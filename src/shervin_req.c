@@ -25,8 +25,29 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+//
+// interface
 
 typedef struct shv_request {
   char *source;
 } shv_request;
+
+shv_request *shv_parse_request(char *s);
+void shv_request_free(shv_request *r);
+
+//
+// implementation
+
+shv_request *shv_parse_request(char *s)
+{
+  shv_request *req = calloc(1, sizeof(shv_request));
+
+  return req;
+}
+
+void shv_request_free(shv_request *r)
+{
+  free(r->source);
+  free(r);
+}
 
