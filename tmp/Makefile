@@ -9,14 +9,13 @@ ifeq ($(RODZO),)
   RODZO=../../rodzo/bin/rodzo
 endif
 
-NAMES=$(wildcard shervin_*.c)
-
+#NAMES=$(wildcard shervin*.c)
 
 s.c: ../spec/*_spec.c
 	$(RODZO) ../spec -o s.c
 
-#s: $(NAME).o $(FLIBS:=.o)
-s: $(NAMES:=.o) $(FLIBS:=.o)
+s: $(NAME).o $(FLIBS:=.o)
+#s: $(NAMES:=.o) $(FLIBS:=.o)
 
 spec: s
 	time ./s

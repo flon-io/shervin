@@ -23,19 +23,33 @@
 // Made in Japan.
 //
 
-#define _POSIX_C_SOURCE 200809L
+// shervin.h
 
+#ifndef FLON_SHERVIN_H
+#define FLON_SHERVIN_H
 
-shv_request *shv_parse_request(char *s)
-{
-  shv_request *req = calloc(1, sizeof(shv_request));
+#define SHV_VERSION "1.0.0"
 
-  return req;
-}
+typedef struct shv_request {
+  char *source;
+  //char *method; // char: 'g' 'P', 'U', 'D', 'h' maybe...
+} shv_request;
 
-void shv_request_free(shv_request *r)
-{
-  free(r->source);
-  free(r);
-}
+typedef struct shv_response {
+  short status_code; // 200, 404, 500, ...
+} shv_response;
+
+typedef void shv_handler(shv_request *req, shv_response *res);
+
+typedef struct shv_route {
+  char *path;
+  shv_handler *handler;
+} shv_route;
+
+shv_request *shv_parse_request(char *s);
+void shv_request_free(shv_request *r);
+
+int shv_serve(int port, shv_route **routes);
+
+#endif // FLON_SHERVIN_H
 

@@ -2,8 +2,7 @@
 NAME=shervin
 FLIBS=flutil aabro
 
-#default: $(NAME).o
-default: $(NAME)
+default: $(NAME).o
 
 .DEFAULT spec clean:
 	$(MAKE) -C tmp/ $@ NAME=$(NAME) FLIBS="$(FLIBS)"

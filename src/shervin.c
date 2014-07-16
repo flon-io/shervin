@@ -26,8 +26,9 @@
 #define _POSIX_C_SOURCE 200809L
 
 
-int main()
-{
-  return 0;
-}
+#include <shervin.h>
+
+#include <stdlib.h>
+
+#include <shervin_req.c> // simple
 
