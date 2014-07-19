@@ -23,9 +23,7 @@ context "request"
   {
     it "returns a pointer to a shv_request struct"
     {
-      char *s = rdz_strdup("GET / HTTP/1.0\r\n");
-
-      req = shv_parse_request(s);
+      req = shv_parse_request("GET / HTTP/1.0\r\n");
 
       ensure(req != NULL);
       ensure(req->method == 'g');

@@ -40,7 +40,9 @@ void shv_init_parser()
   abr_parser *text = abr_regex("^[^\x00-\x31\x127]+"); // not the ctls
 
   abr_parser *token =
-    abr_regex("^[^\(\)<>@,;:\\\"\/\[\]\?=\{\} \t]+");
+    abr_regex("^[a-zA-Z0-9]+");
+    //abr_regex("^[^\(\)<>@,;:\\\"\/\[\]\?=\{\} \t]+");
+      // which provokes an invalid read of size 4 somewhere in regex.c
 
   abr_parser *method =
     abr_n_alt(
@@ -85,9 +87,10 @@ void shv_init_parser()
 
 shv_request *shv_parse_request(char *s)
 {
-  shv_init_parser();
+  //
+  // parse
 
-  shv_request *req = calloc(1, sizeof(shv_request));
+  shv_init_parser();
 
   //abr_tree *r = abr_parse(s, 0, request_parser);
 
@@ -95,6 +98,20 @@ shv_request *shv_parse_request(char *s)
   abr_tree *r = abr_parse_c(s, 0, request_parser, c);
   //
   puts(abr_tree_to_string_with_leaves(s, r));
+
+  //
+  // return req
+
+  abr_tree *t = NULL;
+  char *ts = NULL;
+
+  shv_request *req = calloc(1, sizeof(shv_request));
+
+  t = abr_tree_lookup(r, "method");
+  ts = abr_tree_string(s, t);
+
+  if (strcmp(ts, "GET") == 0) req->method = 'g';
+  else req->method = '?';
 
   return req;
 }

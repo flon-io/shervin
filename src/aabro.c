@@ -618,6 +618,7 @@ abr_tree *abr_p_regex(
 
   //printf("regex: >%s<\n", p->string);
   //printf("regex: %p\n", p->regex);
+  //printf("input: >%s...<\n", strndup(input + offset, 14));
 
   if (regexec(p->regex, input + offset, 1, ms, 0))
   {
