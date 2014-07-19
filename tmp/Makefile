@@ -15,7 +15,6 @@ s.c: ../spec/*_spec.c
 	$(RODZO) ../spec -o s.c
 
 s: $(NAME).o $(FLIBS:=.o)
-#s: $(NAMES:=.o) $(FLIBS:=.o)
 
 spec: s
 	time ./s

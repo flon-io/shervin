@@ -32,7 +32,7 @@
 
 typedef struct shv_request {
   char *source;
-  //char *method; // char: 'g' 'P', 'U', 'D', 'h' maybe...
+  char method;
 } shv_request;
 
 typedef struct shv_response {

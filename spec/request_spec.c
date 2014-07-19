@@ -28,6 +28,7 @@ context "request"
       req = shv_parse_request(s);
 
       ensure(req != NULL);
+      ensure(req->method == 'g');
     }
   }
 }

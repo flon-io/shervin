@@ -36,11 +36,11 @@ void shv_init_parser()
 
   abr_parser *sp = abr_string(" ");
   abr_parser *crlf = abr_string("\r\n");
-  abr_parser *lws = abr_regex("\r\n[ \t]+");
-  abr_parser *text = abr_regex("[^\x00-\x31\x127]"); // not the ctls
+  abr_parser *lws = abr_regex("^\r\n[ \t]+");
+  abr_parser *text = abr_regex("^[^\x00-\x31\x127]+"); // not the ctls
 
   abr_parser *token =
-    abr_regex("[^\(\)<>@,;:\\\"\/\[\]\?=\{\} \t]+");
+    abr_regex("^[^\(\)<>@,;:\\\"\/\[\]\?=\{\} \t]+");
 
   abr_parser *method =
     abr_n_alt(
@@ -51,9 +51,9 @@ void shv_init_parser()
       abr_name("extension_method", token),
       NULL);
   abr_parser *request_uri =
-    NULL;
+    abr_n_regex("request_uri", "^[^ \t\r\n]{1,2048}"); // arbitrary limit
   abr_parser *http_version =
-    abr_n_regex("http_version", "^HTTP\/\d+\.\d+");
+    abr_n_regex("http_version", "^HTTP/[0-9]+\.[0-9]+");
 
   abr_parser *request_line =
     abr_seq(method, sp, request_uri, sp, http_version, crlf, NULL);
@@ -88,6 +88,13 @@ shv_request *shv_parse_request(char *s)
   shv_init_parser();
 
   shv_request *req = calloc(1, sizeof(shv_request));
+
+  //abr_tree *r = abr_parse(s, 0, request_parser);
+
+  abr_conf c = { .prune = 0, .all = 1 };
+  abr_tree *r = abr_parse_c(s, 0, request_parser, c);
+  //
+  puts(abr_tree_to_string_with_leaves(s, r));
 
   return req;
 }
