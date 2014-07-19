@@ -36,7 +36,8 @@ void shv_init_parser()
 
   abr_parser *sp = abr_string(" ");
   abr_parser *crlf = abr_string("\r\n");
-  abr_parser *lws = abr_regex("\r\n[ \t]*");
+  abr_parser *lws = abr_regex("\r\n[ \t]+");
+  abr_parser *text = abr_regex("[^\x00-\x31\x127]"); // not the ctls
 
   abr_parser *token =
     abr_regex("[^\(\)<>@,;:\\\"\/\[\]\?=\{\} \t]+");
@@ -57,14 +58,19 @@ void shv_init_parser()
   abr_parser *request_line =
     abr_seq(method, sp, request_uri, sp, http_version, crlf, NULL);
 
-  abr_parser *field_name = abr_name("field_name", token);
-  abr_parser *field_value = NULL;
+  abr_parser *field_content =
+    text;
+
+  abr_parser *field_name =
+    abr_name("field_name", token);
+  abr_parser *field_value =
+    abr_n_rep("field_value", abr_alt(field_content, lws, NULL), 0, -1);
 
   abr_parser *message_header =
     abr_seq(field_name, abr_string(":"), field_value, NULL);
 
   abr_parser *message_body =
-    NULL;
+    abr_n_regex("message_body", "^.+"); // well, the rest
 
   request_parser =
     abr_seq(
