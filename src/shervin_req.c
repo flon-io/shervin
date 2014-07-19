@@ -100,7 +100,7 @@ shv_request *shv_parse_request(char *s)
   puts(abr_tree_to_string_with_leaves(s, r));
 
   //
-  // return req
+  // prepare req
 
   abr_tree *t = NULL;
   char *ts = NULL;
@@ -112,6 +112,13 @@ shv_request *shv_parse_request(char *s)
 
   if (strcmp(ts, "GET") == 0) req->method = 'g';
   else req->method = '?';
+
+  free(ts);
+
+  //
+  // over
+
+  abr_tree_free(r);
 
   return req;
 }
