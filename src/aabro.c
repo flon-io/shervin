@@ -81,6 +81,11 @@ char *abr_tree_string(const char *input, abr_tree *t)
   return strndup(input + t->offset, t->length);
 }
 
+char *abr_tree_str(const char *input, abr_tree *t)
+{
+  return input + t->offset;
+}
+
 char *abr_p_names[] = { // const ?
   "string", "regex",
   "rep", "alt", "seq",
@@ -615,10 +620,6 @@ abr_tree *abr_p_regex(
   const abr_conf co)
 {
   regmatch_t ms[1];
-
-  //printf("regex: >%s<\n", p->string);
-  //printf("regex: %p\n", p->regex);
-  //printf("input: >%s...<\n", strndup(input + offset, 14));
 
   if (regexec(p->regex, input + offset, 1, ms, 0))
   {
