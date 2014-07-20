@@ -108,12 +108,10 @@ shv_request *shv_parse_request(char *s)
   shv_request *req = calloc(1, sizeof(shv_request));
 
   t = abr_tree_lookup(r, "method");
-  ts = abr_tree_string(s, t);
+  ts = abr_tree_str(s, t);
 
-  if (strcmp(ts, "GET") == 0) req->method = 'g';
+  if (strncmp(ts, "GET", 3) == 0) req->method = 'g';
   else req->method = '?';
-
-  free(ts);
 
   //
   // over
