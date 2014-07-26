@@ -26,6 +26,10 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "aabro.h"
+#include "shervin.h"
+
+#include <stdlib.h>
+#include <string.h>
 
 
 abr_parser *request_parser = NULL;

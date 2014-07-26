@@ -9,12 +9,13 @@ ifeq ($(RODZO),)
   RODZO=../../rodzo/bin/rodzo
 endif
 
-#NAMES=$(wildcard shervin*.c)
+NAMES=$(patsubst $(VPATH)/%.h, ./%.o, $(wildcard $(VPATH)/$(SNAME)_*.h))
+  # since wildcard doesn't care about VPATH...
 
 s.c: ../spec/*_spec.c
 	$(RODZO) ../spec -o s.c
 
-s: $(NAME).o $(FLIBS:=.o)
+s: $(NAME).o $(NAMES) $(FLIBS:=.o)
 
 spec: s
 	time ./s

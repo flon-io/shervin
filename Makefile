@@ -1,11 +1,12 @@
 
 NAME=shervin
+SNAME=shv
 FLIBS=flutil aabro
 
 default: $(NAME).o
 
 .DEFAULT spec clean:
-	$(MAKE) -C tmp/ $@ NAME=$(NAME) FLIBS="$(FLIBS)"
+	$(MAKE) -C tmp/ $@ NAME=$(NAME) SNAME=$(SNAME) FLIBS="$(FLIBS)"
 
 # copy updated version of dep libs into src/
 #
