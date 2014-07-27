@@ -75,8 +75,8 @@ void shv_init_parser()
   abr_parser *message_header =
     abr_seq(field_name, abr_string(":"), field_value, NULL);
 
-  abr_parser *message_body =
-    abr_n_regex("message_body", "^.+"); // well, the rest
+  //abr_parser *message_body =
+  //  abr_n_regex("message_body", "^.+"); // well, the rest
 
   request_parser =
     abr_seq(
@@ -85,8 +85,9 @@ void shv_init_parser()
         abr_seq(message_header, crlf, NULL),
         0, -1),
       crlf,
-      abr_rep(message_body, 0, 1),
+      //abr_rep(message_body, 0, 1),
       NULL);
+  // do not include the message_body
 }
 
 shv_request *shv_parse_request(char *s)
