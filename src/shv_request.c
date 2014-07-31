@@ -51,9 +51,9 @@ void shv_init_parser()
   abr_parser *method =
     abr_n_alt(
       "method",
-      abr_string("OPTIONS"), abr_string("GET"), abr_string("HEAD"),
-      abr_string("POST"), abr_string("PUT"), abr_string("DELETE"),
-      abr_string("TRACE"), abr_string("CONNECT"),
+      abr_regex("(GET|POST|PUT|DELETE|HEAD|OPTIONS|TRACE|CONNECT)"),
+      //abr_string("POST"), abr_string("PUT"), abr_string("DELETE"),
+      //abr_string("TRACE"), abr_string("CONNECT"),
       abr_name("extension_method", token),
       NULL);
   abr_parser *request_uri =
