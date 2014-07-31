@@ -104,6 +104,8 @@ shv_request *shv_parse_request(char *s)
   //
   puts(abr_tree_to_string_with_leaves(s, r));
 
+  if (r->result != 1) return NULL;
+
   //
   // prepare req
 
