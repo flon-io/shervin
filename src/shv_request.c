@@ -116,6 +116,13 @@ shv_request *shv_parse_request(char *s)
   ts = abr_tree_str(s, t);
 
   if (strncmp(ts, "GET", 3) == 0) req->method = 'g';
+  else if (strncmp(ts, "PUT", 3) == 0) req->method = 'u';
+  else if (strncmp(ts, "POST", 4) == 0) req->method = 'p';
+  else if (strncmp(ts, "HEAD", 4) == 0) req->method = 'h';
+  else if (strncmp(ts, "TRACE", 5) == 0) req->method = 't';
+  else if (strncmp(ts, "DELETE", 6) == 0) req->method = 'd';
+  else if (strncmp(ts, "OPTIONS", 7) == 0) req->method = 'o';
+  else if (strncmp(ts, "CONNECT", 7) == 0) req->method = 'c';
   else req->method = '?';
 
   //
