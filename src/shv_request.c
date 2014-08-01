@@ -44,16 +44,15 @@ void shv_init_parser()
   abr_parser *text = abr_regex("^[^\x00-\x31\x127]+"); // not the ctls
 
   abr_parser *token =
-    abr_regex("^[a-zA-Z0-9]+");
+    abr_regex("^[^: \t\r\n]+");
+    //abr_regex("^[a-zA-Z0-9]+");
     //abr_regex("^[^\(\)<>@,;:\\\"\/\[\]\?=\{\} \t]+");
-      // which provokes an invalid read of size 4 somewhere in regex.c
+      // which doesn't compile
 
   abr_parser *method =
     abr_n_alt(
       "method",
       abr_regex("(GET|POST|PUT|DELETE|HEAD|OPTIONS|TRACE|CONNECT)"),
-      //abr_string("POST"), abr_string("PUT"), abr_string("DELETE"),
-      //abr_string("TRACE"), abr_string("CONNECT"),
       abr_name("extension_method", token),
       NULL);
   abr_parser *request_uri =
