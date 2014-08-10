@@ -44,6 +44,8 @@ context "request"
 
       ensure(req != NULL);
       ensure(req->method == 'p');
+
+      // TODO: access the headers and their values
     }
   }
 }

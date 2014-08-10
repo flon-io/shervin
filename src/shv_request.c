@@ -40,17 +40,16 @@ void shv_init_parser()
 
   abr_parser *sp = abr_string(" ");
   abr_parser *crlf = abr_string("\r\n");
-  //abr_parser *lws = abr_regex("^\r\n[ \t]+");
-  abr_parser *lws = abr_rex("\r\n[ \t]+");
-  //abr_parser *text = abr_regex("^[^\x00-\x31\x127]+"); // not the ctls
-  //abr_parser *text = abr_rex("[^\x00-\x31\x127]+"); // not the ctls
-  abr_parser *text = abr_rex("[^\x01-\x31\x127]+"); // not the ctls
+
+  abr_parser *lws = abr_rex("(\r\n)?[ \t]+");
+
+  //abr_parser *text =
+  //  abr_alt(abr_rex("[^\x01-\x1F\x7F]"), lws, abr_r("+"));
+  abr_parser *text =
+    abr_rex("[^\x01-\x1F\x7F]+");
 
   abr_parser *token =
-    //abr_regex("^[a-zA-Z0-9]+");
-    //abr_regex("^[^\(\)<>@,;:\\\"\/\[\]\?=\{\} \t]+");
-      // which doesn't compile
-    abr_rex("[^: \t\r\n]+");
+    abr_rex("[^\x01-\x1F\x7F()<>@,;:\\\\\"/[\\]?={} \t]+");
 
   abr_parser *method =
     abr_n_alt(
@@ -101,8 +100,8 @@ shv_request *shv_parse_request(char *s)
 
   shv_init_parser();
 
-  //abr_tree *r = abr_parse(s, 0, request_parser);
-  abr_tree *r = abr_parse_f(s, 0, request_parser, ABR_F_ALL);
+  abr_tree *r = abr_parse(s, 0, request_parser);
+  //abr_tree *r = abr_parse_f(s, 0, request_parser, ABR_F_ALL);
   puts(abr_tree_to_string_with_leaves(s, r));
 
   if (r->result != 1) return NULL;
