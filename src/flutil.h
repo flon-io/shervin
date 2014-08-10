@@ -49,6 +49,17 @@ char *flu_strrtrim(const char *s);
  */
 char *flu_strtrim(const char *s);
 
+/* Returns the index of the first occurence of char c in string s.
+ * Starts searching at s + off.
+ */
+ssize_t flu_index(const char *s, size_t off, char c);
+
+/* Returns the index of the last occurence of char c in string s.
+ * Starts searching at s + off.
+ * Setting off to -1, is equivalent to setting it to strlen(s) - 1.
+ */
+ssize_t flu_rindex(const char *s, ssize_t off, char c);
+
 
 //
 // sbuffer
@@ -189,15 +200,20 @@ void *flu_list_at(const flu_list *l, size_t n);
 //size_t flu_list_indexof(const flu_list *l, void *item);
 //int flu_list_contains(const flu_list *l, void *item);
 
+enum // flags for flu_list_to_array()
+{
+  FLU_F_REVERSE     = 1 << 0, // reverse the order of the returned elements
+  FLU_F_EXTRA_NULL  = 1 << 1  // add a final NULL element
+};
+
 /* Returns an array of void pointers, pointers to the items in the flu_list.
  * The size of the array is the size of the flu_list.
+ * If the flag FLU_REVERSE is set, the array order will be the reverse of
+ * the flu_list order.
+ * If the flag FLU_EXTRA_NULL is set, the array will have one final extra
+ * NULL element.
  */
-void **flu_list_to_array(const flu_list *l);
-
-/* Returns the array of pointers to the items in the flu_list, with an
- * extra NULL pointer at the end of the array.
- */
-void **flu_list_to_array_n(const flu_list *l);
+void **flu_list_to_array(const flu_list *l, int flags);
 
 /* Adds an item at the end of a flu_list.
  */

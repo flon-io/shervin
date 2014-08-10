@@ -75,6 +75,28 @@ char *flu_strtrim(const char *s)
   return r;
 }
 
+ssize_t flu_index(const char *s, size_t off, char c)
+{
+  for (size_t i = off; ; ++i)
+  {
+    char cc = s[i];
+    if (cc == '\0') break;
+    if (cc == c) return i;
+  }
+  return -1;
+}
+
+ssize_t flu_rindex(const char *s, ssize_t off, char c)
+{
+  off = (off == -1) ? strlen(s) - 1 : off;
+  for (size_t i = off; ; --i)
+  {
+    if (s[i] == c) return i;
+    if (i < 1) break;
+  }
+  return -1;
+}
+
 //
 // sbuffer
 
@@ -320,7 +342,7 @@ char *flu_n_unescape(const char *s, size_t n)
 
 
 //
-// colls
+// flu_list
 
 static flu_node *flu_node_malloc(void *item)
 {
@@ -421,20 +443,16 @@ void *flu_list_shift(flu_list *l)
   return item;
 }
 
-void **flu_list_to_array(const flu_list *l)
+void **flu_list_to_array(const flu_list *l, int flags)
 {
-  void **a = calloc(l->size, sizeof(void *));
-  size_t i = 0;
-  for (flu_node *n = l->first; n != NULL; n = n->next) a[i++] = n->item;
-  return a;
-}
-
-void **flu_list_to_array_n(const flu_list *l)
-{
-  void **a = calloc(l->size + 1, sizeof(void *));
-  size_t i = 0;
-  for (flu_node *n = l->first; n != NULL; n = n->next) a[i++] = n->item;
-  a[i] = NULL;
+  size_t s = l->size + (flags & FLU_F_EXTRA_NULL ? 1 : 0);
+  void **a = calloc(s, sizeof(void *));
+  size_t i = flags & FLU_F_REVERSE ? l->size - 1 : 0;
+  for (flu_node *n = l->first; n != NULL; n = n->next)
+  {
+    a[i] = n->item;
+    i = i + (flags & FLU_F_REVERSE ? -1 : 1);
+  }
   return a;
 }
 
