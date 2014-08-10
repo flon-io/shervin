@@ -74,7 +74,7 @@ void shv_init_parser()
     abr_n_rep("field_value", abr_alt(field_content, lws, NULL), 0, -1);
 
   abr_parser *message_header =
-    abr_seq(field_name, abr_string(":"), field_value, NULL);
+    abr_n_seq("message_header", field_name, abr_string(":"), field_value, NULL);
 
   //abr_parser *message_body =
   //  abr_n_regex("message_body", "^.+"); // well, the rest
@@ -90,7 +90,7 @@ void shv_init_parser()
       NULL);
   // do not include the message_body
 
-  puts(abr_parser_to_string(request_parser));
+  //puts(abr_parser_to_string(request_parser));
 }
 
 shv_request *shv_parse_request(char *s)
@@ -102,7 +102,7 @@ shv_request *shv_parse_request(char *s)
 
   abr_tree *r = abr_parse(s, 0, request_parser);
   //abr_tree *r = abr_parse_f(s, 0, request_parser, ABR_F_ALL);
-  puts(abr_tree_to_string_with_leaves(s, r));
+  //puts(abr_tree_to_string_with_leaves(s, r));
 
   if (r->result != 1) return NULL;
 
@@ -113,6 +113,8 @@ shv_request *shv_parse_request(char *s)
   char *ts = NULL;
 
   shv_request *req = calloc(1, sizeof(shv_request));
+
+  // method
 
   t = abr_tree_lookup(r, "method");
   ts = abr_tree_str(s, t);
@@ -127,6 +129,25 @@ shv_request *shv_parse_request(char *s)
   else if (strncmp(ts, "CONNECT", 7) == 0) req->method = 'c';
   else req->method = '?';
 
+  // headers
+
+  flu_list *hs = abr_tree_list_named(r, "message_header");
+
+  size_t i = 0;
+  req->headers = calloc((2 * hs->size) + 1, sizeof(char *));
+  for (flu_node *h = hs->first; h != NULL; h = h->next)
+  {
+    abr_tree *th = (abr_tree *)h->item;
+    abr_tree *tk = abr_tree_lookup(th, "field_name");
+    abr_tree *tv = abr_tree_lookup(th, "field_value");
+    req->headers[i++] = abr_tree_string(s, tk);
+    req->headers[i++] = abr_tree_string(s, tv);
+    // TODO: tolower key
+    // TODO: trim value
+  }
+
+  flu_list_free(hs);
+
   //
   // over
 
@@ -137,7 +158,11 @@ shv_request *shv_parse_request(char *s)
 
 void shv_request_free(shv_request *r)
 {
-  free(r->source);
+  if (r->headers != NULL)
+  {
+    for (size_t i = 0; r->headers[i] != NULL; ++i) free(r->headers[i]);
+    free(r->headers);
+  }
   free(r);
 }
 

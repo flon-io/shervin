@@ -45,6 +45,15 @@ context "request"
       ensure(req != NULL);
       ensure(req->method == 'p');
 
+      ensure(req->headers[0] === ""
+        "content-type");
+      ensure(req->headers[1] === ""
+        " application/x-www-form-urlencoded;charset=utf-8");
+      ensure(req->headers[4] === ""
+        "content-length");
+      ensure(req->headers[5] === ""
+        " 207");
+
       // TODO: access the headers and their values
     }
   }

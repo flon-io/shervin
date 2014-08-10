@@ -31,8 +31,9 @@
 #define SHV_VERSION "1.0.0"
 
 typedef struct shv_request {
-  char *source;
   char method;
+  char **headers;
+  char *body;
 } shv_request;
 
 typedef struct shv_response {
