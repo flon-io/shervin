@@ -151,9 +151,9 @@ shv_request *shv_parse_request(char *s)
     abr_tree *tk = abr_tree_lookup(th, "field_name");
     abr_tree *tv = abr_tree_lookup(th, "field_value");
     req->headers[i++] = abr_tree_string(s, tk);
-    req->headers[i++] = abr_tree_string(s, tv);
-    // TODO: tolower key : NO, in header lookup, do a nocase cmp instead
-    // TODO: trim value
+    char *sv = abr_tree_string(s, tv);
+    req->headers[i++] = flu_strtrim(sv);
+    free(sv);
   }
 
   flu_list_free(hs);
@@ -164,6 +164,15 @@ shv_request *shv_parse_request(char *s)
   abr_tree_free(r);
 
   return req;
+}
+
+char *shv_request_header(shv_request *r, char *header_name)
+{
+  for (size_t i = 0; r->headers[i] != NULL; i = i + 2)
+  {
+    if (strcasecmp(r->headers[i], header_name) == 0) return r->headers[i + 1];
+  }
+  return NULL;
 }
 
 void shv_request_free(shv_request *r)

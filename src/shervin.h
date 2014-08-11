@@ -43,6 +43,8 @@ typedef struct shv_request {
 shv_request *shv_parse_request(char *s);
 void shv_request_free(shv_request *r);
 
+char *shv_request_header(shv_request *r, char *header_name);
+
 // response
 
 typedef struct shv_response {
