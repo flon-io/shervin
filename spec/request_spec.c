@@ -31,6 +31,8 @@ context "request"
       ensure(req != NULL);
       ensure(req->method == 'g');
       ensure(req->uri === "/");
+
+      ensure(req->status_code == 200);
     }
 
     it "parses POST requests"
@@ -57,6 +59,19 @@ context "request"
         "content-length");
       ensure(req->headers[5] === ""
         " 207");
+
+      ensure(req->status_code == 200);
+    }
+
+    it "returns a req with ->status_code == 400 when it cannot parse"
+    {
+      req = shv_parse_request(""
+        "GET /\r\n"
+        "\r\n"
+      );
+
+      ensure(req != NULL);
+      ensure(req->status_code == 400);
     }
   }
 }

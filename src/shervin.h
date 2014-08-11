@@ -35,6 +35,7 @@ typedef struct shv_request {
   char *uri;
   char **headers;
   char *body;
+  short status_code; // 4xx code set by shervin, 200 else
 } shv_request;
 
 typedef struct shv_response {

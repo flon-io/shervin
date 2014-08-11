@@ -105,15 +105,15 @@ shv_request *shv_parse_request(char *s)
 
   //puts(abr_tree_to_string_with_leaves(s, r));
 
-  if (r->result != 1) return NULL;
+  shv_request *req = calloc(1, sizeof(shv_request));
+  req->status_code = 400; // Bad Request
 
-  //
-  // prepare req
+  if (r->result != 1) { abr_tree_free(r); return req; }
+
+  req->status_code = 200; // ok, for now
 
   abr_tree *t = NULL;
   char *ts = NULL;
-
-  shv_request *req = calloc(1, sizeof(shv_request));
 
   // method
 
