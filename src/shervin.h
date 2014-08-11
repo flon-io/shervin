@@ -32,6 +32,7 @@
 
 typedef struct shv_request {
   char method;
+  char *path;
   char **headers;
   char *body;
 } shv_request;

@@ -102,6 +102,7 @@ shv_request *shv_parse_request(char *s)
 
   abr_tree *r = abr_parse(s, 0, request_parser);
   //abr_tree *r = abr_parse_f(s, 0, request_parser, ABR_F_ALL);
+
   //puts(abr_tree_to_string_with_leaves(s, r));
 
   if (r->result != 1) return NULL;
@@ -129,6 +130,15 @@ shv_request *shv_parse_request(char *s)
   else if (strncmp(ts, "CONNECT", 7) == 0) req->method = 'c';
   else req->method = '?';
 
+  // path
+
+  t = abr_tree_lookup(r, "request_uri");
+  req->path = abr_tree_string(s, t);
+
+  // version
+
+  // reject when not 1.0 or 1.1?
+
   // headers
 
   flu_list *hs = abr_tree_list_named(r, "message_header");
@@ -142,7 +152,7 @@ shv_request *shv_parse_request(char *s)
     abr_tree *tv = abr_tree_lookup(th, "field_value");
     req->headers[i++] = abr_tree_string(s, tk);
     req->headers[i++] = abr_tree_string(s, tv);
-    // TODO: tolower key
+    // TODO: tolower key : NO, in header lookup, do a nocase cmp instead
     // TODO: trim value
   }
 
@@ -163,6 +173,7 @@ void shv_request_free(shv_request *r)
     for (size_t i = 0; r->headers[i] != NULL; ++i) free(r->headers[i]);
     free(r->headers);
   }
+  free(r->path);
   free(r);
 }
 

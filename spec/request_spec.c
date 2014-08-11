@@ -21,7 +21,7 @@ context "request"
 
   describe "shv_request_parse()"
   {
-    it "returns a pointer to a shv_request struct"
+    it "parses GET requests"
     {
       req = shv_parse_request(""
         "GET / HTTP/1.0\r\n"
@@ -30,9 +30,10 @@ context "request"
 
       ensure(req != NULL);
       ensure(req->method == 'g');
+      ensure(req->path === "/");
     }
 
-    it "parses message headers"
+    it "parses POST requests"
     {
       req = shv_parse_request(""
         "POST /msgbin HTTP/1.1\r\n"
@@ -43,7 +44,10 @@ context "request"
       );
 
       ensure(req != NULL);
+
       ensure(req->method == 'p');
+
+      ensure(req->path === "/msgbin");
 
       ensure(req->headers[0] === ""
         "content-type");
