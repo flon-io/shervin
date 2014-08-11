@@ -111,5 +111,32 @@ context "request"
       ensure(shv_request_header(req, "host") === "https://example.com");
     }
   }
+
+  describe "shv_request_content_length()"
+  {
+    it "returns -1 when there is no content-length header"
+    {
+      req = shv_parse_request(""
+        "GET /msg HTTP/1.1\r\n"
+        "Host: https://example.com\r\n"
+        "\r\n"
+      );
+
+      ensure(shv_request_content_length(req) == -1);
+    }
+
+    it "returns the number for the content-length header"
+    {
+      req = shv_parse_request(""
+        "POST /msgbin HTTP/1.1\r\n"
+        "content-type: application/x-www-form-urlencoded;charset=utf-8\r\n"
+        "host: https://importexport.amazonaws.com\r\n"
+        "content-length: 207\r\n"
+        "\r\n"
+      );
+
+      ensure(shv_request_content_length(req) == 207);
+    }
+  }
 }
 

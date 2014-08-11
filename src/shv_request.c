@@ -175,6 +175,13 @@ char *shv_request_header(shv_request *r, char *header_name)
   return NULL;
 }
 
+ssize_t shv_request_content_length(shv_request *r)
+{
+  char *cl = shv_request_header(r, "content-length");
+
+  return (cl == NULL) ? -1 : atol(cl);
+}
+
 void shv_request_free(shv_request *r)
 {
   if (r->headers != NULL)

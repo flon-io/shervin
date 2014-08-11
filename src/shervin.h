@@ -28,6 +28,8 @@
 #ifndef FLON_SHERVIN_H
 #define FLON_SHERVIN_H
 
+#include <stdio.h> // brings ssize_t in
+
 #define SHV_VERSION "1.0.0"
 
 // request
@@ -44,6 +46,7 @@ shv_request *shv_parse_request(char *s);
 void shv_request_free(shv_request *r);
 
 char *shv_request_header(shv_request *r, char *header_name);
+ssize_t shv_request_content_length(shv_request *r);
 
 // response
 
