@@ -30,7 +30,7 @@ context "request"
 
       ensure(req != NULL);
       ensure(req->method == 'g');
-      ensure(req->path === "/");
+      ensure(req->uri === "/");
     }
 
     it "parses POST requests"
@@ -47,7 +47,7 @@ context "request"
 
       ensure(req->method == 'p');
 
-      ensure(req->path === "/msgbin");
+      ensure(req->uri === "/msgbin");
 
       ensure(req->headers[0] === ""
         "content-type");
@@ -57,8 +57,6 @@ context "request"
         "content-length");
       ensure(req->headers[5] === ""
         " 207");
-
-      // TODO: access the headers and their values
     }
   }
 }

@@ -130,10 +130,10 @@ shv_request *shv_parse_request(char *s)
   else if (strncmp(ts, "CONNECT", 7) == 0) req->method = 'c';
   else req->method = '?';
 
-  // path
+  // uri
 
   t = abr_tree_lookup(r, "request_uri");
-  req->path = abr_tree_string(s, t);
+  req->uri = abr_tree_string(s, t);
 
   // version
 
@@ -173,7 +173,7 @@ void shv_request_free(shv_request *r)
     for (size_t i = 0; r->headers[i] != NULL; ++i) free(r->headers[i]);
     free(r->headers);
   }
-  free(r->path);
+  free(r->uri);
   free(r);
 }
 
