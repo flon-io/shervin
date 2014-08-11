@@ -30,6 +30,8 @@
 
 #define SHV_VERSION "1.0.0"
 
+// request
+
 typedef struct shv_request {
   char method;
   char *uri;
@@ -38,21 +40,34 @@ typedef struct shv_request {
   short status_code; // 4xx code set by shervin, 200 else
 } shv_request;
 
+shv_request *shv_parse_request(char *s);
+void shv_request_free(shv_request *r);
+
+// response
+
 typedef struct shv_response {
   short status_code; // 200, 404, 500, ...
 } shv_response;
 
+// route
+
+typedef int shv_guard(shv_request *req, void **params);
 typedef void shv_handler(shv_request *req, shv_response *res);
 
 typedef struct shv_route {
-  char *path;
+  void **params;
+  shv_guard *guard;
   shv_handler *handler;
 } shv_route;
 
-shv_request *shv_parse_request(char *s);
-void shv_request_free(shv_request *r);
+// guards
+
+int shv_path_guard(shv_request *req, void **params);
+
+// serving
 
 int shv_serve(int port, shv_route **routes);
+  // NULL terminated route array
 
 #endif // FLON_SHERVIN_H
 
