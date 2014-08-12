@@ -23,63 +23,25 @@
 // Made in Japan.
 //
 
-// shervin.h
+#define _POSIX_C_SOURCE 200809L
 
-#ifndef FLON_SHERVIN_H
-#define FLON_SHERVIN_H
+#include <shervin.h>
 
-#include <stdio.h> // brings ssize_t in
 
-#define SHV_VERSION "1.0.0"
+/*
+ * Respond with 200 and the time.
+ */
+void htime_handler(shv_request *req, shv_response *res)
+{
+  res->status_code = 200;
+}
 
-// request
+int main()
+{
+  shv_route **routes = (shv_route **){
+    &(shv_route){ shv_any_guard, htime_handler, (void **){ "www" } }
+  };
 
-typedef struct shv_request {
-  char method;
-  char *uri;
-  char **headers;
-  char *body;
-  short status_code; // 4xx code set by shervin, 200 else
-} shv_request;
-
-shv_request *shv_parse_request(char *s);
-void shv_request_free(shv_request *r);
-
-char *shv_request_header(shv_request *r, char *header_name);
-ssize_t shv_request_content_length(shv_request *r);
-
-// response
-
-typedef struct shv_response {
-  short status_code; // 200, 404, 500, ...
-} shv_response;
-
-// route
-
-typedef int shv_guard(shv_request *req, void **params);
-typedef void shv_handler(shv_request *req, shv_response *res);
-
-typedef struct shv_route {
-  shv_guard *guard;
-  shv_handler *handler;
-  void **params;
-} shv_route;
-
-// guards
-
-int shv_any_guard(shv_request *req, void **params);
-int shv_path_guard(shv_request *req, void **params);
-
-// handlers
-
-void shv_dir_handler(shv_request *req, shv_response *res);
-
-// serving
-
-void shv_serve(int port, shv_route **routes);
-  // NULL terminated route array
-
-// TODO: shv_stop_serve?
-
-#endif // FLON_SHERVIN_H
+  shv_serve(4001, routes);
+}
 
