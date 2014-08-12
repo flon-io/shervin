@@ -52,6 +52,7 @@ ssize_t shv_request_content_length(shv_request *r);
 
 typedef struct shv_response {
   short status_code; // 200, 404, 500, ...
+  char *body;
 } shv_response;
 
 // route

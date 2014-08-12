@@ -29,12 +29,13 @@
 
 #include <stdlib.h>
 #include <string.h>
+//#include <unistd.h> // for close(fd)
 #include <netinet/in.h>
 #include <ev.h>
 
 // TODO: logging
 
-#define SHV_BUFFER_SIZE 1024
+#define SHV_BUFFER_SIZE 2048
 
 
 static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
@@ -55,7 +56,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     return;
   }
 
-  //printf("  >%s<\n", buffer);
+  printf("  >%s< %zu\n", buffer, strlen(buffer));
 
   //send(eio->fd, buffer, r, 0);
   //memset(buffer, 0, r);
@@ -68,8 +69,7 @@ static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
   struct sockaddr_in ca; // client address
   socklen_t cal = sizeof(struct sockaddr_in);
-  //struct ev_io *ceio = calloc(1, sizeof(struct ev_io));
-  struct ev_io ceio;
+  struct ev_io *ceio = calloc(1, sizeof(struct ev_io));
 
   if (EV_ERROR & revents) { /*perror("accept invalid event");*/ return; }
 
@@ -79,10 +79,8 @@ static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   // client connected...
 
-  //ev_io_init(ceio, shv_handle_cb, csd, EV_READ);
-  //ev_io_start(l, ceio);
-  ev_io_init(&ceio, shv_handle_cb, csd, EV_READ);
-  ev_io_start(l, &ceio);
+  ev_io_init(ceio, shv_handle_cb, csd, EV_READ);
+  ev_io_start(l, ceio);
 }
 
 void shv_serve(int port, shv_route **routes)
@@ -112,5 +110,9 @@ void shv_serve(int port, shv_route **routes)
   ev_io_start(l, &eio);
 
   ev_loop(l, 0);
+
+  //printf("closing...\n");
+  //r = close(sd);
+  //if (r != 0) { perror("close error"); /*exit(4);*/ }
 }
 

@@ -34,12 +34,13 @@
 void htime_handler(shv_request *req, shv_response *res)
 {
   res->status_code = 200;
+  res->body = "it's midnight";
 }
 
 int main()
 {
   shv_route **routes = (shv_route **){
-    &(shv_route){ shv_any_guard, htime_handler, (void **){ "www" } }
+    &(shv_route){ shv_any_guard, htime_handler, (void **){ NULL } }
   };
 
   shv_serve(4001, routes);
