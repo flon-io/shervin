@@ -75,8 +75,10 @@ void shv_dir_handler(shv_request *req, shv_response *res);
 
 // serving
 
-int shv_serve(int port, shv_route **routes);
+void shv_serve(int port, shv_route **routes);
   // NULL terminated route array
+
+// TODO: shv_stop_serve?
 
 #endif // FLON_SHERVIN_H
 

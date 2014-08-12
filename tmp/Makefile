@@ -1,6 +1,6 @@
 
 CFLAGS=-I../src -g -Wall -O3
-LDLIBS=
+LDLIBS=/usr/lib/libev.so # :-(
 CC=c99
 VPATH=../src
 

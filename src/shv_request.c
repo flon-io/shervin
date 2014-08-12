@@ -30,6 +30,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 
 abr_parser *request_parser = NULL;
