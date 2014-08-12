@@ -68,7 +68,8 @@ static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
   struct sockaddr_in ca; // client address
   socklen_t cal = sizeof(struct sockaddr_in);
-  struct ev_io *ceio = calloc(1, sizeof(struct ev_io));
+  //struct ev_io *ceio = calloc(1, sizeof(struct ev_io));
+  struct ev_io ceio;
 
   if (EV_ERROR & revents) { /*perror("accept invalid event");*/ return; }
 
@@ -78,8 +79,10 @@ static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   // client connected...
 
-  ev_io_init(ceio, shv_handle_cb, csd, EV_READ);
-  ev_io_start(l, ceio);
+  //ev_io_init(ceio, shv_handle_cb, csd, EV_READ);
+  //ev_io_start(l, ceio);
+  ev_io_init(&ceio, shv_handle_cb, csd, EV_READ);
+  ev_io_start(l, &ceio);
 }
 
 void shv_serve(int port, shv_route **routes)
