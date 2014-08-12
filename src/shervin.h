@@ -69,6 +69,10 @@ typedef struct shv_route {
 
 int shv_path_guard(shv_request *req, void **params);
 
+// handlers
+
+void shv_dir_handler(shv_request *req, shv_response *res);
+
 // serving
 
 int shv_serve(int port, shv_route **routes);
