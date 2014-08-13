@@ -37,14 +37,16 @@
 
 // TODO: logging
 
-#define SHV_BUFFER_SIZE 2048
+#define SHV_HEAD_SIZE 8192
+#define SHV_BUFFER_SIZE 1024
 
 
 typedef struct shv_con {
-  short state; // 0 created, 1 headers read, 2 body read
   shv_route **routes;
   shv_route *route;
-  flu_sbuffer *src;
+  char *head;
+  size_t hoff;
+  flu_sbuffer *body;
   shv_request req;
   shv_response res;
 } shv_con;
@@ -53,8 +55,8 @@ static shv_con *shv_con_malloc(const shv_route **routes)
 {
   shv_con *c = calloc(1, sizeof(shv_con));
   c->routes = routes;
-  c->state = 0;
-  c->src = flu_sbuffer_malloc();
+  c->head = calloc(SHV_HEAD_SIZE, sizeof(char));
+  c->hoff = 0;
   return c;
 }
 
@@ -66,31 +68,29 @@ static void shv_con_free(shv_con *c)
 
 static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
-printf("watcher: %p\n", eio);
   if (EV_ERROR & revents) { perror("read invalid event"); return; }
 
-  // TODO: use a memstream
-  char buffer[SHV_BUFFER_SIZE];
+  shv_con *con = (shv_con *)eio->data;
 
-  ssize_t r = recv(eio->fd, buffer, SHV_BUFFER_SIZE, 0);
+  ssize_t r = recv(eio->fd, con->head + con->hoff, SHV_BUFFER_SIZE, 0);
 
-  if (r < 0) { /*perror("read error");*/ return; }
+  if (r < 0) { perror("read error"); return; }
 
   if (r == 0)
   {
     ev_io_stop(l, eio);
     free(eio);
     perror("*** client closing ***");
+    // TODO: free con
     return;
   }
 
-  printf("  >%s< %zu\n", buffer, strlen(buffer));
+  con->hoff += r;
+
+  printf("** current  >%s< l%zu r%zu\n", con->head, strlen(con->head), r);
 
   //send(eio->fd, buffer, r, 0);
   //memset(buffer, 0, r);
-
-  // TODO: read until the double crlf
-  // TODO: handle the incoming requests
 }
 
 static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
