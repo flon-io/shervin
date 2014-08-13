@@ -33,15 +33,43 @@
 #include <netinet/in.h>
 #include <ev.h>
 
+#include "flutil.h"
+
 // TODO: logging
 
 #define SHV_BUFFER_SIZE 2048
 
 
+typedef struct shv_con {
+  short state; // 0 created, 1 headers read, 2 body read
+  shv_route **routes;
+  shv_route *route;
+  flu_sbuffer *src;
+  shv_request req;
+  shv_response res;
+} shv_con;
+
+static shv_con *shv_con_malloc(const shv_route **routes)
+{
+  shv_con *c = calloc(1, sizeof(shv_con));
+  c->routes = routes;
+  c->state = 0;
+  c->src = flu_sbuffer_malloc();
+  return c;
+}
+
+static void shv_con_free(shv_con *c)
+{
+  // TODO
+}
+
+
 static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
+printf("watcher: %p\n", eio);
   if (EV_ERROR & revents) { perror("read invalid event"); return; }
 
+  // TODO: use a memstream
   char buffer[SHV_BUFFER_SIZE];
 
   ssize_t r = recv(eio->fd, buffer, SHV_BUFFER_SIZE, 0);
@@ -52,7 +80,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   {
     ev_io_stop(l, eio);
     free(eio);
-    //perror("client closing");
+    perror("*** client closing ***");
     return;
   }
 
@@ -69,7 +97,9 @@ static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
   struct sockaddr_in ca; // client address
   socklen_t cal = sizeof(struct sockaddr_in);
+
   struct ev_io *ceio = calloc(1, sizeof(struct ev_io));
+  ceio->data = shv_con_malloc((const shv_route **)eio->data);
 
   if (EV_ERROR & revents) { /*perror("accept invalid event");*/ return; }
 
@@ -83,7 +113,7 @@ static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   ev_io_start(l, ceio);
 }
 
-void shv_serve(int port, shv_route **routes)
+void shv_serve(int port, const shv_route **routes)
 {
   struct ev_io eio;
   struct ev_loop *l = ev_default_loop(0);
@@ -107,6 +137,7 @@ void shv_serve(int port, shv_route **routes)
   if (r < 0) { perror("listen error"); exit(3); }
 
   ev_io_init(&eio, shv_accept_cb, sd, EV_READ);
+  eio.data = routes;
   ev_io_start(l, &eio);
 
   ev_loop(l, 0);

@@ -77,7 +77,7 @@ void shv_dir_handler(shv_request *req, shv_response *res);
 
 // serving
 
-void shv_serve(int port, shv_route **routes);
+void shv_serve(int port, const shv_route **routes);
   // NULL terminated route array
 
 // TODO: shv_stop_serve?
