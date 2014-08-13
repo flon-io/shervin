@@ -47,8 +47,8 @@ typedef struct shv_con {
   char *head;
   size_t hoff;
   flu_sbuffer *body;
-  shv_request req;
-  shv_response res;
+  shv_request *req;
+  shv_response *res;
 } shv_con;
 
 static shv_con *shv_con_malloc(const shv_route **routes)
@@ -65,6 +65,18 @@ static void shv_con_free(shv_con *c)
   // TODO
 }
 
+static void shv_close(struct ev_loop *l, struct ev_io *eio)
+{
+  ev_io_stop(l, eio);
+  free(eio);
+  perror("*** client closing ***");
+  // TODO: free con
+}
+
+static void shv_respond(struct ev_loop *l, struct ev_io *eio)
+{
+  //send(eio->fd, buffer, r, 0);
+}
 
 static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
@@ -72,25 +84,38 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   shv_con *con = (shv_con *)eio->data;
 
-  ssize_t r = recv(eio->fd, con->head + con->hoff, SHV_BUFFER_SIZE, 0);
+  size_t n = SHV_HEAD_SIZE - con->hoff;
+  if (n > SHV_BUFFER_SIZE) n = SHV_BUFFER_SIZE;
+
+  ssize_t r = recv(eio->fd, con->head + con->hoff, n, 0);
 
   if (r < 0) { perror("read error"); return; }
-
-  if (r == 0)
-  {
-    ev_io_stop(l, eio);
-    free(eio);
-    perror("*** client closing ***");
-    // TODO: free con
-    return;
-  }
+  if (r == 0) { shv_close(l, eio); return; }
 
   con->hoff += r;
 
   printf("** current  >%s< l%zu r%zu\n", con->head, strlen(con->head), r);
+  printf("   head ended? %p\n", strstr(con->head, "\r\n\r\n"));
 
-  //send(eio->fd, buffer, r, 0);
-  //memset(buffer, 0, r);
+  if (con->req == NULL)
+  {
+    if (strstr(con->head, "\r\n\r\n") == NULL) return;
+      // end of head not yet found
+
+    con->req = shv_parse_request(con->head);
+
+    if (con->req->status_code != 200)
+    {
+      con->res = shv_response_malloc(con->req->status_code);
+      shv_respond(l, eio);
+      return;
+    }
+
+    return;
+  }
+  // else we have a req, probably reading the body
+
+  // TODO...
 }
 
 static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
