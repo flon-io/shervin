@@ -55,6 +55,9 @@ typedef struct shv_response {
   char *body;
 } shv_response;
 
+shv_response *shv_response_malloc(short status_code);
+void shv_response_free(shv_response *r);
+
 // route
 
 typedef int shv_guard(shv_request *req, void **params);
