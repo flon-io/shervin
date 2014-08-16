@@ -61,7 +61,7 @@ void shv_response_free(shv_response *r);
 // route
 
 typedef int shv_guard(shv_request *req, void **params);
-typedef void shv_handler(shv_request *req, shv_response *res);
+typedef void shv_handler(shv_request *req, shv_response *res, void **params);
 
 typedef struct shv_route {
   shv_guard *guard;
@@ -76,11 +76,11 @@ int shv_path_guard(shv_request *req, void **params);
 
 // handlers
 
-void shv_dir_handler(shv_request *req, shv_response *res);
+void shv_dir_handler(shv_request *req, shv_response *res, void **params);
 
 // serving
 
-void shv_serve(int port, const shv_route **routes);
+void shv_serve(int port, shv_route **routes);
   // NULL terminated route array
 
 // TODO: shv_stop_serve?

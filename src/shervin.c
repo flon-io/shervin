@@ -43,7 +43,6 @@
 typedef struct shv_con {
 
   shv_route **routes;
-  shv_route *route;
 
   flu_sbuffer *head;
   short hend;
@@ -55,14 +54,14 @@ typedef struct shv_con {
   shv_response *res;
 } shv_con;
 
-static shv_con *shv_con_malloc(const shv_route **routes)
+static shv_con *shv_con_malloc(shv_route **routes)
 {
   shv_con *c = calloc(1, sizeof(shv_con));
   c->routes = routes;
   c->head = flu_sbuffer_malloc();
-  c->hend = 0;
+  //c->hend = 0;
   //c->body = NULL;
-  c->blen = 0;
+  //c->blen = 0;
   return c;
 }
 
@@ -79,7 +78,7 @@ static void shv_close(struct ev_loop *l, struct ev_io *eio)
   // TODO: free con
 }
 
-static void shv_respond(struct ev_loop *l, struct ev_io *eio)
+static void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
 {
   char *s = ""
     "HTTP/1.1 200 Ok\r\n"
@@ -87,7 +86,7 @@ static void shv_respond(struct ev_loop *l, struct ev_io *eio)
     "content-type: text/plain; charset=utf-8\r\n"
     "content-length: 1\r\n"
     "location: http://127.0.0.1:4001/nada\r\n"
-    "data: xxx\r\n"
+    "date: xxx\r\n"
     "\r\n"
     ".";
   send(eio->fd, s, strlen(s), 0);
@@ -146,28 +145,35 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     con->req = shv_parse_request(con->head->string);
 
     printf("con->req->status_code %i\n", con->req->status_code);
-    printf("con->req content-length %zu\n", shv_request_content_length(con->req));
 
     if (con->req->status_code != 200)
     {
-      con->res = shv_response_malloc(con->req->status_code);
-      shv_respond(l, eio);
+      shv_respond(-1, l, eio);
       return;
     }
-
-    shv_respond(l, eio);
-    return;
   }
-  // else we have a req, probably reading the body
 
-  // TODO...
-  //if (con->req != NULL)
-  //{
-  //  if (shv_request_content_length(con->req) == con->blen)
-  //  {
-  //    printf("@@@\nbody >%s<\n@.@\n", flu_sbuffer_to_string(con->body));
-  //  }
-  //}
+  printf("con->req content-length %zu\n", shv_request_content_length(con->req));
+
+  if (
+    (con->req->method == 'p' || con->req->method == 'u') &&
+    (con->blen < shv_request_content_length(con->req))
+  ) return; // request body not yet complete
+
+  for (i = 0; ; ++i)
+  {
+    shv_route *route = con->routes[i];
+    if (route == NULL)
+    {
+      shv_respond(404, l, eio);
+      return;
+    }
+    if (route->guard(con->req, route->params))
+    {
+      route->handler(con->req, con->res, route->params);
+      return;
+    }
+  }
 }
 
 static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
@@ -176,7 +182,7 @@ static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   socklen_t cal = sizeof(struct sockaddr_in);
 
   struct ev_io *ceio = calloc(1, sizeof(struct ev_io));
-  ceio->data = shv_con_malloc((const shv_route **)eio->data);
+  ceio->data = shv_con_malloc((shv_route **)eio->data);
 
   if (EV_ERROR & revents) { /*perror("accept invalid event");*/ return; }
 
@@ -190,7 +196,7 @@ static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   ev_io_start(l, ceio);
 }
 
-void shv_serve(int port, const shv_route **routes)
+void shv_serve(int port, shv_route **routes)
 {
   struct ev_io eio;
   struct ev_loop *l = ev_default_loop(0);
