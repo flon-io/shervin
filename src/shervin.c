@@ -41,11 +41,16 @@
 
 
 typedef struct shv_con {
+
   shv_route **routes;
   shv_route *route;
-  short hend;
+
   flu_sbuffer *head;
+  short hend;
+
   flu_sbuffer *body;
+  size_t blen;
+
   shv_request *req;
   shv_response *res;
 } shv_con;
@@ -54,9 +59,10 @@ static shv_con *shv_con_malloc(const shv_route **routes)
 {
   shv_con *c = calloc(1, sizeof(shv_con));
   c->routes = routes;
-  c->hend = 0;
   c->head = flu_sbuffer_malloc();
+  c->hend = 0;
   //c->body = NULL;
+  c->blen = 0;
   return c;
 }
 
@@ -104,18 +110,22 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     ) ++con->hend; else con->hend = 0;
   }
 
-  printf("i %i, con->hend %i\n", i, con->hend);
+  printf("i %zu, con->hend %i\n", i, con->hend);
 
   if (i < 0)
   {
     flu_sbwrite(con->body, buffer, r);
+    con->blen += r;
   }
   else
   {
-    con->body = flu_sbuffer_malloc();
     flu_sbwrite(con->head, buffer, i + 1);
+    con->body = flu_sbuffer_malloc();
     flu_sbwrite(con->body, buffer + i, r - i);
+    con->blen = r - i;
   }
+
+  printf("con->blen %zu\n", con->blen);
 
   if (con->req == NULL)
   {
@@ -127,6 +137,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     con->req = shv_parse_request(con->head->string);
 
     printf("con->req->status_code %i\n", con->req->status_code);
+    printf("con->req content-length %zu\n", shv_request_content_length(con->req));
 
     if (con->req->status_code != 200)
     {
@@ -140,6 +151,13 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   // else we have a req, probably reading the body
 
   // TODO...
+  //if (con->req != NULL)
+  //{
+  //  if (shv_request_content_length(con->req) == con->blen)
+  //  {
+  //    printf("@@@\nbody >%s<\n@.@\n", flu_sbuffer_to_string(con->body));
+  //  }
+  //}
 }
 
 static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
@@ -188,6 +206,8 @@ void shv_serve(int port, const shv_route **routes)
   ev_io_init(&eio, shv_accept_cb, sd, EV_READ);
   eio.data = routes;
   ev_io_start(l, &eio);
+
+  printf("+++ serving +++\n");
 
   ev_loop(l, 0);
 
