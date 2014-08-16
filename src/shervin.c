@@ -37,15 +37,14 @@
 
 // TODO: logging
 
-#define SHV_HEAD_SIZE 8192
-#define SHV_BUFFER_SIZE 1024
+#define SHV_BUFFER_SIZE 2048
 
 
 typedef struct shv_con {
   shv_route **routes;
   shv_route *route;
-  char *head;
-  size_t hoff;
+  short hend;
+  flu_sbuffer *head;
   flu_sbuffer *body;
   shv_request *req;
   shv_response *res;
@@ -55,8 +54,9 @@ static shv_con *shv_con_malloc(const shv_route **routes)
 {
   shv_con *c = calloc(1, sizeof(shv_con));
   c->routes = routes;
-  c->head = calloc(SHV_HEAD_SIZE, sizeof(char));
-  c->hoff = 0;
+  c->hend = 0;
+  c->head = flu_sbuffer_malloc();
+  //c->body = NULL;
   return c;
 }
 
@@ -84,25 +84,49 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   shv_con *con = (shv_con *)eio->data;
 
-  size_t n = SHV_HEAD_SIZE - con->hoff;
-  if (n > SHV_BUFFER_SIZE) n = SHV_BUFFER_SIZE;
+  char buffer[SHV_BUFFER_SIZE];
 
-  ssize_t r = recv(eio->fd, con->head + con->hoff, n, 0);
+  ssize_t r = recv(eio->fd, buffer, SHV_BUFFER_SIZE, 0);
 
   if (r < 0) { perror("read error"); return; }
   if (r == 0) { shv_close(l, eio); return; }
 
-  con->hoff += r;
+  printf("in >%s<\n", buffer);
 
-  printf("** current  >%s< l%zu r%zu\n", con->head, strlen(con->head), r);
-  printf("   head ended? %p\n", strstr(con->head, "\r\n\r\n"));
+  ssize_t i = -1;
+  if (con->hend < 4) for (i = 0; i < r; ++i)
+  {
+    if (con->hend == 4) break; // head found
+
+    if (
+      ((con->hend == 0 || con->hend == 2) && buffer[i] == '\r') ||
+      ((con->hend == 1 || con->hend == 3) && buffer[i] == '\n')
+    ) ++con->hend; else con->hend = 0;
+  }
+
+  printf("i %i, con->hend %i\n", i, con->hend);
+
+  if (i < 0)
+  {
+    flu_sbwrite(con->body, buffer, r);
+  }
+  else
+  {
+    con->body = flu_sbuffer_malloc();
+    flu_sbwrite(con->head, buffer, i + 1);
+    flu_sbwrite(con->body, buffer + i, r - i);
+  }
 
   if (con->req == NULL)
   {
-    if (strstr(con->head, "\r\n\r\n") == NULL) return;
+    if (con->hend < 4) return;
       // end of head not yet found
 
-    con->req = shv_parse_request(con->head);
+    flu_sbuffer_close(con->head);
+
+    con->req = shv_parse_request(con->head->string);
+
+    printf("con->req->status_code %i\n", con->req->status_code);
 
     if (con->req->status_code != 200)
     {
