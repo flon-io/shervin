@@ -81,7 +81,16 @@ static void shv_close(struct ev_loop *l, struct ev_io *eio)
 
 static void shv_respond(struct ev_loop *l, struct ev_io *eio)
 {
-  //send(eio->fd, buffer, r, 0);
+  char *s = ""
+    "HTTP/1.1 200 Ok\r\n"
+    "server: shervin\r\n"
+    "content-type: text/plain; charset=utf-8\r\n"
+    "content-length: 1\r\n"
+    "location: http://127.0.0.1:4001/nada\r\n"
+    "data: xxx\r\n"
+    "\r\n"
+    ".";
+  send(eio->fd, s, strlen(s), 0);
 }
 
 static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
@@ -146,6 +155,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
       return;
     }
 
+    shv_respond(l, eio);
     return;
   }
   // else we have a req, probably reading the body
