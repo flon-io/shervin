@@ -31,7 +31,7 @@
 /*
  * Respond with 200 and the time.
  */
-void htime_handler(shv_request *req, shv_response *res)
+void htime_handler(shv_request *req, shv_response *res, void **params)
 {
   res->status_code = 200;
   res->body = "it's midnight";
@@ -39,8 +39,9 @@ void htime_handler(shv_request *req, shv_response *res)
 
 int main()
 {
-  shv_route **routes = (shv_route **){
-    &(shv_route){ shv_any_guard, htime_handler, (void **){ NULL } }
+  shv_route **routes = (shv_route *[]){
+    &(shv_route){ shv_any_guard, htime_handler, (void **){ NULL } },
+    NULL
   };
 
   shv_serve(4001, routes);

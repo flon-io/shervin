@@ -153,7 +153,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     }
   }
 
-  printf("con->req content-length %zu\n", shv_request_content_length(con->req));
+  printf("con->req content-length %zd\n", shv_request_content_length(con->req));
 
   if (
     (con->req->method == 'p' || con->req->method == 'u') &&
@@ -163,17 +163,17 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   for (i = 0; ; ++i)
   {
     shv_route *route = con->routes[i];
-    if (route == NULL)
-    {
-      shv_respond(404, l, eio);
-      return;
-    }
-    if (route->guard(con->req, route->params))
-    {
-      route->handler(con->req, con->res, route->params);
-      return;
-    }
+
+    if (route == NULL) break;
+    if (route->guard(con->req, route->params) != 1) continue;
+
+    con->res = shv_response_malloc(-1);
+    route->handler(con->req, con->res, route->params);
+    shv_respond(-1, l, eio);
+    return;
   }
+
+  shv_respond(404, l, eio);
 }
 
 static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
