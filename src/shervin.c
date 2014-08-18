@@ -80,16 +80,37 @@ static void shv_close(struct ev_loop *l, struct ev_io *eio)
 
 static void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
 {
-  char *s = ""
-    "HTTP/1.1 200 Ok\r\n"
-    "server: shervin\r\n"
-    "content-type: text/plain; charset=utf-8\r\n"
-    "content-length: 1\r\n"
-    "location: http://127.0.0.1:4001/nada\r\n"
-    "date: xxx\r\n"
-    "\r\n"
-    ".";
-  send(eio->fd, s, strlen(s), 0);
+  shv_con *con = (shv_con *)eio->data;
+
+  if (status_code == -1)
+  {
+    if (con->res) status_code = con->res->status_code;
+    else status_code = con->req->status_code;
+  }
+
+  char *ct = "text/plain; charset=utf-8";
+  size_t cl = 1;
+  char *dt = "2013/12/24 24:00 UTC";
+  char *lo = "northpole";
+    //
+    // FIXME
+
+  flu_sbuffer *b = flu_sbuffer_malloc();
+  flu_sbprintf(b, "HTTP/1.1 %i whatever\r\n", status_code);
+  flu_sbprintf(b, "server: shervin %s\r\n", SHV_VERSION);
+  flu_sbprintf(b, "content-type: %s\r\n", ct);
+  flu_sbprintf(b, "content-length: %zu\r\n", cl);
+  flu_sbprintf(b, "date: %s\r\n", dt);
+  flu_sbprintf(b, "location: %s\r\n", lo);
+  flu_sbprintf(b, "\r\n");
+
+  flu_sbprintf(b, ".");
+
+  flu_sbuffer_close(b);
+
+  send(eio->fd, b->string, b->len, 0);
+
+  flu_sbuffer_free(b);
 }
 
 static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
