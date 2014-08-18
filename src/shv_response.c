@@ -34,6 +34,7 @@ shv_response *shv_response_malloc(short status_code)
 {
   shv_response *r = calloc(1, sizeof(shv_response));
   r->status_code = status_code;
+  //r->body = NULL;
 
   return r;
 }

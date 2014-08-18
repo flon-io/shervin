@@ -67,7 +67,11 @@ static shv_con *shv_con_malloc(shv_route **routes)
 
 static void shv_con_free(shv_con *c)
 {
-  // TODO
+  if (c->head) flu_sbuffer_free(c->head);
+  if (c->body) flu_sbuffer_free(c->body);
+  if (c->req) shv_request_free(c->req);
+  if (c->res) shv_response_free(c->res);
+  free(c);
 }
 
 static void shv_close(struct ev_loop *l, struct ev_io *eio)
@@ -111,6 +115,7 @@ static void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
   send(eio->fd, b->string, b->len, 0);
 
   flu_sbuffer_free(b);
+  shv_con_free(con);
 }
 
 static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
@@ -161,9 +166,12 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     if (con->hend < 4) return;
       // end of head not yet found
 
-    flu_sbuffer_close(con->head);
+    char *head = flu_sbuffer_to_string(con->head);
+    con->head = NULL;
 
-    con->req = shv_parse_request(con->head->string);
+    con->req = shv_parse_request(head);
+
+    free(head);
 
     printf("con->req->status_code %i\n", con->req->status_code);
 

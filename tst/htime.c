@@ -34,7 +34,7 @@
 void htime_handler(shv_request *req, shv_response *res, void **params)
 {
   res->status_code = 200;
-  res->body = "it's midnight";
+  res->body = strdup("it's midnight");
 }
 
 int main()
