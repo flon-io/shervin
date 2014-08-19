@@ -29,6 +29,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 //#include <unistd.h> // for close(fd)
 #include <netinet/in.h>
 #include <ev.h>
@@ -82,7 +83,7 @@ static void shv_close(struct ev_loop *l, struct ev_io *eio)
   // TODO: free con
 }
 
-static void shv_reason(short status_code)
+static char *shv_reason(short status_code)
 {
   if (status_code == 200) return "OK";
 
@@ -140,9 +141,12 @@ static void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
     else status_code = con->req->status_code;
   }
 
+  time_t tt; time(&tt);
+  struct tm *tm; tm = gmtime(&tt);
+  char *dt = asctime(tm); // TODO: upgrade to rfc1123
+
   char *ct = "text/plain; charset=utf-8";
   size_t cl = 1;
-  char *dt = "2013/12/24 24:00 UTC";
   char *lo = "northpole";
     //
     // FIXME
@@ -155,6 +159,8 @@ static void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
   flu_sbprintf(b, "date: %s\r\n", dt);
   flu_sbprintf(b, "location: %s\r\n", lo);
   flu_sbprintf(b, "\r\n");
+
+  //free(dt); // not necessary
 
   flu_sbprintf(b, ".");
 
