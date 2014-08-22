@@ -42,11 +42,7 @@ typedef struct shv_request {
   short status_code; // 4xx code set by shervin, 200 else
 } shv_request;
 
-shv_request *shv_parse_request(char *s);
-void shv_request_free(shv_request *r);
-
 char *shv_request_header(shv_request *r, char *header_name);
-ssize_t shv_request_content_length(shv_request *r);
 
 // response
 
@@ -54,9 +50,6 @@ typedef struct shv_response {
   short status_code; // 200, 404, 500, ...
   char *body;
 } shv_response;
-
-shv_response *shv_response_malloc(short status_code);
-void shv_response_free(shv_response *r);
 
 // route
 

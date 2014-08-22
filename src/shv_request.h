@@ -23,5 +23,7 @@
 // Made in Japan.
 //
 
-// nada
+shv_request *shv_parse_request(char *s);
+void shv_request_free(shv_request *r);
+ssize_t shv_request_content_length(shv_request *r);
 
