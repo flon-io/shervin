@@ -28,8 +28,6 @@
 #ifndef FLON_SHERVIN_H
 #define FLON_SHERVIN_H
 
-#include <stdio.h> // brings ssize_t in
-
 #define SHV_VERSION "1.0.0"
 
 // request
