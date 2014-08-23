@@ -23,6 +23,3 @@
 // Made in Japan.
 //
 
-shv_response *shv_response_malloc(short status_code);
-void shv_response_free(shv_response *r);
-

@@ -35,8 +35,8 @@
 #include <ev.h>
 
 #include "flutil.h"
-#include "shv_request.h"
-#include "shv_response.h"
+#include "shv_protected.h"
+//#include "shv_response.h"
 
 // TODO: logging
 

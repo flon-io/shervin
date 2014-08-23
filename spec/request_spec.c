@@ -6,7 +6,7 @@
 //
 
 #include "shervin.h"
-#include "shv_request.h" // direct access to shv_request methods
+#include "shv_protected.h" // direct access to shv_request methods
 
 
 context "request"
