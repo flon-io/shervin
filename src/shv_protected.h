@@ -23,6 +23,10 @@
 // Made in Japan.
 //
 
+#include "flutil.h"
+#include "shervin.h"
+
+
 //
 // request
 
@@ -35,4 +39,24 @@ ssize_t shv_request_content_length(shv_request *r);
 
 shv_response *shv_response_malloc(short status_code);
 void shv_response_free(shv_response *r);
+
+//
+// connection
+
+typedef struct shv_con {
+
+  shv_route **routes;
+
+  flu_sbuffer *head;
+  short hend;
+
+  flu_sbuffer *body;
+  size_t blen;
+
+  shv_request *req;
+  shv_response *res;
+} shv_con;
+
+shv_con *shv_con_malloc(shv_route **routes);
+void shv_con_free(shv_con *c);
 
