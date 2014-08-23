@@ -23,6 +23,9 @@
 // Made in Japan.
 //
 
+#ifndef FLON_SHV_PROTECTED_H
+#define FLON_SHV_PROTECTED_H
+
 #include <ev.h>
 
 #include "flutil.h"
@@ -65,4 +68,6 @@ typedef struct shv_con {
 
 shv_con *shv_con_malloc(shv_route **routes);
 void shv_con_free(shv_con *c);
+
+#endif // FLON_SHV_PROTECTED_H
 
