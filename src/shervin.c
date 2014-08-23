@@ -29,8 +29,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
-//#include <unistd.h> // for close(fd)
 #include <netinet/in.h>
 #include <ev.h>
 
@@ -48,95 +46,6 @@ static void shv_close(struct ev_loop *l, struct ev_io *eio)
   free(eio);
   perror("*** client closing ***");
   // TODO: free con
-}
-
-static char *shv_reason(short status_code)
-{
-  if (status_code == 200) return "OK";
-
-  if (status_code == 400) return "Bad Request";
-  if (status_code == 404) return "Not Found";
-
-  if (status_code == 500) return "Internal Server Error";
-
-  if (status_code == 100) return "Continue";
-  if (status_code == 101) return "Switching Protocols";
-  if (status_code == 201) return "Created";
-  if (status_code == 202) return "Accepted";
-  if (status_code == 203) return "Non-Authoritative Information";
-  if (status_code == 204) return "No Content";
-  if (status_code == 205) return "Reset Content";
-  if (status_code == 206) return "Partial Content";
-  if (status_code == 300) return "Multiple Choices";
-  if (status_code == 301) return "Moved Permanently";
-  if (status_code == 302) return "Found";
-  if (status_code == 303) return "See Other";
-  if (status_code == 304) return "Not Modified";
-  if (status_code == 305) return "Use Proxy";
-  if (status_code == 307) return "Temporary Redirect";
-  if (status_code == 401) return "Unauthorized";
-  if (status_code == 402) return "Payment Required";
-  if (status_code == 403) return "Forbidden";
-  if (status_code == 405) return "Method Not Allowed";
-  if (status_code == 406) return "Not Acceptable";
-  if (status_code == 407) return "Proxy Authentication Required";
-  if (status_code == 408) return "Request Time-out";
-  if (status_code == 409) return "Conflict";
-  if (status_code == 410) return "Gone";
-  if (status_code == 411) return "Length Required";
-  if (status_code == 412) return "Precondition Failed";
-  if (status_code == 413) return "Request Entity Too Large";
-  if (status_code == 414) return "Request-URI Too Large";
-  if (status_code == 415) return "Unsupported Media Type";
-  if (status_code == 416) return "Requested range not satisfiable";
-  if (status_code == 417) return "Expectation Failed";
-  if (status_code == 501) return "Not Implemented";
-  if (status_code == 502) return "Bad Gateway";
-  if (status_code == 503) return "Service Unavailable";
-  if (status_code == 504) return "Gateway Time-out";
-  if (status_code == 505) return "HTTP Version not supported";
-  return "(no reason-phrase)";
-}
-
-static void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
-{
-  shv_con *con = (shv_con *)eio->data;
-
-  if (status_code == -1)
-  {
-    if (con->res) status_code = con->res->status_code;
-    else status_code = con->req->status_code;
-  }
-
-  time_t tt; time(&tt);
-  struct tm *tm; tm = gmtime(&tt);
-  char *dt = asctime(tm); // TODO: upgrade to rfc1123
-
-  char *ct = "text/plain; charset=utf-8";
-  size_t cl = 1;
-  char *lo = "northpole";
-    //
-    // FIXME
-
-  flu_sbuffer *b = flu_sbuffer_malloc();
-  flu_sbprintf(b, "HTTP/1.1 %i %s\r\n", status_code, shv_reason(status_code));
-  flu_sbprintf(b, "server: shervin %s\r\n", SHV_VERSION);
-  flu_sbprintf(b, "content-type: %s\r\n", ct);
-  flu_sbprintf(b, "content-length: %zu\r\n", cl);
-  flu_sbprintf(b, "date: %s\r\n", dt);
-  flu_sbprintf(b, "location: %s\r\n", lo);
-  flu_sbprintf(b, "\r\n");
-
-  //free(dt); // not necessary
-
-  flu_sbprintf(b, ".");
-
-  flu_sbuffer_close(b);
-
-  send(eio->fd, b->string, b->len, 0);
-
-  flu_sbuffer_free(b);
-  shv_con_free(con);
 }
 
 static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)

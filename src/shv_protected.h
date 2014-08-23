@@ -23,6 +23,8 @@
 // Made in Japan.
 //
 
+#include <ev.h>
+
 #include "flutil.h"
 #include "shervin.h"
 
@@ -34,11 +36,15 @@ shv_request *shv_parse_request(char *s);
 void shv_request_free(shv_request *r);
 ssize_t shv_request_content_length(shv_request *r);
 
+
 //
 // response
 
 shv_response *shv_response_malloc(short status_code);
 void shv_response_free(shv_response *r);
+
+void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio);
+
 
 //
 // connection
