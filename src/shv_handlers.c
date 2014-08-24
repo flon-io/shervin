@@ -37,7 +37,7 @@
 //
 // guards
 
-int shv_any_guard(shv_request *req, void **params)
+int shv_any_guard(shv_request *req, void *params)
 {
   return 1; // say yes
 }

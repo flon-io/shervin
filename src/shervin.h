@@ -51,8 +51,8 @@ typedef struct shv_response {
 
 // route
 
-typedef int shv_guard(shv_request *req, void **params);
-typedef void shv_handler(shv_request *req, shv_response *res, void **params);
+typedef int shv_guard(shv_request *req, void *params);
+typedef void shv_handler(shv_request *req, shv_response *res, void *params);
 
 typedef struct shv_route {
   shv_guard *guard;
@@ -62,12 +62,12 @@ typedef struct shv_route {
 
 // guards
 
-int shv_any_guard(shv_request *req, void **params);
-int shv_path_guard(shv_request *req, void **params);
+int shv_any_guard(shv_request *req, void *params);
+int shv_path_guard(shv_request *req, void *params);
 
 // handlers
 
-void shv_dir_handler(shv_request *req, shv_response *res, void **params);
+void shv_dir_handler(shv_request *req, shv_response *res, void *params);
 
 // serving
 
