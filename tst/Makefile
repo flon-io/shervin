@@ -13,7 +13,10 @@ NAMES=$(patsubst $(VPATH)/%.h, ./%.o, $(wildcard $(VPATH)/$(SNAME)_*.h))
 #s.c: ../spec/*_spec.c
 #	$(RODZO) ../spec -o s.c
 
-htime: htime.o shervin.o $(NAMES) $(FLIBS:=.o)
+webapp: webapp.o shervin.o $(NAMES) $(FLIBS:=.o)
+
+serve: webapp
+	./webapp
 
 #spec: s
 #	time ./s
@@ -24,6 +27,7 @@ htime: htime.o shervin.o $(NAMES) $(FLIBS:=.o)
 clean:
 	rm -f *.o
 	rm -f *.so
+	rm -f webapp
 
 .PHONY: clean
 
