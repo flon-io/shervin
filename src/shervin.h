@@ -46,6 +46,7 @@ char *shv_request_header(shv_request *r, char *header_name);
 
 typedef struct shv_response {
   short status_code; // 200, 404, 500, ...
+  char *content_type;
   char *body;
 } shv_response;
 
