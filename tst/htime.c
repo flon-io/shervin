@@ -25,7 +25,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-
+#include <time.h>
 #include <string.h>
 
 #include "shervin.h"
@@ -36,9 +36,13 @@
  */
 void htime_handler(shv_request *req, shv_response *res, void *params)
 {
+  time_t tt; time(&tt);
+  struct tm *tm; tm = gmtime(&tt);
+  char *dt = asctime(tm);
+
   res->status_code = 200;
   res->content_type = "text/plain; charset=utf-8";
-  res->body = strdup("it's midnight\n");
+  res->body = strdup(dt);
 }
 
 int main()
