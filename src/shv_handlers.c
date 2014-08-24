@@ -29,10 +29,6 @@
 
 #include "shervin.h"
 
-//#include <stdlib.h>
-//#include <string.h>
-//#include <strings.h>
-
 
 //
 // guards

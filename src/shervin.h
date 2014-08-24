@@ -58,7 +58,7 @@ typedef void shv_handler(shv_request *req, shv_response *res, void *params);
 typedef struct shv_route {
   shv_guard *guard;
   shv_handler *handler;
-  void **params;
+  void *params;
 } shv_route;
 
 // guards
