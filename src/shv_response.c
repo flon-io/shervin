@@ -117,26 +117,30 @@ void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
   struct tm *tm; tm = gmtime(&tt);
   char *dt = asctime(tm); // TODO: upgrade to rfc1123
 
+  char *x = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<\n";
+
   char *ct = "text/plain; charset=utf-8";
-  size_t cl = 1;
+  size_t cl = strlen(x) + 2;
   char *lo = "northpole";
     //
     // FIXME
 
   flu_sbuffer *b = flu_sbuffer_malloc();
   flu_sbprintf(b, "HTTP/1.1 %i %s\r\n", status_code, shv_reason(status_code));
-  flu_sbprintf(b, "server: shervin %s\r\n", SHV_VERSION);
-  flu_sbprintf(b, "content-type: %s\r\n", ct);
-  flu_sbprintf(b, "content-length: %zu\r\n", cl);
-  flu_sbprintf(b, "date: %s\r\n", dt);
-  flu_sbprintf(b, "location: %s\r\n", lo);
+  flu_sbprintf(b, "Server: shervin %s\r\n", SHV_VERSION);
+  flu_sbprintf(b, "Content-Type: %s\r\n", ct);
+  flu_sbprintf(b, "Content-Length: %zu\r\n", cl);
+  flu_sbprintf(b, "Location: %s\r\n", lo);
+  flu_sbprintf(b, "Date: %s\r\n", dt);
   flu_sbprintf(b, "\r\n");
 
   //free(dt); // not necessary
 
-  flu_sbprintf(b, ".");
+  flu_sbprintf(b, x);
 
   flu_sbuffer_close(b);
+
+  //printf("b>%s< %zu\n", b->string, b->len);
 
   send(eio->fd, b->string, b->len, 0);
 
