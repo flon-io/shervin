@@ -190,7 +190,10 @@ void shv_request_free(shv_request *r)
     for (size_t i = 0; r->headers[i] != NULL; ++i) free(r->headers[i]);
     free(r->headers);
   }
-  free(r->uri);
+  if (r->uri != NULL)
+  {
+    free(r->uri);
+  }
   free(r);
 }
 

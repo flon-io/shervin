@@ -34,19 +34,30 @@ shv_con *shv_con_malloc(shv_route **routes)
 {
   shv_con *c = calloc(1, sizeof(shv_con));
   c->routes = routes;
-  c->head = flu_sbuffer_malloc();
-  //c->hend = 0;
-  //c->body = NULL;
-  //c->blen = 0;
+  shv_con_reset(c);
   return c;
 }
 
-void shv_con_free(shv_con *c)
+static void shv_con_free_members(shv_con *c)
 {
   if (c->head) flu_sbuffer_free(c->head);
   if (c->body) flu_sbuffer_free(c->body);
   if (c->req) shv_request_free(c->req);
   if (c->res) shv_response_free(c->res);
+}
+
+void shv_con_free(shv_con *c)
+{
+  shv_con_free_members(c);
   free(c);
+}
+
+void shv_con_reset(shv_con *c)
+{
+  shv_con_free_members(c);
+  c->head = flu_sbuffer_malloc();
+  c->hend = 0;
+  c->body = NULL;
+  c->blen = 0;
 }
 

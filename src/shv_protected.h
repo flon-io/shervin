@@ -67,6 +67,7 @@ typedef struct shv_con {
 } shv_con;
 
 shv_con *shv_con_malloc(shv_route **routes);
+void shv_con_reset(shv_con *c);
 void shv_con_free(shv_con *c);
 
 #endif // FLON_SHV_PROTECTED_H

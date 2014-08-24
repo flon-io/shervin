@@ -61,7 +61,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   if (r < 0) { perror("read error"); return; }
   if (r == 0) { shv_close(l, eio); return; }
 
-  printf("in >%s<\n", buffer);
+  printf("eio_%p in >%s<\n", eio, buffer);
 
   ssize_t i = -1;
   if (con->hend < 4) for (i = 0; i < r; ++i)
@@ -74,7 +74,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     ) ++con->hend; else con->hend = 0;
   }
 
-  printf("i %zu, con->hend %i\n", i, con->hend);
+  printf("i %zd, con->hend %i\n", i, con->hend);
 
   if (i < 0)
   {
@@ -143,7 +143,7 @@ static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   struct ev_io *ceio = calloc(1, sizeof(struct ev_io));
   ceio->data = shv_con_malloc((shv_route **)eio->data);
 
-  if (EV_ERROR & revents) { /*perror("accept invalid event");*/ return; }
+  if (EV_ERROR & revents) { perror("accept invalid event"); return; }
 
   int csd = accept(eio->fd, (struct sockaddr *)&ca, &cal);
 
