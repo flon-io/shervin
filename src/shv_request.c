@@ -25,12 +25,13 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include "aabro.h"
-#include "shervin.h"
-
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+
+#include "aabro.h"
+#include "shervin.h"
+#include "shv_protected.h"
 
 
 abr_parser *request_parser = NULL;
@@ -114,22 +115,11 @@ shv_request *shv_parse_request(char *s)
   req->status_code = 200; // ok, for now
 
   abr_tree *t = NULL;
-  char *ts = NULL;
 
   // method
 
   t = abr_tree_lookup(r, "method");
-  ts = abr_tree_str(s, t);
-
-  if (strncmp(ts, "GET", 3) == 0) req->method = 'g';
-  else if (strncmp(ts, "PUT", 3) == 0) req->method = 'u';
-  else if (strncmp(ts, "POST", 4) == 0) req->method = 'p';
-  else if (strncmp(ts, "HEAD", 4) == 0) req->method = 'h';
-  else if (strncmp(ts, "TRACE", 5) == 0) req->method = 't';
-  else if (strncmp(ts, "DELETE", 6) == 0) req->method = 'd';
-  else if (strncmp(ts, "OPTIONS", 7) == 0) req->method = 'o';
-  else if (strncmp(ts, "CONNECT", 7) == 0) req->method = 'c';
-  else req->method = '?';
+  req->method = shv_method_to_char(abr_tree_str(s, t));
 
   // uri
 

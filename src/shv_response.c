@@ -150,7 +150,9 @@ void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
 
   flu_sbuffer_free(b);
 
-  printf(". %s %c %s %i\n", dt, con->req->method, con->req->uri, status_code);
+  printf(
+    ". %s %s %s %i\n",
+    dt, shv_char_to_method(con->req->method), con->req->uri, status_code);
 
   shv_con_reset(con);
 }

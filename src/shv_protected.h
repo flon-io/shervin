@@ -39,6 +39,8 @@ shv_request *shv_parse_request(char *s);
 void shv_request_free(shv_request *r);
 ssize_t shv_request_content_length(shv_request *r);
 
+char shv_method_to_char(char *s);
+char *shv_char_to_method(char c);
 
 //
 // response
