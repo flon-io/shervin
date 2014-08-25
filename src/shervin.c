@@ -147,7 +147,7 @@ static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   int csd = accept(eio->fd, (struct sockaddr *)&ca, &cal);
 
-  if (csd < 0) { /*perror("accept error");*/ return; }
+  if (csd < 0) { perror("accept error"); return; }
 
   // client connected...
 
