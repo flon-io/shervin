@@ -7,7 +7,7 @@ VPATH=../src
 FLIBS=flutil aabro
 SNAME=shv
 
-NAMES=$(patsubst $(VPATH)/%.h, ./%.o, $(wildcard $(VPATH)/$(SNAME)_*.h))
+NAMES=$(patsubst $(VPATH)/%.c, ./%.o, $(wildcard $(VPATH)/$(SNAME)_*.c))
   # since wildcard doesn't care about VPATH...
 
 webapp: webapp.o shervin.o $(NAMES) $(FLIBS:=.o)
