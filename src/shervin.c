@@ -182,7 +182,7 @@ void shv_serve(int port, shv_route **routes)
   eio.data = routes;
   ev_io_start(l, &eio);
 
-  printf("+++ serving +++\n");
+  fgaj_i("serving...");
 
   ev_loop(l, 0);
 

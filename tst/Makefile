@@ -4,7 +4,7 @@ LDLIBS=/usr/lib/libev.so # :-(
 CC=c99
 VPATH=../src
 
-FLIBS=flutil aabro
+FLIBS=flutil gajeta aabro
 SNAME=shv
 
 NAMES=$(patsubst $(VPATH)/%.c, ./%.o, $(wildcard $(VPATH)/$(SNAME)_*.c))
@@ -13,10 +13,10 @@ NAMES=$(patsubst $(VPATH)/%.c, ./%.o, $(wildcard $(VPATH)/$(SNAME)_*.c))
 webapp: webapp.o shervin.o $(NAMES) $(FLIBS:=.o)
 
 serve: webapp
-	./webapp
+	FGAJ_HOST=g ./webapp
 
 vserve: webapp
-	valgrind --leak-check=full -v ./webapp
+	FGAJ_HOST=g valgrind --leak-check=full -v ./webapp
 
 clean:
 	rm -f *.o
