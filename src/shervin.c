@@ -43,13 +43,13 @@ static void shv_close(struct ev_loop *l, struct ev_io *eio)
 {
   ev_io_stop(l, eio);
   free(eio);
-  fgaj_i(__flf, "con %p client closing", eio);
+  fgaj_i("con %p client closing", eio);
   // TODO: free con?
 }
 
 static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
-  if (EV_ERROR & revents) { fgaj_e(__flf, "invalid event"); return; }
+  if (EV_ERROR & revents) { fgaj_e("invalid event"); return; }
 
   shv_con *con = (shv_con *)eio->data;
 
@@ -57,7 +57,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   ssize_t r = recv(eio->fd, buffer, SHV_BUFFER_SIZE, 0);
 
-  if (r < 0) { fgaj_e(__flf, "read error"); return; }
+  if (r < 0) { fgaj_e("read error"); return; }
   if (r == 0) { shv_close(l, eio); return; }
 
   printf("eio_%p in >%s<\n", eio, buffer);
@@ -142,11 +142,11 @@ static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   struct ev_io *ceio = calloc(1, sizeof(struct ev_io));
   ceio->data = shv_con_malloc((shv_route **)eio->data);
 
-  if (EV_ERROR & revents) { fgaj_e(__flf, "invalid event"); return; }
+  if (EV_ERROR & revents) { fgaj_e("invalid event"); return; }
 
   int csd = accept(eio->fd, (struct sockaddr *)&ca, &cal);
 
-  if (csd < 0) { fgaj_e(__flf, "error"); return; }
+  if (csd < 0) { fgaj_e("error"); return; }
 
   // client connected...
 
@@ -161,7 +161,7 @@ void shv_serve(int port, shv_route **routes)
 
   int sd = socket(PF_INET, SOCK_STREAM, 0);
 
-  if (sd < 0) { fgaj_e(__flf, "socket error"); exit(1); }
+  if (sd < 0) { fgaj_e("socket error"); exit(1); }
 
   struct sockaddr_in a;
   memset(&a, 0, sizeof(struct sockaddr_in));
@@ -172,21 +172,21 @@ void shv_serve(int port, shv_route **routes)
   int r;
 
   r = bind(sd, (struct sockaddr *)&a, sizeof(struct sockaddr_in));
-  if (r != 0) { fgaj_e(__flf, "bind error"); exit(2); }
+  if (r != 0) { fgaj_e("bind error"); exit(2); }
 
   r = listen(sd, 2);
-  if (r < 0) { fgaj_e(__flf, "listen error"); exit(3); }
+  if (r < 0) { fgaj_e("listen error"); exit(3); }
 
   ev_io_init(&eio, shv_accept_cb, sd, EV_READ);
   eio.data = routes;
   ev_io_start(l, &eio);
 
-  fgaj_i(__flf, "serving on %d...", port);
+  fgaj_i("serving on %d...", port);
 
   ev_loop(l, 0);
 
   //printf("closing...\n");
   //r = close(sd);
-  //if (r != 0) { fgaj_e(__flf, "close error"); /*exit(4);*/ }
+  //if (r != 0) { fgaj_e("close error"); /*exit(4);*/ }
 }
 

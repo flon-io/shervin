@@ -225,7 +225,9 @@ void fgaj_string_logger(char level, const char *pref, const char *msg)
 // logging functions
 
 static void fgaj_do_log(
-  char level, const char *pref, const char *format, va_list ap, short err)
+  char level,
+  const char *file, int line, const char *func,
+  const char *format, va_list ap, short err)
 {
   fgaj_init();
 
@@ -234,61 +236,37 @@ static void fgaj_do_log(
   level = fgaj_normalize_level(level);
   if (level < fgaj__conf->level && level <= 50) return;
 
-  flu_sbuffer *b = flu_sbuffer_malloc();
+  flu_sbuffer *b = NULL;
+
+  b = flu_sbuffer_malloc();
+  flu_sbputs(b, file);
+  if (line > -1)
+  {
+    flu_sbprintf(b, ":%d", line);
+    if (func != NULL) flu_sbprintf(b, ":%s", func);
+  }
+  //
+  char *subject = flu_sbuffer_to_string(b);
+
+  b = flu_sbuffer_malloc();
   flu_sbvprintf(b, format, ap);
   if (err) flu_sbprintf(b, ": %s", strerror(errno));
+  //
+  char *msg = flu_sbuffer_to_string(b);
 
-  char *s = flu_sbuffer_to_string(b);
-  fgaj__conf->logger(level, pref, s);
-  free(s);
+  fgaj__conf->logger(level, subject, msg);
+
+  free(subject);
+  free(msg);
 }
 
-void fgaj_log(char level, const char *pref, const char *format, ...)
+void fgaj_log(
+  char level,
+  const char *file, int line, const char *func,
+  const char *format, ...)
 {
   va_list ap; va_start(ap, format);
-  fgaj_do_log(level, pref, format, ap, tolower(level) == 'r');
-  va_end(ap);
-}
-
-void fgaj_t(const char *pref, const char *format, ...)
-{
-  va_list ap; va_start(ap, format);
-  fgaj_do_log('t', pref, format, ap, 0);
-  va_end(ap);
-}
-
-void fgaj_d(const char *pref, const char *format, ...)
-{
-  va_list ap; va_start(ap, format);
-  fgaj_do_log('d', pref, format, ap, 0);
-  va_end(ap);
-}
-
-void fgaj_i(const char *pref, const char *format, ...)
-{
-  va_list ap; va_start(ap, format);
-  fgaj_do_log('i', pref, format, ap, 0);
-  va_end(ap);
-}
-
-void fgaj_w(const char *pref, const char *format, ...)
-{
-  va_list ap; va_start(ap, format);
-  fgaj_do_log('w', pref, format, ap, 0);
-  va_end(ap);
-}
-
-void fgaj_e(const char *pref, const char *format, ...)
-{
-  va_list ap; va_start(ap, format);
-  fgaj_do_log('e', pref, format, ap, 0);
-  va_end(ap);
-}
-
-void fgaj_r(const char *pref, const char *format, ...)
-{
-  va_list ap; va_start(ap, format);
-  fgaj_do_log('e', pref, format, ap, 1);
+  fgaj_do_log(level, file, line, func, format, ap, tolower(level) == 'r');
   va_end(ap);
 }
 

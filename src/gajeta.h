@@ -36,8 +36,6 @@
 
 #define FGAJ_VERSION "1.0.0"
 
-#define __flf flu_sprintf("%s:%i:%s", __FILE__, __LINE__, __func__)
-
 // 10 't' trace
 // 20 'd' debug
 // 30 'i' info
@@ -47,7 +45,7 @@
 /*
  * Logger function type.
  */
-typedef void fgaj_logger(char level, const char *pref, const char *msg);
+typedef void fgaj_logger(char level, const char *subject, const char *msg);
 
 
 //
@@ -76,15 +74,17 @@ void fgaj_conf_reset();
 
 /* Default logger function.
  */
-void fgaj_color_stdout_logger(char level, const char *pref, const char *msg);
+void fgaj_color_stdout_logger(
+  char level, const char *subject, const char *msg);
 
 /* Simple logger function. Used for testing.
  */
-void fgaj_string_logger(char level, const char *pref, const char *msg);
+void fgaj_string_logger(
+  char level, const char *subject, const char *msg);
 
 
 //
-// logging functions
+// logging functions (and macros)
 
 /* A raw logging method, accepts the level as a char ('e', 'w', 'd', ...) or
  * as a number (10, 20, ...) and the pref / msg.
@@ -92,17 +92,24 @@ void fgaj_string_logger(char level, const char *pref, const char *msg);
  * It accepts 'r' as a [virtual] level as well (like 'e' but appends the
  * result of strerror(errno) to the message)
  */
-void fgaj_log(char level, const char *pref, const char *format, ...);
+void fgaj_log(
+  char level,
+  const char *file, int line, const char *func,
+  const char *format, ...);
 
-void fgaj_t(const char *pref, const char *format, ...); // TRACE
-void fgaj_d(const char *pref, const char *format, ...); // DEBUG
-void fgaj_i(const char *pref, const char *format, ...); //  INFO
-void fgaj_w(const char *pref, const char *format, ...); //  WARN
-void fgaj_e(const char *pref, const char *format, ...); // ERROR
+#define fgaj_t(...) fgaj_log('t', __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_d(...) fgaj_log('d', __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_i(...) fgaj_log('i', __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_w(...) fgaj_log('w', __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_e(...) fgaj_log('e', __FILE__, __LINE__, __func__, __VA_ARGS__)
 
-/* Like fagj_e() but appends ": " and the strerror for the current errno.
- */
-void fgaj_r(const char *pref, const char *format, ...);
+#define fgaj_r(...) fgaj_log('r', __FILE__, __LINE__, __func__, __VA_ARGS__)
+
+#define fgaj_l(level, ...) \
+  fgaj_log(level, __FILE__, __LINE__, __func__, __VA_ARGS__)
+
+#define fgaj_ll(level, subject, ...) \
+  fgaj_log(level, subject, -1, NULL, __VA_ARGS__)
 
 
 //
@@ -124,7 +131,7 @@ void fgaj_level_string_free(char *s);
  */
 char fgaj_normalize_level(char level);
 
-/* Returns a string detailing the current time.
+/* Returns a (malloc'ed) string detailing the current time.
  */
 char *fgaj_now();
 
