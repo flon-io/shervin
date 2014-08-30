@@ -27,6 +27,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <netinet/in.h>
 
 #include "shv_protected.h"
 
@@ -68,9 +69,10 @@ char *shv_char_to_method(char c)
 //
 // connection
 
-shv_con *shv_con_malloc(shv_route **routes)
+shv_con *shv_con_malloc(struct sockaddr_in *client, shv_route **routes)
 {
   shv_con *c = calloc(1, sizeof(shv_con));
+  c->client = client;
   c->routes = routes;
   shv_con_reset(c);
   return c;
@@ -87,6 +89,7 @@ static void shv_con_free_members(shv_con *c)
 void shv_con_free(shv_con *c)
 {
   shv_con_free_members(c);
+  free(c->client);
   free(c);
 }
 

@@ -26,6 +26,7 @@
 #ifndef FLON_SHV_PROTECTED_H
 #define FLON_SHV_PROTECTED_H
 
+#include <netinet/in.h>
 #include <ev.h>
 
 #include "flutil.h"
@@ -56,6 +57,7 @@ void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio);
 
 typedef struct shv_con {
 
+  struct sockaddr_in *client;
   shv_route **routes;
 
   flu_sbuffer *head;
@@ -68,7 +70,7 @@ typedef struct shv_con {
   shv_response *res;
 } shv_con;
 
-shv_con *shv_con_malloc(shv_route **routes);
+shv_con *shv_con_malloc(struct sockaddr_in *client, shv_route **routes);
 void shv_con_reset(shv_con *c);
 void shv_con_free(shv_con *c);
 

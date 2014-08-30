@@ -49,7 +49,7 @@ static void shv_close(struct ev_loop *l, struct ev_io *eio)
 
 static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
-  if (EV_ERROR & revents) { fgaj_e("invalid event"); return; }
+  if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
 
   shv_con *con = (shv_con *)eio->data;
 
@@ -57,7 +57,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   ssize_t r = recv(eio->fd, buffer, SHV_BUFFER_SIZE, 0);
 
-  if (r < 0) { fgaj_e("read error"); return; }
+  if (r < 0) { fgaj_r("read error"); return; }
   if (r == 0) { shv_close(l, eio); return; }
 
   printf("eio_%p in >%s<\n", eio, buffer);
@@ -102,12 +102,17 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
     free(head);
 
-    printf("con->req->status_code %i\n", con->req->status_code);
+    fgaj_i(
+      "%s %s %s",
+      inet_ntoa(con->client->sin_addr),
+      shv_char_to_method(con->req->method),
+      con->req->uri);
 
     if (con->req->status_code != 200)
     {
-      shv_respond(-1, l, eio);
-      return;
+      fgaj_d("con %p, couldn't parse request head", eio);
+
+      shv_respond(-1, l, eio); return;
     }
   }
 
@@ -136,19 +141,20 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
 static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
-  struct sockaddr_in ca; // client address
   socklen_t cal = sizeof(struct sockaddr_in);
+  struct sockaddr_in *ca = calloc(1, cal); // client address
 
   struct ev_io *ceio = calloc(1, sizeof(struct ev_io));
-  ceio->data = shv_con_malloc((shv_route **)eio->data);
 
-  if (EV_ERROR & revents) { fgaj_e("invalid event"); return; }
+  if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
 
-  int csd = accept(eio->fd, (struct sockaddr *)&ca, &cal);
+  int csd = accept(eio->fd, (struct sockaddr *)ca, &cal);
 
-  if (csd < 0) { fgaj_e("error"); return; }
+  if (csd < 0) { fgaj_r("error"); return; }
 
   // client connected...
+
+  ceio->data = shv_con_malloc(ca, (shv_route **)eio->data);
 
   ev_io_init(ceio, shv_handle_cb, csd, EV_READ);
   ev_io_start(l, ceio);
@@ -161,7 +167,7 @@ void shv_serve(int port, shv_route **routes)
 
   int sd = socket(PF_INET, SOCK_STREAM, 0);
 
-  if (sd < 0) { fgaj_e("socket error"); exit(1); }
+  if (sd < 0) { fgaj_r("socket error"); exit(1); }
 
   struct sockaddr_in a;
   memset(&a, 0, sizeof(struct sockaddr_in));
@@ -172,10 +178,10 @@ void shv_serve(int port, shv_route **routes)
   int r;
 
   r = bind(sd, (struct sockaddr *)&a, sizeof(struct sockaddr_in));
-  if (r != 0) { fgaj_e("bind error"); exit(2); }
+  if (r != 0) { fgaj_r("bind error"); exit(2); }
 
   r = listen(sd, 2);
-  if (r < 0) { fgaj_e("listen error"); exit(3); }
+  if (r < 0) { fgaj_r("listen error"); exit(3); }
 
   ev_io_init(&eio, shv_accept_cb, sd, EV_READ);
   eio.data = routes;
@@ -187,6 +193,6 @@ void shv_serve(int port, shv_route **routes)
 
   //printf("closing...\n");
   //r = close(sd);
-  //if (r != 0) { fgaj_e("close error"); /*exit(4);*/ }
+  //if (r != 0) { fgaj_r("close error"); /*exit(4);*/ }
 }
 

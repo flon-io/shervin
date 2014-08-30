@@ -31,6 +31,7 @@
 #include <netinet/in.h>
 #include <ev.h>
 
+#include "gajeta.h"
 #include "shervin.h"
 #include "shv_protected.h"
 
@@ -150,9 +151,15 @@ void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
 
   flu_sbuffer_free(b);
 
-  printf(
-    ". %s %s %s %i\n",
-    dt, shv_char_to_method(con->req->method), con->req->uri, status_code);
+  //printf(
+  //  ". %s %s %s %i\n",
+  //  dt, shv_char_to_method(con->req->method), con->req->uri, status_code);
+  fgaj_i(
+    "%s %s %s %i took 0.000ms", // TODO
+    inet_ntoa(con->client->sin_addr),
+    shv_char_to_method(con->req->method),
+    con->req->uri,
+    status_code);
 
   shv_con_reset(con);
 }
