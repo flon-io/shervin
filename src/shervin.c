@@ -43,11 +43,11 @@
 
 static void shv_close(struct ev_loop *l, struct ev_io *eio)
 {
+  shv_con_free((shv_con *)eio->data);
+
   ev_io_stop(l, eio);
   free(eio);
-  fgaj_i("c%p client closing", eio);
-
-  // TODO: free con?
+  fgaj_i("c%p closed by client", eio);
 }
 
 static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)

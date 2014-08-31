@@ -16,8 +16,8 @@ serve: webapp
 	FGAJ_HOST=g FGAJ_LEVEL=10 ./webapp
 
 vserve: webapp
-	FGAJ_HOST=g FGAJ_LEVEL=10 valgrind --leak-check=full -v ./webapp
-	#FGAJ_HOST=g FGAJ_LEVEL=10 valgrind --leak-check=full --show-reachable=yes -v ./webapp
+	#FGAJ_HOST=g FGAJ_LEVEL=10 valgrind --leak-check=full -v ./webapp
+	FGAJ_HOST=g FGAJ_LEVEL=10 valgrind --leak-check=full --show-reachable=yes -v ./webapp
 
 clean:
 	rm -f *.o
