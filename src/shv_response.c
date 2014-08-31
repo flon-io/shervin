@@ -135,12 +135,18 @@ void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
   char *lo = "northpole"; // FIXME
 
   flu_sbuffer *b = flu_sbuffer_malloc();
+
   flu_sbprintf(b, "HTTP/1.1 %i %s\r\n", status_code, shv_reason(status_code));
   flu_sbprintf(b, "Server: shervin %s\r\n", SHV_VERSION);
   flu_sbprintf(b, "Location: %s\r\n", lo);
   flu_sbprintf(b, "Date: %s\r\n", dt);
   flu_sbprintf(b, "Content-Type: %s\r\n", content_type);
   flu_sbprintf(b, "Content-Length: %zu\r\n", strlen(body));
+
+  flu_sbprintf(b,
+    "x-shv-duration-ms: %.3f\r\n",
+    (flu_getMs() - con->startMs) / 1000.0);
+
   flu_sbprintf(b, "\r\n");
 
   //free(dt); // not necessary
