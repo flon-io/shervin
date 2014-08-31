@@ -58,6 +58,8 @@ void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio);
 typedef struct shv_con {
 
   struct sockaddr_in *client;
+  long long startMs;
+
   shv_route **routes;
 
   flu_sbuffer *head;

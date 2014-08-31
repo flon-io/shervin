@@ -153,15 +153,13 @@ void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
 
   flu_sbuffer_free(b);
 
-  //printf(
-  //  ". %s %s %s %i\n",
-  //  dt, shv_char_to_method(con->req->method), con->req->uri, status_code);
   fgaj_i(
-    "%s %s %s %i took 0.000ms", // TODO
+    "%s %s %s %i %.3fms",
     inet_ntoa(con->client->sin_addr),
     shv_char_to_method(con->req->method),
     con->req->uri,
-    status_code);
+    status_code,
+    (flu_getMs() - con->startMs) / 1000.0);
 
   shv_con_reset(con);
 }
