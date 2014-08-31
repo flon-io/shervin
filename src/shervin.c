@@ -46,6 +46,7 @@ static void shv_close(struct ev_loop *l, struct ev_io *eio)
   ev_io_stop(l, eio);
   free(eio);
   fgaj_i("c%p client closing", eio);
+
   // TODO: free con?
 }
 
@@ -55,7 +56,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   shv_con *con = (shv_con *)eio->data;
 
-  char buffer[SHV_BUFFER_SIZE];
+  char buffer[SHV_BUFFER_SIZE + 1];
 
   ssize_t r = recv(eio->fd, buffer, SHV_BUFFER_SIZE, 0);
 
