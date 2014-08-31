@@ -143,9 +143,12 @@ void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
   flu_sbprintf(b, "Content-Type: %s\r\n", content_type);
   flu_sbprintf(b, "Content-Length: %zu\r\n", strlen(body));
 
+  long long now = flu_getMs();
   flu_sbprintf(b,
-    "x-shv-duration-ms: %.3f\r\n",
-    (flu_getMs() - con->startMs) / 1000.0);
+    "x-flon-shervin: c%.3fms;r%.3fms;rq%i\r\n",
+    (now - con->startMs) / 1000.0,
+    (now - con->req->startMs) / 1000.0,
+    con->rqount);
 
   flu_sbprintf(b, "\r\n");
 
@@ -159,14 +162,16 @@ void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
 
   flu_sbuffer_free(b);
 
+  now = flu_getMs();
   fgaj_i(
-    "c%p r%i %s %s %s %i %.3fms",
+    "c%p r%i %s %s %s %i c%.3fms r%.3fms",
     eio, con->rqount,
     inet_ntoa(con->client->sin_addr),
     shv_char_to_method(con->req->method),
     con->req->uri,
     status_code,
-    (flu_getMs() - con->startMs) / 1000.0);
+    (flu_getMs() - con->startMs) / 1000.0,
+    (flu_getMs() - con->req->startMs) / 1000.0);
 
   shv_con_reset(con);
 }

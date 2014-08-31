@@ -29,6 +29,7 @@
 #include <string.h>
 #include <strings.h>
 
+#include "flutil.h"
 #include "aabro.h"
 #include "shervin.h"
 #include "shv_protected.h"
@@ -110,6 +111,7 @@ shv_request *shv_parse_request(char *s)
   //puts(abr_tree_to_string_with_leaves(s, r));
 
   shv_request *req = calloc(1, sizeof(shv_request));
+  req->startMs = flu_getMs();
   req->status_code = 400; // Bad Request
 
   if (r->result != 1) { abr_tree_free(r); return req; }
