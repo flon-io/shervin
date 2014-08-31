@@ -45,7 +45,7 @@ static void shv_close(struct ev_loop *l, struct ev_io *eio)
 {
   ev_io_stop(l, eio);
   free(eio);
-  fgaj_i("con %p client closing", eio);
+  fgaj_i("c%p client closing", eio);
   // TODO: free con?
 }
 
@@ -62,7 +62,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   if (r < 0) { fgaj_r("read error"); return; }
   if (r == 0) { shv_close(l, eio); return; }
 
-  printf("eio_%p in >%s<\n", eio, buffer);
+  printf("c%p in >%s<\n", eio, buffer);
 
   ssize_t i = -1;
   if (con->hend < 4) for (i = 0; i < r; ++i)
@@ -75,7 +75,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     ) ++con->hend; else con->hend = 0;
   }
 
-  printf("i %zd, con->hend %i\n", i, con->hend);
+  printf("c%p i %zd, con->hend %i\n", eio, i, con->hend);
 
   if (i < 0)
   {
@@ -90,7 +90,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     con->blen = r - i;
   }
 
-  printf("con->blen %zu\n", con->blen);
+  printf("c%p con->blen %zu\n", eio, con->blen);
 
   if (con->req == NULL)
   {
@@ -105,14 +105,15 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     free(head);
 
     fgaj_i(
-      "%s %s %s",
+      "c%p %s %s %s",
+      eio,
       inet_ntoa(con->client->sin_addr),
       shv_char_to_method(con->req->method),
       con->req->uri);
 
     if (con->req->status_code != 200)
     {
-      fgaj_d("con %p, couldn't parse request head", eio);
+      fgaj_d("c%p couldn't parse request head", eio);
 
       shv_respond(-1, l, eio); return;
     }

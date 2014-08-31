@@ -154,7 +154,8 @@ void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
   flu_sbuffer_free(b);
 
   fgaj_i(
-    "%s %s %s %i %.3fms",
+    "c%p %s %s %s %i %.3fms",
+    eio,
     inet_ntoa(con->client->sin_addr),
     shv_char_to_method(con->req->method),
     con->req->uri,
