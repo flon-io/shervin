@@ -62,7 +62,9 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   if (r < 0) { fgaj_r("read error"); return; }
   if (r == 0) { shv_close(l, eio); return; }
 
-  printf("c%p in >%s<\n", eio, buffer);
+  buffer[r] = '\0';
+
+  fgaj_t("c%p r%i in >>>\n%s<<< %i\n", eio, con->rqount, buffer, r);
 
   ssize_t i = -1;
   if (con->hend < 4) for (i = 0; i < r; ++i)
@@ -75,7 +77,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     ) ++con->hend; else con->hend = 0;
   }
 
-  printf("c%p i %zd, con->hend %i\n", eio, i, con->hend);
+  fgaj_t("c%p r%i i%i, con->hend %i", eio, con->rqount, i, con->hend);
 
   if (i < 0)
   {
@@ -90,7 +92,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     con->blen = r - i;
   }
 
-  printf("c%p con->blen %zu\n", eio, con->blen);
+  //printf("c%p con->blen %zu\n", eio, con->blen);
 
   if (con->req == NULL)
   {
@@ -101,25 +103,26 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     con->head = NULL;
 
     con->req = shv_parse_request(head);
+    con->rqount++;
 
     free(head);
 
     fgaj_i(
-      "c%p %s %s %s",
-      eio,
+      "c%p r%i %s %s %s",
+      eio, con->rqount,
       inet_ntoa(con->client->sin_addr),
       shv_char_to_method(con->req->method),
       con->req->uri);
 
     if (con->req->status_code != 200)
     {
-      fgaj_d("c%p couldn't parse request head", eio);
+      fgaj_d("c%p r%i couldn't parse request head", eio, con->rqount);
 
       shv_respond(-1, l, eio); return;
     }
   }
 
-  printf("con->req content-length %zd\n", shv_request_content_length(con->req));
+  //printf("con->req content-length %zd\n", shv_request_content_length(con->req));
 
   if (
     (con->req->method == 'p' || con->req->method == 'u') &&
@@ -194,7 +197,7 @@ void shv_serve(int port, shv_route **routes)
 
   ev_loop(l, 0);
 
-  //printf("closing...\n");
+  //fgaj_i("closing...");
   //r = close(sd);
   //if (r != 0) { fgaj_r("close error"); /*exit(4);*/ }
 }

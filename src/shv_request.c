@@ -33,6 +33,8 @@
 #include "shervin.h"
 #include "shv_protected.h"
 
+#include "gajeta.h"
+
 
 abr_parser *request_parser = NULL;
 

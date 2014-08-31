@@ -68,6 +68,7 @@ typedef struct shv_con {
   flu_sbuffer *body;
   size_t blen;
 
+  ssize_t rqount;
   shv_request *req;
   shv_response *res;
 } shv_con;

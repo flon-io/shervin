@@ -13,10 +13,10 @@ NAMES=$(patsubst $(VPATH)/%.c, ./%.o, $(wildcard $(VPATH)/$(SNAME)_*.c))
 webapp: webapp.o shervin.o $(NAMES) $(FLIBS:=.o)
 
 serve: webapp
-	FGAJ_HOST=g ./webapp
+	FGAJ_HOST=g FGAJ_LEVEL=10 ./webapp
 
 vserve: webapp
-	FGAJ_HOST=g valgrind --leak-check=full -v ./webapp
+	FGAJ_HOST=g FGAJ_LEVEL=10 valgrind --leak-check=full -v ./webapp
 
 clean:
 	rm -f *.o

@@ -76,6 +76,7 @@ shv_con *shv_con_malloc(struct sockaddr_in *client, shv_route **routes)
   c->startMs = flu_getMs();
   c->routes = routes;
   shv_con_reset(c);
+  c->rqount = -1;
   return c;
 }
 
@@ -101,5 +102,7 @@ void shv_con_reset(shv_con *c)
   c->hend = 0;
   c->body = NULL;
   c->blen = 0;
+  c->req = NULL;
+  c->res = NULL;
 }
 
