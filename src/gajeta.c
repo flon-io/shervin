@@ -149,6 +149,18 @@ void fgaj_level_string_free(char *s)
 //
 // loggers
 
+
+// PS1="\[\033[1;34m\][\$(date +%H%M)][\u@\h:\w]$\[\033[0m\] "
+//
+// Black       0;30     Dark Gray     1;30
+// Blue        0;34     Light Blue    1;34
+// Green       0;32     Light Green   1;32
+// Cyan        0;36     Light Cyan    1;36
+// Red         0;31     Light Red     1;31
+// Purple      0;35     Light Purple  1;35
+// Brown       0;33     Yellow        1;33
+// Light Gray  0;37     White         1;37
+
 static short fgaj_color()
 {
   if (fgaj__conf->color == 'T') return 1;
@@ -156,14 +168,14 @@ static short fgaj_color()
   return isatty(1);
 }
 
-static char *fgaj_red() { return fgaj_color() ? "[31m" : ""; }
-static char *fgaj_green() { return fgaj_color() ? "[32m" : ""; }
-static char *fgaj_yellow() { return fgaj_color() ? "[33m" : ""; }
-static char *fgaj_blue() { return fgaj_color() ? "[34m" : ""; }
-//static char *fgaj_magenta() { return fgaj_color() ? "[35m" : ""; }
-static char *fgaj_cyan() { return fgaj_color() ? "[36m" : ""; }
-static char *fgaj_white() { return fgaj_color() ? "[37m" : ""; }
-static char *fgaj_clear() { return fgaj_color() ? "[0m" : ""; }
+static char *fgaj_red() { return fgaj_color() ? "[0;31m" : ""; }
+static char *fgaj_green() { return fgaj_color() ? "[0;32m" : ""; }
+static char *fgaj_brown() { return fgaj_color() ? "[0;33m" : ""; }
+static char *fgaj_blue() { return fgaj_color() ? "[0;34m" : ""; }
+static char *fgaj_cyan() { return fgaj_color() ? "[0;36m" : ""; }
+static char *fgaj_white() { return fgaj_color() ? "[0;37m" : ""; }
+static char *fgaj_yellow() { return fgaj_color() ? "[1;33m" : ""; }
+static char *fgaj_clear() { return fgaj_color() ? "[0;0m" : ""; }
 
 char *fgaj_now()
 {
@@ -199,9 +211,9 @@ void fgaj_color_stdout_logger(char level, const char *pref, const char *msg)
 
   printf(
     "%s%s %s%s %s%d/%d %s%5s %s%s %s%s%s\n",
-    fgaj_yellow(), now,
+    fgaj_brown(), now,
     fgaj_white(), fgaj__conf->host,
-    fgaj_yellow(), getppid(), getpid(),
+    fgaj_brown(), getppid(), getpid(),
     lcolor, lstr,
     fgaj_green(), pref,
     fgaj_white(), msg,

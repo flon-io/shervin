@@ -97,6 +97,8 @@ void fgaj_log(
   const char *file, int line, const char *func,
   const char *format, ...);
 
+// the ellipsis in there cover "format and ellipsis"...
+
 #define fgaj_t(...) fgaj_log('t', __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define fgaj_d(...) fgaj_log('d', __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define fgaj_i(...) fgaj_log('i', __FILE__, __LINE__, __func__, __VA_ARGS__)
