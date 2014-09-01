@@ -169,7 +169,7 @@ static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
 void shv_serve(int port, shv_route **routes)
 {
-  struct ev_io eio;
+  struct ev_io *eio = calloc(1, sizeof(struct ev_io));
   struct ev_loop *l = ev_default_loop(0);
 
   int sd = socket(PF_INET, SOCK_STREAM, 0);
@@ -190,9 +190,9 @@ void shv_serve(int port, shv_route **routes)
   r = listen(sd, 2);
   if (r < 0) { fgaj_r("listen error"); exit(3); }
 
-  ev_io_init(&eio, shv_accept_cb, sd, EV_READ);
-  eio.data = routes;
-  ev_io_start(l, &eio);
+  ev_io_init(eio, shv_accept_cb, sd, EV_READ);
+  eio->data = routes;
+  ev_io_start(l, eio);
 
   fgaj_i("serving on %d...", port);
 
