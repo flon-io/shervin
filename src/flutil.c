@@ -114,7 +114,7 @@ void flu_sbuffer_free(flu_sbuffer *b)
   if (b == NULL) return;
 
   if (b->stream != NULL) fclose(b->stream);
-  free(b->string);
+  if (b->string != NULL) free(b->string);
   free(b);
 }
 
@@ -180,6 +180,8 @@ char *flu_sbuffer_to_string(flu_sbuffer *b)
     // the string should be NULL, let flow and reach free(b)
 
   char *s = b->string;
+  b->string = NULL;
+
   free(b);
 
   return s;
