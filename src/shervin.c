@@ -87,6 +87,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   }
   else
   {
+    if (con->head == NULL) con->head = flu_sbuffer_malloc();
     flu_sbwrite(con->head, buffer, i + 1);
     con->body = flu_sbuffer_malloc();
     flu_sbwrite(con->body, buffer + i, r - i);

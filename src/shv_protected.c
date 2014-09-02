@@ -29,6 +29,7 @@
 #include <string.h>
 #include <netinet/in.h>
 
+//#include "gajeta.h"
 #include "shv_protected.h"
 
 
@@ -80,29 +81,27 @@ shv_con *shv_con_malloc(struct sockaddr_in *client, shv_route **routes)
   return c;
 }
 
-static void shv_con_free_members(shv_con *c)
+void shv_con_reset(shv_con *c)
 {
   if (c->head) flu_sbuffer_free(c->head);
+  c->head = NULL;
+  c->hend = 0;
+
   if (c->body) flu_sbuffer_free(c->body);
+  c->body = NULL;
+  c->blen = 0;
+
   if (c->req) shv_request_free(c->req);
+  c->req = NULL;
+
   if (c->res) shv_response_free(c->res);
+  c->res = NULL;
 }
 
 void shv_con_free(shv_con *c)
 {
-  shv_con_free_members(c);
+  shv_con_reset(c);
   free(c->client);
   free(c);
-}
-
-void shv_con_reset(shv_con *c)
-{
-  shv_con_free_members(c);
-  c->head = flu_sbuffer_malloc();
-  c->hend = 0;
-  c->body = NULL;
-  c->blen = 0;
-  c->req = NULL;
-  c->res = NULL;
 }
 
