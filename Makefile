@@ -1,12 +1,10 @@
 
 NAME=shervin
-SNAME=shv
-FLIBS=flutil gajeta aabro
 
 default: $(NAME).o
 
 .DEFAULT spec clean:
-	$(MAKE) -C tmp/ $@ NAME=$(NAME) SNAME=$(SNAME) FLIBS="$(FLIBS)"
+	$(MAKE) -C tmp/ $@ NAME=$(NAME)
 
 # copy updated version of dep libs into src/
 #
