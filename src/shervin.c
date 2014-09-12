@@ -47,7 +47,7 @@ static void shv_close(struct ev_loop *l, struct ev_io *eio)
 
   ev_io_stop(l, eio);
   free(eio);
-  fgaj_i("c%p closed by client", eio);
+  fgaj_d("c%p closed by client", eio);
 }
 
 static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
