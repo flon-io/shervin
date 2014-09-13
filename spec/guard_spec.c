@@ -46,6 +46,29 @@ context "guards"
       ensure(flu_list_get(d, "name") === "anna_karenine");
     }
     // TODO: unescape URIs? anna%20karenine?
+    // TODO: query string
+
+    it "fails if the path is too short"
+    {
+      shv_request *req = shv_parse_request(""
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      flu_dict *d = shv_path_guard(req, "/x/y");
+      ensure(d == NULL);
+    }
+
+    it "fails if the path is too long"
+    {
+      shv_request *req = shv_parse_request(""
+        "GET /x/y HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      flu_dict *d = shv_path_guard(req, "/x");
+      ensure(d == NULL);
+    }
 
     it "returns NULL else"
     {

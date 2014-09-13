@@ -36,6 +36,8 @@
 //
 // guards
 
+// TODO: query strings
+
 flu_dict *shv_any_guard(shv_request *req, void *params)
 {
   return flu_list_malloc(); // always say yes
@@ -72,7 +74,8 @@ flu_dict *shv_path_guard(shv_request *req, void *params)
       if (strncmp(path, rpath, slash - path) != 0) { success = 0; break; }
     }
 
-    if (slash[0] == '\0' || rslash[0] == '\0') break;
+    if (slash[0] == '\0' && rslash[0] == '\0') break;
+    if (slash[0] == '\0' || rslash[0] == '\0') { success = 0; break; }
 
     path = slash + 1;
     rpath = rslash + 1;
