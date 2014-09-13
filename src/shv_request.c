@@ -59,7 +59,7 @@ void shv_init_parser()
   abr_parser *method =
     abr_n_alt(
       "method",
-      abr_rex("GET|POST|PUT|DELETE|HEAD|OPTIONS|TRACE|CONNECT"),
+      abr_rex("GET|POST|PUT|DELETE|HEAD|OPTIONS|TRACE|CONNECT|LINK|UNLINK"),
       abr_name("extension_method", token),
       NULL);
   abr_parser *request_uri =
