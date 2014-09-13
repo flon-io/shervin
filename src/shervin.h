@@ -39,7 +39,7 @@ typedef struct shv_request {
   long long startMs; // microseconds since the Epoch
   char method;
   char *uri;
-  flu_list *headers;
+  flu_dict *headers;
   char *body;
   short status_code; // 4xx code set by shervin, 200 else
 } shv_request;
@@ -54,10 +54,10 @@ typedef struct shv_response {
 
 // route
 
-typedef flu_list *shv_guard(
+typedef flu_dict *shv_guard(
   shv_request *req, void *params);
 typedef void shv_handler(
-  shv_request *req, flu_list *dict, shv_response *res, void *params);
+  shv_request *req, flu_dict *d, shv_response *res, void *params);
 
 typedef struct shv_route {
   shv_guard *guard;
@@ -67,13 +67,13 @@ typedef struct shv_route {
 
 // guards
 
-flu_list *shv_any_guard(shv_request *req, void *params);
-flu_list *shv_path_guard(shv_request *req, void *params);
+flu_dict *shv_any_guard(shv_request *req, void *params);
+flu_dict *shv_path_guard(shv_request *req, void *params);
 
 // handlers
 
 void shv_dir_handler(
-  shv_request *req, flu_list *dict, shv_response *res, void *params);
+  shv_request *req, flu_dict *d, shv_response *res, void *params);
 
 // serving
 

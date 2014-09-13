@@ -35,12 +35,12 @@
 //
 // guards
 
-flu_list *shv_any_guard(shv_request *req, void *params)
+flu_dict *shv_any_guard(shv_request *req, void *params)
 {
   return flu_list_malloc(); // always say yes
 }
 
-flu_list *shv_path_guard(shv_request *req, void *params)
+flu_dict *shv_path_guard(shv_request *req, void *params)
 {
   char *path = (char *)params;
 

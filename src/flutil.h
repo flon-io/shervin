@@ -165,6 +165,8 @@ typedef struct flu_list {
   size_t size;
 } flu_list;
 
+#define flu_dict flu_list
+
 /* Creates a new, empty, flu_list
  */
 flu_list *flu_list_malloc();

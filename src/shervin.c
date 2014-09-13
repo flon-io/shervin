@@ -137,12 +137,12 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
     if (route == NULL) break;
 
-    flu_list *dict = route->guard(con->req, route->params);
+    flu_dict *d = route->guard(con->req, route->params);
 
-    if (dict == NULL) continue;
+    if (d == NULL) continue;
 
     con->res = shv_response_malloc(-1);
-    route->handler(con->req, dict, con->res, route->params);
+    route->handler(con->req, d, con->res, route->params);
     shv_respond(-1, l, eio);
     return;
   }

@@ -36,7 +36,7 @@
  * Respond with 200 and the time.
  */
 void htime_handler(
-  shv_request *req, flu_list *dict, shv_response *res, void *params)
+  shv_request *req, flu_dict *d, shv_response *res, void *params)
 {
   time_t tt; time(&tt);
   struct tm *tm; tm = gmtime(&tt);
