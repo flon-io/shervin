@@ -38,6 +38,12 @@ int shv_any_guard(shv_request *req, void *params)
   return 1; // say yes
 }
 
+int shv_path_guard(shv_request *req, void *params)
+{
+  char *path = (char *)params;
+
+  return (strcmp(req->uri, path) == 0);
+}
 
 //
 // handlers
