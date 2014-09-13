@@ -15,30 +15,31 @@ context "guards"
   {
     it "always returns 1"
     {
-      ensure(shv_any_guard(NULL, NULL) == 1);
+      ensure(shv_any_guard(NULL, NULL) != NULL);
     }
   }
 
   describe "shv_path_guard()"
   {
-    it "returns 1 if the path matches"
+    it "returns a path dict if the path matches"
     {
       shv_request *req = shv_parse_request(""
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      ensure(shv_path_guard(req, "/x") == 1);
+      ensure(shv_path_guard(req, "/x") != NULL);
+      // TODO: continue me
     }
 
-    it "returns 0 else"
+    it "returns NULL else"
     {
       shv_request *req = shv_parse_request(""
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      ensure(shv_path_guard(req, "/y") == 0);
+      ensure(shv_path_guard(req, "/y") == NULL);
     }
   }
 }
