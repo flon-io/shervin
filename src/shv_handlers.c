@@ -27,6 +27,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "shervin.h"
@@ -40,12 +41,47 @@ flu_dict *shv_any_guard(shv_request *req, void *params)
   return flu_list_malloc(); // always say yes
 }
 
+// IDEA:
+//   "/book/:name" for any method
+//   "GET /book/:name" to limit to GET
+
 flu_dict *shv_path_guard(shv_request *req, void *params)
 {
   char *path = (char *)params;
+  char *rpath = req->uri;
 
-  if (strcmp(req->uri, path) != 0) return NULL;
-  return flu_list_malloc();
+  short success = 1;
+  flu_dict *d = flu_list_malloc();
+
+  while (1)
+  {
+    char *slash = strchr(path, '/');
+    char *rslash = strchr(rpath, '/');
+
+    if (slash == NULL) slash = strchr(path, '\0');
+    if (rslash == NULL) rslash = strchr(rpath, '\0');
+
+    if (path[0] == ':')
+    {
+      char *k = strndup(path + 1, slash - path - 1);
+      flu_list_set(d, k, strndup(rpath, rslash - rpath));
+      free(k);
+    }
+    else
+    {
+      if (strncmp(path, rpath, slash - path) != 0) { success = 0; break; }
+    }
+
+    if (slash[0] == '\0' || rslash[0] == '\0') break;
+
+    path = slash + 1;
+    rpath = rslash + 1;
+  }
+
+  if (success) return d;
+
+  flu_list_and_items_free(d, free);
+  return NULL;
 }
 
 //

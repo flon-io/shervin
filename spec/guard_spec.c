@@ -13,7 +13,7 @@ context "guards"
 {
   describe "shv_any_guard()"
   {
-    it "always returns 1"
+    it "never returns NULL"
     {
       ensure(shv_any_guard(NULL, NULL) != NULL);
     }
@@ -28,9 +28,24 @@ context "guards"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      ensure(shv_path_guard(req, "/x") != NULL);
-      // TODO: continue me
+      flu_dict *d = shv_path_guard(req, "/x");
+      ensure(d != NULL);
+      ensure(d->size == 0);
     }
+
+    it "returns a path dict for /book/:name"
+    {
+      shv_request *req = shv_parse_request(""
+        "GET /book/anna_karenine HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      flu_dict *d = shv_path_guard(req, "/book/:name");
+      ensure(d != NULL);
+      ensure(d->size == 1);
+      ensure(flu_list_get(d, "name") === "anna_karenine");
+    }
+    // TODO: unescape URIs? anna%20karenine?
 
     it "returns NULL else"
     {
