@@ -138,16 +138,14 @@ shv_request *shv_parse_request(char *s)
 
   flu_list *hs = abr_tree_list_named(r, "message_header");
 
-  size_t i = 0;
-  req->headers = calloc((2 * hs->size) + 1, sizeof(char *));
+  req->headers = flu_list_malloc();
   for (flu_node *h = hs->first; h != NULL; h = h->next)
   {
     abr_tree *th = (abr_tree *)h->item;
     abr_tree *tk = abr_tree_lookup(th, "field_name");
     abr_tree *tv = abr_tree_lookup(th, "field_value");
-    req->headers[i++] = abr_tree_string(s, tk);
     char *sv = abr_tree_string(s, tv);
-    req->headers[i++] = flu_strtrim(sv);
+    flu_list_set(req->headers, abr_tree_string(s, tk), flu_strtrim(sv));
     free(sv);
   }
 
@@ -161,33 +159,17 @@ shv_request *shv_parse_request(char *s)
   return req;
 }
 
-char *shv_request_header(shv_request *r, char *header_name)
-{
-  for (size_t i = 0; r->headers[i] != NULL; i = i + 2)
-  {
-    if (strcasecmp(r->headers[i], header_name) == 0) return r->headers[i + 1];
-  }
-  return NULL;
-}
-
 ssize_t shv_request_content_length(shv_request *r)
 {
-  char *cl = shv_request_header(r, "content-length");
+  char *cl = flu_list_get(r->headers, "content-length");
 
   return (cl == NULL) ? -1 : atol(cl);
 }
 
 void shv_request_free(shv_request *r)
 {
-  if (r->headers != NULL)
-  {
-    for (size_t i = 0; r->headers[i] != NULL; ++i) free(r->headers[i]);
-    free(r->headers);
-  }
-  if (r->uri != NULL)
-  {
-    free(r->uri);
-  }
+  if (r->headers != NULL) flu_list_and_items_free(r->headers, free);
+  if (r->uri != NULL) free(r->uri);
   free(r);
 }
 

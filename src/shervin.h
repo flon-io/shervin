@@ -28,6 +28,9 @@
 #ifndef FLON_SHERVIN_H
 #define FLON_SHERVIN_H
 
+#include "flutil.h"
+
+
 #define SHV_VERSION "1.0.0"
 
 // request
@@ -36,12 +39,10 @@ typedef struct shv_request {
   long long startMs; // microseconds since the Epoch
   char method;
   char *uri;
-  char **headers;
+  flu_list *headers;
   char *body;
   short status_code; // 4xx code set by shervin, 200 else
 } shv_request;
-
-char *shv_request_header(shv_request *r, char *header_name);
 
 // response
 

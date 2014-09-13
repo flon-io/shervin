@@ -41,7 +41,7 @@ context "request"
       req = shv_parse_request(""
         "POST /msgbin HTTP/1.1\r\n"
         "content-type: application/x-www-form-urlencoded;charset=utf-8\r\n"
-        "host: https://importexport.amazonaws.com\r\n"
+        "host: https://www.example.com\r\n"
         "content-length: 207\r\n"
         "\r\n"
       );
@@ -52,13 +52,13 @@ context "request"
 
       ensure(req->uri === "/msgbin");
 
-      ensure(req->headers[0] === ""
-        "content-type");
-      ensure(req->headers[1] === ""
+      ensure(req->headers->size == 3);
+      //
+      ensure(flu_list_get(req->headers, "content-type") === ""
         "application/x-www-form-urlencoded;charset=utf-8");
-      ensure(req->headers[4] === ""
-        "content-length");
-      ensure(req->headers[5] === ""
+      ensure(flu_list_get(req->headers, "host") === ""
+        "https://www.example.com");
+      ensure(flu_list_get(req->headers, "content-length") === ""
         "207");
 
       ensure(req->status_code == 200);
@@ -73,43 +73,6 @@ context "request"
 
       ensure(req != NULL);
       ensure(req->status_code == 400);
-    }
-  }
-
-  describe "shv_request_header()"
-  {
-    it "returns the value for the header"
-    {
-      req = shv_parse_request(""
-        "POST /msgbin HTTP/1.1\r\n"
-        "content-type: application/x-www-form-urlencoded;charset=utf-8\r\n"
-        "host: https://importexport.amazonaws.com\r\n"
-        "content-length: 207\r\n"
-        "\r\n"
-      );
-
-      ensure(shv_request_header(req, "content-length") === "207");
-    }
-
-    it "returns NULL when the header is not set"
-    {
-      req = shv_parse_request(""
-        "GET /msg HTTP/1.1\r\n"
-        "\r\n"
-      );
-
-      ensure(shv_request_header(req, "x-whatever") == NULL);
-    }
-
-    it "doesn't care about the headers name case"
-    {
-      req = shv_parse_request(""
-        "GET /msg HTTP/1.1\r\n"
-        "Host: https://example.com\r\n"
-        "\r\n"
-      );
-
-      ensure(shv_request_header(req, "host") === "https://example.com");
     }
   }
 
