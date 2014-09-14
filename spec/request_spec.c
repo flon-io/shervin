@@ -125,7 +125,13 @@ context "request"
 
     it "returns the query string"
     {
-      pending();
+      d = shv_extract_query_and_fragment("/a?b=c&d=e");
+
+      ensure(d != NULL);
+      ensure(d->size == 3);
+      ensure(flu_list_get(d, "_path") === "/a");
+      ensure(flu_list_get(d, "b") === "c");
+      ensure(flu_list_get(d, "d") === "e");
     }
 
     it "return the fragment"

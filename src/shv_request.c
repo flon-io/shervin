@@ -177,7 +177,23 @@ flu_dict *shv_extract_query_and_fragment(char *uri)
 {
   flu_dict *d = flu_list_malloc();
 
-  flu_list_set(d, "_path", strdup(uri)); // FIXME
+  flu_list_set(d, "_path", strdup(uri)); // FIXME: uri vs path
+
+  char *qs = strchr(uri, '?');
+  if (qs != NULL && qs[1] != '\0')
+  {
+    qs++;
+    char *ens = strchr(qs, '&');
+    if (ens == NULL) ens = strchr(qs, '#');
+    if (ens == NULL) ens = strchr(qs, '\0');
+    // ...
+  }
+
+  char *fs = strchr(uri, '#');
+  if (fs != NULL && fs[1] != '\0')
+  {
+    flu_list_set(d, "_fragment", strdup(fs + 1));
+  }
 
   return d;
 }
