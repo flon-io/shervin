@@ -38,6 +38,7 @@
 
 
 abr_parser *request_parser = NULL;
+abr_parser *uri_parser = NULL;
 
 void shv_init_parser()
 {
@@ -96,6 +97,47 @@ void shv_init_parser()
   // do not include the message_body
 
   //puts(abr_parser_to_string(request_parser));
+}
+
+void shv_init_uri_parser()
+{
+  if (uri_parser != NULL) return;
+
+  abr_parser *scheme =
+    abr_n_rex("scheme", "https?");
+  abr_parser *host =
+    abr_n_rex("host", "[^:]+");
+  abr_parser *port =
+    abr_n_rex("port", ":[1-9][0-9]+");
+
+  abr_parser *path =
+    abr_n_rex("path", "[^\\?#]+");
+  abr_parser *quentry =
+    abr_n_string("quentry", "a=b"); // FIXME
+  abr_parser *query = NULL;
+  //  abr_n_seq("query",
+  //    quentry,
+  //    abr_seq(abr_string("&"), quentry),
+  //    abr_q("*"),
+  //    NULL);
+  abr_parser *fragment =
+    abr_rex(".+");
+
+  abr_parser *shp =
+    abr_seq(
+      scheme,
+      abr_string("://"),
+      host,
+      abr_rep(port, 0, 1),
+      NULL);
+
+  uri_parser =
+    abr_seq(
+      abr_rep(shp, 0, 1),
+      path,
+      abr_seq(abr_string("?"), query, abr_r("?")),
+      abr_seq(abr_string("#"), fragment, abr_r("?")),
+      NULL);
 }
 
 shv_request *shv_parse_request(char *s)
