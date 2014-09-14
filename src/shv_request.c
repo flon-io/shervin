@@ -173,3 +173,12 @@ void shv_request_free(shv_request *r)
   free(r);
 }
 
+flu_dict *shv_extract_query_and_fragment(char *uri)
+{
+  flu_dict *d = flu_list_malloc();
+
+  flu_list_set(d, "_path", strdup(uri)); // FIXME
+
+  return d;
+}
+

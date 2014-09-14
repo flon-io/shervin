@@ -102,5 +102,41 @@ context "request"
       ensure(shv_request_content_length(req) == 207);
     }
   }
+
+  describe "shv_extract_query_and_fragment"
+  {
+    before each
+    {
+      flu_dict *d = NULL;
+    }
+    after each
+    {
+      if (d != NULL) flu_list_and_items_free(d, free);
+    }
+
+    it "returns the \"_path\""
+    {
+      d = shv_extract_query_and_fragment("/a/b/c");
+
+      ensure(d != NULL);
+      ensure(d->size == 1);
+      ensure(flu_list_get(d, "_path") === "/a/b/c");
+    }
+
+    it "returns the query string"
+    {
+      pending();
+    }
+
+    it "return the fragment"
+    {
+      pending();
+    }
+
+    it "unescapes \%oct entries"
+    {
+      pending();
+    }
+  }
 }
 

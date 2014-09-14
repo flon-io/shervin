@@ -43,6 +43,8 @@ ssize_t shv_request_content_length(shv_request *r);
 char shv_method_to_char(char *s);
 char *shv_char_to_method(char c);
 
+flu_dict *shv_extract_query_and_fragment(char *uri);
+
 //
 // response
 

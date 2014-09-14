@@ -17,6 +17,16 @@ context "guards"
     {
       ensure(shv_any_guard(NULL, NULL) != NULL);
     }
+
+    it "provides the query string"
+    {
+      pending();
+    }
+
+    it "provides the fragment"
+    {
+      pending();
+    }
   }
 
   describe "shv_path_guard()"
