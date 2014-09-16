@@ -86,9 +86,7 @@ void shv_init_parser()
   request_parser =
     abr_seq(
       request_line,
-      abr_rep(
-        abr_seq(message_header, crlf, NULL),
-        0, -1),
+      abr_seq(message_header, crlf, NULL), abr_q("*"),
       crlf,
       //abr_rep(message_body, 0, 1),
       NULL);
