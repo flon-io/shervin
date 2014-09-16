@@ -50,8 +50,8 @@ void shv_init_uri_parser()
     abr_n_rex("path", "[^\\?#]+");
   abr_parser *quentry =
     abr_n_seq("quentry",
-      abr_n_rex("key", "[^=&#]"),
-      abr_seq(abr_string("="), abr_n_rex("val", "[^&#]")), abr_q("?"),
+      abr_n_rex("key", "[^=&#]+"),
+      abr_seq(abr_string("="), abr_n_rex("val", "[^&#]+")), abr_q("?"),
       NULL);
   abr_parser *query =
     abr_n_seq("query",

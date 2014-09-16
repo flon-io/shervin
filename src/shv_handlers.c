@@ -31,16 +31,15 @@
 #include <string.h>
 
 #include "shervin.h"
+#include "shv_protected.h"
 
 
 //
 // guards
 
-// TODO: query strings
-
 flu_dict *shv_any_guard(shv_request *req, void *params)
 {
-  return flu_list_malloc(); // always say yes
+  return shv_parse_uri(req->uri);
 }
 
 // IDEA:
@@ -49,11 +48,12 @@ flu_dict *shv_any_guard(shv_request *req, void *params)
 
 flu_dict *shv_path_guard(shv_request *req, void *params)
 {
+  flu_dict *d = shv_parse_uri(req->uri);
+
   char *path = (char *)params;
-  char *rpath = req->uri;
+  char *rpath = (char *)flu_list_get(d, "_path");
 
   short success = 1;
-  flu_dict *d = flu_list_malloc();
 
   while (1)
   {

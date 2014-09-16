@@ -11,21 +11,32 @@
 
 context "guards"
 {
+  before each
+  {
+    shv_request *req = NULL;
+    flu_dict *d = NULL;
+  }
+  after each
+  {
+    if (req != NULL) shv_request_free(req);
+    if (d != NULL) flu_list_and_items_free(d, free);
+  }
+
   describe "shv_any_guard()"
   {
-    it "never returns NULL"
+    it "provides the query string and fragment"
     {
-      ensure(shv_any_guard(NULL, NULL) != NULL);
-    }
+      req = shv_parse_request(""
+        "GET /x?a=b#f HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
 
-    it "provides the query string"
-    {
-      pending();
-    }
-
-    it "provides the fragment"
-    {
-      pending();
+      d = shv_any_guard(req, NULL);
+      ensure(d != NULL);
+      ensure(d->size == 3);
+      ensure(flu_list_get(d, "_path") === "/x");
+      ensure(flu_list_get(d, "a") === "b");
+      ensure(flu_list_get(d, "_fragment") === "f");
     }
   }
 
@@ -33,56 +44,72 @@ context "guards"
   {
     it "returns a path dict if the path matches"
     {
-      shv_request *req = shv_parse_request(""
+      req = shv_parse_request(""
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      flu_dict *d = shv_path_guard(req, "/x");
+      d = shv_path_guard(req, "/x");
       ensure(d != NULL);
-      ensure(d->size == 0);
+      ensure(d->size == 1);
+      ensure(flu_list_get(d, "_path") === "/x");
     }
 
     it "returns a path dict for /book/:name"
     {
-      shv_request *req = shv_parse_request(""
+      req = shv_parse_request(""
         "GET /book/anna_karenine HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      flu_dict *d = shv_path_guard(req, "/book/:name");
+      d = shv_path_guard(req, "/book/:name");
       ensure(d != NULL);
-      ensure(d->size == 1);
+      ensure(d->size == 2);
+      ensure(flu_list_get(d, "_path") === "/book/anna_karenine");
       ensure(flu_list_get(d, "name") === "anna_karenine");
     }
     // TODO: unescape URIs? anna%20karenine?
-    // TODO: query string
+
+    it "includes the query string in the dict"
+    {
+      req = shv_parse_request(""
+        "GET /book/anna_karenine?v=2.0 HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      d = shv_path_guard(req, "/book/:name");
+      ensure(d != NULL);
+      ensure(d->size == 3);
+      ensure(flu_list_get(d, "_path") === "/book/anna_karenine");
+      ensure(flu_list_get(d, "name") === "anna_karenine");
+      ensure(flu_list_get(d, "v") === "2.0");
+    }
 
     it "fails if the path is too short"
     {
-      shv_request *req = shv_parse_request(""
+      req = shv_parse_request(""
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      flu_dict *d = shv_path_guard(req, "/x/y");
+      d = shv_path_guard(req, "/x/y");
       ensure(d == NULL);
     }
 
     it "fails if the path is too long"
     {
-      shv_request *req = shv_parse_request(""
+      req = shv_parse_request(""
         "GET /x/y HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      flu_dict *d = shv_path_guard(req, "/x");
+      d = shv_path_guard(req, "/x");
       ensure(d == NULL);
     }
 
     it "returns NULL else"
     {
-      shv_request *req = shv_parse_request(""
+      req = shv_parse_request(""
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
