@@ -26,19 +26,17 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdlib.h>
-#include <string.h>
-#include <strings.h>
 
 #include "flutil.h"
 #include "aabro.h"
-#include "shervin.h"
+//#include "shervin.h"
 #include "shv_protected.h"
 
-#include "gajeta.h"
+//#include "gajeta.h"
 
 
 abr_parser *request_parser = NULL;
-abr_parser *uri_parser = NULL;
+
 
 void shv_init_parser()
 {
@@ -168,80 +166,5 @@ void shv_request_free(shv_request *r)
   if (r->headers != NULL) flu_list_and_items_free(r->headers, free);
   if (r->uri != NULL) free(r->uri);
   free(r);
-}
-
-void shv_init_uri_parser()
-{
-  abr_parser *scheme =
-    abr_n_rex("scheme", "https?");
-  abr_parser *host =
-    abr_n_rex("host", "[^:]+");
-  abr_parser *port =
-    abr_n_rex("port", ":[1-9][0-9]+");
-
-  abr_parser *path =
-    abr_n_rex("path", "[^\\?#]+");
-  abr_parser *quentry =
-    abr_n_seq("quentry",
-      abr_n_rex("key", "[^=&#]"),
-      abr_seq(abr_string("="), abr_n_rex("val", "[^&#]")), abr_q("?"),
-      NULL);
-  abr_parser *query =
-    abr_n_seq("query",
-      quentry,
-      abr_seq(abr_string("&"), quentry), abr_q("*"),
-      NULL);
-  abr_parser *fragment =
-    abr_n_rex("fragment", ".+");
-
-  abr_parser *shp =
-    abr_seq(
-      scheme,
-      abr_string("://"),
-      host,
-      port, abr_q("?"),
-      NULL);
-
-  uri_parser =
-    abr_seq(
-      shp, abr_q("?"),
-      path,
-      abr_seq(abr_string("?"), query), abr_q("?"),
-      abr_seq(abr_string("#"), fragment), abr_q("?"),
-      NULL);
-}
-
-flu_dict *shv_parse_uri(char *uri)
-{
-  if (uri_parser == NULL) shv_init_uri_parser();
-
-  abr_tree *r = abr_parse(uri, 0, uri_parser);
-  abr_tree *t = NULL;
-
-  //puts(abr_tree_to_string_with_leaves(uri, r));
-
-  flu_dict *d = flu_list_malloc();
-
-  t = abr_tree_lookup(r, "path");
-  flu_list_set(d, "_path", abr_tree_string(uri, t));
-
-  flu_list *l = abr_tree_list_named(r, "quentry");
-  for (flu_node *n = l->first; n != NULL; n = n->next)
-  {
-    t = abr_tree_lookup((abr_tree *)n->item, "key");
-    char *k = abr_tree_string(uri, t);
-
-    t = abr_tree_lookup((abr_tree *)n->item, "val");
-    char *v = abr_tree_string(uri, t);
-
-    flu_list_set(d, k, v);
-    free(k); // since flu_list_set() copies it
-  }
-  flu_list_free(l);
-
-  t = abr_tree_lookup(r, "fragment");
-  if (t != NULL) flu_list_set(d, "_fragment", abr_tree_string(uri, t));
-
-  return d;
 }
 
