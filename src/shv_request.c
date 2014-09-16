@@ -194,7 +194,7 @@ void shv_init_uri_parser()
       abr_seq(abr_string("&"), quentry), abr_q("*"),
       NULL);
   abr_parser *fragment =
-    abr_rex(".+");
+    abr_n_rex("fragment", ".+");
 
   abr_parser *shp =
     abr_seq(
@@ -240,6 +240,9 @@ flu_dict *shv_parse_uri(char *uri)
     free(k); // since flu_list_set() copies it
   }
   flu_list_free(l);
+
+  t = abr_tree_lookup(r, "fragment");
+  if (t != NULL) flu_list_set(d, "_fragment", abr_tree_string(uri, t));
 
   return d;
 }

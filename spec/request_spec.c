@@ -136,7 +136,12 @@ context "request"
 
     it "returns the fragment"
     {
-      pending();
+      d = shv_parse_uri("/a#frag");
+
+      ensure(d != NULL);
+      ensure(d->size == 2);
+      ensure(flu_list_get(d, "_path") === "/a");
+      ensure(flu_list_get(d, "_fragment") === "frag");
     }
 
     it "unescapes \%oct entries"
