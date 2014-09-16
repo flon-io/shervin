@@ -42,8 +42,6 @@ abr_parser *uri_parser = NULL;
 
 void shv_init_parser()
 {
-  if (request_parser != NULL) return;
-
   abr_parser *sp = abr_string(" ");
   abr_parser *crlf = abr_string("\r\n");
 
@@ -99,53 +97,12 @@ void shv_init_parser()
   //puts(abr_parser_to_string(request_parser));
 }
 
-void shv_init_uri_parser()
-{
-  if (uri_parser != NULL) return;
-
-  abr_parser *scheme =
-    abr_n_rex("scheme", "https?");
-  abr_parser *host =
-    abr_n_rex("host", "[^:]+");
-  abr_parser *port =
-    abr_n_rex("port", ":[1-9][0-9]+");
-
-  abr_parser *path =
-    abr_n_rex("path", "[^\\?#]+");
-  abr_parser *quentry =
-    abr_n_string("quentry", "a=b"); // FIXME
-  abr_parser *query = NULL;
-  //  abr_n_seq("query",
-  //    quentry,
-  //    abr_seq(abr_string("&"), quentry),
-  //    abr_q("*"),
-  //    NULL);
-  abr_parser *fragment =
-    abr_rex(".+");
-
-  abr_parser *shp =
-    abr_seq(
-      scheme,
-      abr_string("://"),
-      host,
-      abr_rep(port, 0, 1),
-      NULL);
-
-  uri_parser =
-    abr_seq(
-      abr_rep(shp, 0, 1),
-      path,
-      abr_seq(abr_string("?"), query, abr_r("?")),
-      abr_seq(abr_string("#"), fragment, abr_r("?")),
-      NULL);
-}
-
 shv_request *shv_parse_request(char *s)
 {
   //
   // parse
 
-  shv_init_parser();
+  if (request_parser == NULL) shv_init_parser();
 
   abr_tree *r = abr_parse(s, 0, request_parser);
   //abr_tree *r = abr_parse_f(s, 0, request_parser, ABR_F_ALL);
@@ -215,27 +172,74 @@ void shv_request_free(shv_request *r)
   free(r);
 }
 
-flu_dict *shv_extract_query_and_fragment(char *uri)
+void shv_init_uri_parser()
 {
+  abr_parser *scheme =
+    abr_n_rex("scheme", "https?");
+  abr_parser *host =
+    abr_n_rex("host", "[^:]+");
+  abr_parser *port =
+    abr_n_rex("port", ":[1-9][0-9]+");
+
+  abr_parser *path =
+    abr_n_rex("path", "[^\\?#]+");
+  abr_parser *quentry =
+    abr_n_seq("quentry",
+      abr_n_rex("key", "[^=&#]"),
+      abr_seq(abr_string("="), abr_n_rex("val", "[^&#]")), abr_q("?"),
+      NULL);
+  abr_parser *query =
+    abr_n_seq("query",
+      quentry,
+      abr_seq(abr_string("&"), quentry), abr_q("*"),
+      NULL);
+  abr_parser *fragment =
+    abr_rex(".+");
+
+  abr_parser *shp =
+    abr_seq(
+      scheme,
+      abr_string("://"),
+      host,
+      port, abr_q("?"),
+      NULL);
+
+  uri_parser =
+    abr_seq(
+      shp, abr_q("?"),
+      path,
+      abr_seq(abr_string("?"), query), abr_q("?"),
+      abr_seq(abr_string("#"), fragment), abr_q("?"),
+      NULL);
+}
+
+flu_dict *shv_parse_uri(char *uri)
+{
+  if (uri_parser == NULL) shv_init_uri_parser();
+
+  abr_tree *r = abr_parse(uri, 0, uri_parser);
+  abr_tree *t = NULL;
+
+  //puts(abr_tree_to_string_with_leaves(uri, r));
+
   flu_dict *d = flu_list_malloc();
 
-  flu_list_set(d, "_path", strdup(uri)); // FIXME: uri vs path
+  t = abr_tree_lookup(r, "path");
+  flu_list_set(d, "_path", abr_tree_string(uri, t));
 
-  char *qs = strchr(uri, '?');
-  if (qs != NULL && qs[1] != '\0')
+  flu_list *l = abr_tree_list_named(r, "quentry");
+  for (flu_node *n = l->first; n != NULL; n = n->next)
   {
-    qs++;
-    char *ens = strchr(qs, '&');
-    if (ens == NULL) ens = strchr(qs, '#');
-    if (ens == NULL) ens = strchr(qs, '\0');
-    // ...
-  }
+    t = abr_tree_lookup((abr_tree *)n->item, "key");
+    char *k = abr_tree_string(uri, t);
 
-  char *fs = strchr(uri, '#');
-  if (fs != NULL && fs[1] != '\0')
-  {
-    flu_list_set(d, "_fragment", strdup(fs + 1));
+    t = abr_tree_lookup((abr_tree *)n->item, "val");
+    char *v = abr_tree_string(uri, t);
+
+    flu_list_set(d, k, v);
+    free(k); // since flu_list_set() copies it
   }
+  flu_list_free(l);
 
   return d;
 }

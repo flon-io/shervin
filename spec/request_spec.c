@@ -103,7 +103,7 @@ context "request"
     }
   }
 
-  describe "shv_extract_query_and_fragment"
+  describe "shv_parse_uri()"
   {
     before each
     {
@@ -116,7 +116,7 @@ context "request"
 
     it "returns the \"_path\""
     {
-      d = shv_extract_query_and_fragment("/a/b/c");
+      d = shv_parse_uri("/a/b/c");
 
       ensure(d != NULL);
       ensure(d->size == 1);
@@ -125,7 +125,7 @@ context "request"
 
     it "returns the query string"
     {
-      d = shv_extract_query_and_fragment("/a?b=c&d=e");
+      d = shv_parse_uri("/a?b=c&d=e");
 
       ensure(d != NULL);
       ensure(d->size == 3);
@@ -134,7 +134,7 @@ context "request"
       ensure(flu_list_get(d, "d") === "e");
     }
 
-    it "return the fragment"
+    it "returns the fragment"
     {
       pending();
     }
