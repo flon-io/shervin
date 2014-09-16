@@ -1,6 +1,7 @@
 
 CFLAGS=-I../src -g -Wall -O3
-LDLIBS=/usr/lib/libev.so /usr/lib/x86_64-linux-gnu/libcurl.so # :-(
+#LDLIBS=/usr/lib/libev.so /usr/lib/x86_64-linux-gnu/libcurl.so # :-(
+LDLIBS=/usr/lib/libev.so # :-(
 CC=c99
 VPATH=../src
 
