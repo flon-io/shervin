@@ -52,6 +52,19 @@ context "uri"
       ensure(flu_list_get(d, "_fragment") === "frag");
     }
 
+    it "returns _scheme, _host and _port"
+    {
+      d = shv_parse_uri("https://www.example.com:80/a#frag");
+
+      ensure(d != NULL);
+      ensure(d->size == 5);
+      ensure(flu_list_get(d, "_scheme") === "https");
+      ensure(flu_list_get(d, "_host") === "www.example.com");
+      ensure(flu_list_get(d, "_port") === "80");
+      ensure(flu_list_get(d, "_path") === "/a");
+      ensure(flu_list_get(d, "_fragment") === "frag");
+    }
+
     it "unescapes \%oct entries"
     {
       pending();

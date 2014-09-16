@@ -44,7 +44,7 @@ void shv_init_uri_parser()
   abr_parser *host =
     abr_n_rex("host", "[^:]+");
   abr_parser *port =
-    abr_n_rex("port", ":[1-9][0-9]+");
+    abr_seq(abr_string(":"), abr_n_rex("port", "[1-9][0-9]+"));
 
   abr_parser *path =
     abr_n_rex("path", "[^\\?#]+");
@@ -88,6 +88,13 @@ flu_dict *shv_parse_uri(char *uri)
   //puts(abr_tree_to_string_with_leaves(uri, r));
 
   flu_dict *d = flu_list_malloc();
+
+  t = abr_tree_lookup(r, "scheme");
+  if (t != NULL) flu_list_set(d, "_scheme", abr_tree_string(uri, t));
+  t = abr_tree_lookup(r, "host");
+  if (t != NULL) flu_list_set(d, "_host", abr_tree_string(uri, t));
+  t = abr_tree_lookup(r, "port");
+  if (t != NULL) flu_list_set(d, "_port", abr_tree_string(uri, t));
 
   t = abr_tree_lookup(r, "path");
   flu_list_set(d, "_path", abr_tree_string(uri, t));
