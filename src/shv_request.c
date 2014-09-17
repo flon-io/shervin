@@ -38,7 +38,7 @@
 abr_parser *request_parser = NULL;
 
 
-void shv_init_parser()
+static void shv_init_parser()
 {
   abr_parser *sp = abr_string(" ");
   abr_parser *crlf = abr_string("\r\n");
