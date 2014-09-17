@@ -39,6 +39,7 @@ typedef struct shv_request {
   long long startMs; // microseconds since the Epoch
   char method;
   char *uri;
+  flu_dict *uri_d;
   flu_dict *headers;
   char *body;
   short status_code; // 4xx code set by shervin, 200 else

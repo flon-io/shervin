@@ -39,7 +39,7 @@
 
 flu_dict *shv_any_guard(shv_request *req, void *params)
 {
-  return shv_parse_uri(req->uri);
+  return flu_list_malloc(); // that's a yes
 }
 
 // IDEA:
@@ -48,10 +48,10 @@ flu_dict *shv_any_guard(shv_request *req, void *params)
 
 flu_dict *shv_path_guard(shv_request *req, void *params)
 {
-  flu_dict *d = shv_parse_uri(req->uri);
+  flu_dict *d = flu_list_malloc();
 
   char *path = (char *)params;
-  char *rpath = (char *)flu_list_get(d, "_path");
+  char *rpath = (char *)flu_list_get(req->uri_d, "_path");
 
   short success = 1;
 

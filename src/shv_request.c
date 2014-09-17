@@ -124,6 +124,7 @@ shv_request *shv_parse_request(char *s)
 
   t = abr_tree_lookup(r, "request_uri");
   req->uri = abr_tree_string(s, t);
+  req->uri_d = shv_parse_uri(req->uri);
 
   // version
 
@@ -163,8 +164,9 @@ ssize_t shv_request_content_length(shv_request *r)
 
 void shv_request_free(shv_request *r)
 {
-  if (r->headers != NULL) flu_list_and_items_free(r->headers, free);
   if (r->uri != NULL) free(r->uri);
+  if (r->uri_d != NULL) flu_list_and_items_free(r->uri_d, free);
+  if (r->headers != NULL) flu_list_and_items_free(r->headers, free);
   free(r);
 }
 

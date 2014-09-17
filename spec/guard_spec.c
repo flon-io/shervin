@@ -33,16 +33,13 @@ context "guards"
 
       d = shv_any_guard(req, NULL);
       ensure(d != NULL);
-      ensure(d->size == 3);
-      ensure(flu_list_get(d, "_path") === "/x");
-      ensure(flu_list_get(d, "a") === "b");
-      ensure(flu_list_get(d, "_fragment") === "f");
+      ensure(d->size == 0);
     }
   }
 
   describe "shv_path_guard()"
   {
-    it "returns a path dict if the path matches"
+    it "returns a(n empty) dict if the path matches"
     {
       req = shv_parse_request(""
         "GET /x HTTP/1.1\r\n"
@@ -51,11 +48,10 @@ context "guards"
 
       d = shv_path_guard(req, "/x");
       ensure(d != NULL);
-      ensure(d->size == 1);
-      ensure(flu_list_get(d, "_path") === "/x");
+      ensure(d->size == 0);
     }
 
-    it "returns a path dict for /book/:name"
+    it "returns a dict for /book/:name"
     {
       req = shv_parse_request(""
         "GET /book/anna_karenine HTTP/1.1\r\n"
@@ -64,11 +60,9 @@ context "guards"
 
       d = shv_path_guard(req, "/book/:name");
       ensure(d != NULL);
-      ensure(d->size == 2);
-      ensure(flu_list_get(d, "_path") === "/book/anna_karenine");
+      ensure(d->size == 1);
       ensure(flu_list_get(d, "name") === "anna_karenine");
     }
-    // TODO: unescape URIs? anna%20karenine?
 
     it "includes the query string in the dict"
     {
@@ -79,10 +73,8 @@ context "guards"
 
       d = shv_path_guard(req, "/book/:name");
       ensure(d != NULL);
-      ensure(d->size == 3);
-      ensure(flu_list_get(d, "_path") === "/book/anna_karenine");
+      ensure(d->size == 1);
       ensure(flu_list_get(d, "name") === "anna_karenine");
-      ensure(flu_list_get(d, "v") === "2.0");
     }
 
     it "fails if the path is too short"
