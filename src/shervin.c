@@ -124,14 +124,22 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     }
   }
 
-  //printf("con->req content-length %zd\n", shv_request_content_length(con->req));
+  //printf(
+  //  "con->req content-length %zd\n", shv_request_content_length(con->req));
 
   if (
     (con->req->method == 'p' || con->req->method == 'u') &&
     (con->blen < shv_request_content_length(con->req))
   ) return; // request body not yet complete
 
-  for (i = 0; ; ++i)
+  shv_handle(l, eio);
+}
+
+void shv_handle(struct ev_loop *l, struct ev_io *eio)
+{
+  shv_con *con = (shv_con *)eio->data;
+
+  for (size_t i = 0; ; ++i)
   {
     shv_route *route = con->routes[i];
 

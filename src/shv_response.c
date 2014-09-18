@@ -158,7 +158,7 @@ void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
 
   flu_sbuffer_close(b);
 
-  send(eio->fd, b->string, b->len, 0);
+  if (l != NULL) send(eio->fd, b->string, b->len, 0);
 
   flu_sbuffer_free(b);
 
