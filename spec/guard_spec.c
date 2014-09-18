@@ -14,11 +14,13 @@ context "guards"
   before each
   {
     shv_request *req = NULL;
+    flu_dict *params = NULL;
     flu_dict *d = NULL;
   }
   after each
   {
     if (req != NULL) shv_request_free(req);
+    if (params != NULL) flu_list_free(params);
     if (d != NULL) flu_list_free_all(d);
   }
 
@@ -31,7 +33,7 @@ context "guards"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      d = shv_any_guard(req, NULL);
+      d = shv_any_guard(req, NULL, NULL, NULL);
       ensure(d != NULL);
       ensure(d->size == 0);
     }
@@ -46,7 +48,8 @@ context "guards"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      d = shv_path_guard(req, "/x");
+      params = flu_d("path", "/x", NULL);
+      d = shv_path_guard(req, NULL, NULL, params);
       ensure(d != NULL);
       ensure(d->size == 0);
     }
@@ -58,7 +61,8 @@ context "guards"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      d = shv_path_guard(req, "/book/:name");
+      params = flu_d("path", "/book/:name", NULL);
+      d = shv_path_guard(req, NULL, NULL, params);
       ensure(d != NULL);
       ensure(d->size == 1);
       ensure(flu_list_get(d, "name") === "anna_karenine");
@@ -71,7 +75,8 @@ context "guards"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      d = shv_path_guard(req, "/book/:name");
+      params = flu_d("path", "/book/:name", NULL);
+      d = shv_path_guard(req, NULL, NULL, params);
       ensure(d != NULL);
       ensure(d->size == 1);
       ensure(flu_list_get(d, "name") === "anna_karenine");
@@ -84,7 +89,8 @@ context "guards"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      d = shv_path_guard(req, "/x/y");
+      params = flu_d("path", "/x/y", NULL);
+      d = shv_path_guard(req, NULL, NULL, params);
       ensure(d == NULL);
     }
 
@@ -95,7 +101,8 @@ context "guards"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      d = shv_path_guard(req, "/x");
+      params = flu_d("path", "/x", NULL);
+      d = shv_path_guard(req, NULL, NULL, params);
       ensure(d == NULL);
     }
 
@@ -106,7 +113,10 @@ context "guards"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      ensure(shv_path_guard(req, "/y") == NULL);
+      params = flu_d("path", "/y", NULL);
+      d = shv_path_guard(req, NULL, NULL, params);
+
+      ensure(d == NULL);
     }
   }
 }

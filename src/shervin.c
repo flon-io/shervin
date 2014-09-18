@@ -145,7 +145,7 @@ void shv_handle(struct ev_loop *l, struct ev_io *eio)
 
     if (route == NULL) break;
 
-    flu_dict *d = route->guard(con->req, route->params);
+    flu_dict *d = route->guard(con->req, NULL, con->res, route->params);
 
     if (d == NULL) continue;
 

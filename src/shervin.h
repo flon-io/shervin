@@ -55,26 +55,26 @@ typedef struct shv_response {
 
 // route
 
-typedef flu_dict *shv_guard(
-  shv_request *req, void *params);
-typedef void shv_handler(
-  shv_request *req, flu_dict *d, shv_response *res, void *params);
+typedef flu_dict *shv_handler(
+  shv_request *req, flu_dict *guard, shv_response *res, flu_dict *params);
 
 typedef struct shv_route {
-  shv_guard *guard;
+  shv_handler *guard;
   shv_handler *handler;
-  void *params;
+  flu_dict *params;
 } shv_route;
 
 // guards
 
-flu_dict *shv_any_guard(shv_request *req, void *params);
-flu_dict *shv_path_guard(shv_request *req, void *params);
+flu_dict *shv_any_guard(
+  shv_request *req, flu_dict *d, shv_response *res, flu_dict *params);
+flu_dict *shv_path_guard(
+  shv_request *req, flu_dict *d, shv_response *res, flu_dict *params);
 
 // handlers
 
-void shv_dir_handler(
-  shv_request *req, flu_dict *guard, shv_response *res, void *params);
+flu_dict *shv_dir_handler(
+  shv_request *req, flu_dict *guard, shv_response *res, flu_dict *params);
 
 // serving
 
