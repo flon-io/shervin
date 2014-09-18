@@ -141,6 +141,8 @@ flu_dict *shv_parse_uri(char *uri)
   t = abr_tree_lookup(r, "fragment");
   if (t != NULL) flu_list_set(d, "_fragment", abr_tree_string(uri, t));
 
+  abr_tree_free(r);
+
   return d;
 }
 

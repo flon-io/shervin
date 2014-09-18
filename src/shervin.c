@@ -144,6 +144,9 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     con->res = shv_response_malloc(-1);
     route->handler(con->req, d, con->res, route->params);
     shv_respond(-1, l, eio);
+
+    //flu_list_and_items_free(d, free);
+
     return;
   }
 

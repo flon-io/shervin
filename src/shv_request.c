@@ -146,6 +146,8 @@ shv_request *shv_parse_request(char *s)
     char *sv = abr_tree_string(s, tv);
 
     flu_list_set(req->headers, sk, flu_strtrim(sv));
+
+    free(sk);
     free(sv);
   }
 

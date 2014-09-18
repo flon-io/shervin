@@ -74,7 +74,7 @@ flu_dict *shv_path_guard(shv_request *req, void *params);
 // handlers
 
 void shv_dir_handler(
-  shv_request *req, flu_dict *d, shv_response *res, void *params);
+  shv_request *req, flu_dict *guard, shv_response *res, void *params);
 
 // serving
 
