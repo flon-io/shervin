@@ -300,6 +300,11 @@ void flu_list_and_items_free(flu_list *l, void (*free_item)(void *))
   flu_list_free(l);
 }
 
+void flu_list_free_all(flu_list *l)
+{
+  flu_list_and_items_free(l, free);
+}
+
 void *flu_list_at(const flu_list *l, size_t n)
 {
   size_t i = 0;

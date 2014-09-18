@@ -17,7 +17,7 @@ context "uri"
   }
   after each
   {
-    if (d != NULL) flu_list_and_items_free(d, free);
+    if (d != NULL) flu_list_free_all(d);
   }
 
   describe "shv_parse_uri()"

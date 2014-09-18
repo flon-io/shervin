@@ -153,7 +153,7 @@ void shv_handle(struct ev_loop *l, struct ev_io *eio)
     route->handler(con->req, d, con->res, route->params);
     shv_respond(-1, l, eio);
 
-    //flu_list_and_items_free(d, free);
+    //flu_list_free_all(d);
 
     return;
   }

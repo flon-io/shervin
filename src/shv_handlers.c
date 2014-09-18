@@ -83,7 +83,7 @@ flu_dict *shv_path_guard(shv_request *req, void *params)
 
   if (success) return d;
 
-  flu_list_and_items_free(d, free);
+  flu_list_free_all(d);
   return NULL;
 }
 

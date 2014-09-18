@@ -181,6 +181,10 @@ void flu_list_free(flu_list *l);
  */
 void flu_list_and_items_free(flu_list *l, void (*free_item)(void *));
 
+/* A shortcut for `flu_list_and_items_free(l, free)`.
+ */
+void flu_list_free_all(flu_list *l);
+
 /* Returns the nth element in a flu_list. Warning, takes n steps.
  * Returns NULL if n > size of flu_list.
  */

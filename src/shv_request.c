@@ -176,8 +176,8 @@ ssize_t shv_request_content_length(shv_request *r)
 void shv_request_free(shv_request *r)
 {
   if (r->uri != NULL) free(r->uri);
-  if (r->uri_d != NULL) flu_list_and_items_free(r->uri_d, free);
-  if (r->headers != NULL) flu_list_and_items_free(r->headers, free);
+  if (r->uri_d != NULL) flu_list_free_all(r->uri_d);
+  if (r->headers != NULL) flu_list_free_all(r->headers);
   free(r);
 }
 

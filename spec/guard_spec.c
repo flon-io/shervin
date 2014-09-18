@@ -19,7 +19,7 @@ context "guards"
   after each
   {
     if (req != NULL) shv_request_free(req);
-    if (d != NULL) flu_list_and_items_free(d, free);
+    if (d != NULL) flu_list_free_all(d);
   }
 
   describe "shv_any_guard()"
