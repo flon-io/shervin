@@ -124,11 +124,13 @@ shv_request *shv_parse_request(char *s)
 
   t = abr_tree_lookup(r, "request_uri");
   req->uri = abr_tree_string(s, t);
+
   req->uri_d = shv_parse_uri(req->uri);
+    // TODO: move to after "Host" got parsed? And integrate it?
 
   // version
 
-  // reject when not 1.0 or 1.1?
+    // reject when not 1.0 or 1.1?
 
   // headers
 
@@ -140,8 +142,13 @@ shv_request *shv_parse_request(char *s)
     abr_tree *th = (abr_tree *)h->item;
     abr_tree *tk = abr_tree_lookup(th, "field_name");
     abr_tree *tv = abr_tree_lookup(th, "field_value");
+
+    char *sk = abr_tree_string(s, tk);
+    for (char *kk = sk; *kk; ++kk) *kk = tolower(*kk);
+
     char *sv = abr_tree_string(s, tv);
-    flu_list_set(req->headers, abr_tree_string(s, tk), flu_strtrim(sv));
+
+    flu_list_set(req->headers, sk, flu_strtrim(sv));
     free(sv);
   }
 

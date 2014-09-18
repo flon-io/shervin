@@ -64,6 +64,20 @@ context "request"
       ensure(req->status_code == 200);
     }
 
+    it "lowers the case of header field names"
+    {
+      req = shv_parse_request(""
+        "GET / HTTP/1.0\r\n"
+        "Host: http://example.com\r\n"
+        "X-Whatever: nada\r\n"
+        "\r\n"
+      );
+
+      ensure(req != NULL);
+      ensure(flu_list_get(req->headers, "host") === "http://example.com");
+      ensure(flu_list_get(req->headers, "x-whatever") === "nada");
+    }
+
     it "returns a req with ->status_code == 400 when it cannot parse"
     {
       req = shv_parse_request(""
