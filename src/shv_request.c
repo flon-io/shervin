@@ -25,11 +25,11 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+#include <ctype.h>
 #include <stdlib.h>
 
 #include "flutil.h"
 #include "aabro.h"
-//#include "shervin.h"
 #include "shv_protected.h"
 
 //#include "gajeta.h"
@@ -125,9 +125,6 @@ shv_request *shv_parse_request(char *s)
   t = abr_tree_lookup(r, "request_uri");
   req->uri = abr_tree_string(s, t);
 
-  req->uri_d = shv_parse_uri(req->uri);
-    // TODO: move to after "Host" got parsed? And integrate it?
-
   // version
 
     // reject when not 1.0 or 1.1?
@@ -153,6 +150,11 @@ shv_request *shv_parse_request(char *s)
   }
 
   flu_list_free(hs);
+
+  req->uri_d =
+    shv_parse_host_and_path(
+      flu_list_get(req->headers, "host"),
+      req->uri);
 
   //
   // over
