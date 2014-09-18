@@ -64,6 +64,9 @@ typedef struct shv_route {
   flu_dict *params;
 } shv_route;
 
+shv_route *shv_route_malloc(
+  shv_handler *guard, shv_handler *handler, ...);
+
 // guards
 
 flu_dict *shv_any_guard(

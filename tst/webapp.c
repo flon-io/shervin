@@ -49,9 +49,13 @@ void htime_handler(
 
 int main()
 {
+  //shv_route **routes = (shv_route *[]){
+  //  &(shv_route){ shv_any_guard, htime_handler, NULL },
+  //  NULL // optional since we have a "shv_any_guard" above
+  //};
   shv_route **routes = (shv_route *[]){
-    &(shv_route){ shv_any_guard, htime_handler, NULL },
-    NULL // optional since we have a "shv_any_guard" above
+    shv_route_malloc(NULL, htime_handler, NULL),
+    NULL // optional since we have a NULL guard above
   };
 
   shv_serve(4001, routes);

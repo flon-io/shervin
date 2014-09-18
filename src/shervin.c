@@ -145,7 +145,9 @@ void shv_handle(struct ev_loop *l, struct ev_io *eio)
 
     if (route == NULL) break;
 
-    flu_dict *d = route->guard(con->req, NULL, con->res, route->params);
+    flu_dict *d = NULL;
+    if (route->guard) d = route->guard(con->req, NULL, NULL, route->params);
+    else d = flu_list_malloc(); // no guard
 
     if (d == NULL) continue;
 
@@ -216,5 +218,21 @@ void shv_serve(int port, shv_route **routes)
   //fgaj_i("closing...");
   //r = close(sd);
   //if (r != 0) { fgaj_r("close error"); /*exit(4);*/ }
+}
+
+shv_route *shv_route_malloc(
+  shv_handler *guard, shv_handler *handler, ...)
+{
+  va_list ap; va_start(ap, handler);
+  flu_dict *params = flu_vd(ap);
+  va_end(ap);
+
+  shv_route *r = calloc(1, sizeof(shv_route));
+
+  r->guard = guard;
+  r->handler = handler;
+  r->params = params;
+
+  return r;
 }
 
