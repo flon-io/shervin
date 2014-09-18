@@ -44,6 +44,7 @@ char shv_method_to_char(char *s);
 char *shv_char_to_method(char c);
 
 flu_dict *shv_parse_uri(char *uri);
+flu_dict *shv_parse_host_and_path(char *host, char *path);
 
 //
 // response

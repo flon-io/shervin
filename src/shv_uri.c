@@ -62,7 +62,7 @@ static void shv_init_uri_parser()
   abr_parser *scheme =
     abr_n_rex("scheme", "https?");
   abr_parser *host =
-    abr_n_rex("host", "[^:]+");
+    abr_n_rex("host", "[^:/]+");
   abr_parser *port =
     abr_seq(abr_string(":"), abr_n_rex("port", "[1-9][0-9]+"));
 
@@ -103,8 +103,10 @@ flu_dict *shv_parse_uri(char *uri)
   if (uri_parser == NULL) shv_init_uri_parser();
 
   abr_tree *r = abr_parse(uri, 0, uri_parser);
+  //abr_tree *r = abr_parse_f(uri, 0, uri_parser, ABR_F_ALL);
   abr_tree *t = NULL;
 
+  //printf("uri >%s<\n", uri);
   //puts(abr_tree_to_string_with_leaves(uri, r));
 
   flu_dict *d = flu_list_malloc();
@@ -138,6 +140,17 @@ flu_dict *shv_parse_uri(char *uri)
 
   t = abr_tree_lookup(r, "fragment");
   if (t != NULL) flu_list_set(d, "_fragment", abr_tree_string(uri, t));
+
+  return d;
+}
+
+flu_dict *shv_parse_host_and_path(char *host, char *path)
+{
+  if (host == NULL) return shv_parse_uri(path);
+
+  char *s = flu_sprintf("%s%s", host, path);
+  flu_dict *d = shv_parse_uri(s);
+  free(s);
 
   return d;
 }

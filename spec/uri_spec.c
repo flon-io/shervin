@@ -11,17 +11,17 @@
 
 context "uri"
 {
+  before each
+  {
+    flu_dict *d = NULL;
+  }
+  after each
+  {
+    if (d != NULL) flu_list_and_items_free(d, free);
+  }
+
   describe "shv_parse_uri()"
   {
-    before each
-    {
-      flu_dict *d = NULL;
-    }
-    after each
-    {
-      if (d != NULL) flu_list_and_items_free(d, free);
-    }
-
     it "returns the \"_path\""
     {
       d = shv_parse_uri("/a/b/c");
@@ -73,6 +73,34 @@ context "uri"
       ensure(d->size == 2);
       ensure(flu_list_get(d, "_path") === "/a");
       ensure(flu_list_get(d, "x") === "x y z");
+    }
+  }
+
+  describe "shv_parse_host_and_path()"
+  {
+    it "returns _host, _path and co"
+    {
+      d = shv_parse_host_and_path("http://example.com", "/a?x=x%20y%20z");
+
+      ensure(d != NULL);
+      ensure(d->size == 4);
+      ensure(flu_list_get(d, "_scheme") === "http");
+      ensure(flu_list_get(d, "_host") === "example.com");
+      ensure(flu_list_get(d, "_path") === "/a");
+      ensure(flu_list_get(d, "x") === "x y z");
+    }
+
+    it "returns _host, _port, _path and co"
+    {
+      d = shv_parse_host_and_path("http://example.com:8080", "/a/b#anchor");
+
+      ensure(d != NULL);
+      ensure(d->size == 5);
+      ensure(flu_list_get(d, "_scheme") === "http");
+      ensure(flu_list_get(d, "_host") === "example.com");
+      ensure(flu_list_get(d, "_port") === "8080");
+      ensure(flu_list_get(d, "_path") === "/a/b");
+      ensure(flu_list_get(d, "_fragment") === "anchor");
     }
   }
 }
