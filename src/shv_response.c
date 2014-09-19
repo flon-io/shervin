@@ -182,11 +182,14 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
 
   flu_sbuffer_close(b);
 
-  /*if (l != NULL) */send(eio->fd, b->string, b->len, 0);
+  if (l != NULL) send(eio->fd, b->string, b->len, 0);
 
   flu_sbuffer_free(b);
 
+  if (l == NULL) return; // only in spec/handle_spec.c
+
   now = flu_getMs();
+  //
   fgaj_i(
     "c%p r%i %s %s %s %i c%.3fms r%.3fms",
     eio, con->rqount,
