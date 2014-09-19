@@ -378,6 +378,11 @@ void flu_list_set(flu_list *l, const char *key, void *item)
   flu_list_unshift(l, item); l->first->key = strdup(key);
 }
 
+void flu_list_set_last(flu_list *l, const char *key, void *item)
+{
+  flu_list_add(l, item); l->last->key = strdup(key);
+}
+
 static flu_node *flu_list_getn(flu_list *l, const char *key)
 {
   for (flu_node *n = l->first; n != NULL; n = n->next)

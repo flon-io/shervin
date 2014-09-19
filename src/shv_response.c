@@ -26,6 +26,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdlib.h>
+#include <ctype.h>
 #include <string.h>
 #include <time.h>
 #include <sys/socket.h>
@@ -45,15 +46,16 @@ shv_response *shv_response_malloc(short status_code)
 {
   shv_response *r = calloc(1, sizeof(shv_response));
   r->status_code = status_code;
-  //r->content_type = NULL;
-  //r->body = NULL;
+  r->headers = flu_list_malloc();
+  r->body = flu_list_malloc();
 
   return r;
 }
 
 void shv_response_free(shv_response *r)
 {
-  if (r->body != NULL) free(r->body);
+  flu_list_free_all(r->headers);
+  flu_list_free_all(r->body);
   free(r);
 }
 
@@ -108,6 +110,14 @@ static char *shv_reason(short status_code)
   return "(no reason-phrase)";
 }
 
+static void shv_lower_keys(flu_dict *d)
+{
+  for (flu_node *n = d->first; n != NULL; n = n->next)
+  {
+    for (char *s = n->key; *s; ++s) *s = tolower(*s);
+  }
+}
+
 void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
 {
   shv_con *con = (shv_con *)eio->data;
@@ -118,47 +128,64 @@ void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
     else status_code = con->req->status_code;
   }
 
-  char *content_type = "text/plain; charset=utf-8";
-  char *body = "";
-  //
-  if (con->res)
-  {
-    if (con->res->content_type) content_type = con->res->content_type;
-    if (con->res->body) body = con->res->body;
-  }
+  flu_list *body = con->res ? con->res->body : NULL;
+  flu_dict *headers = con->res ? con->res->headers : flu_list_malloc();
 
   time_t tt; time(&tt);
   struct tm *tm; tm = gmtime(&tt);
   char *dt = asctime(tm); // TODO: upgrade to rfc1123
   dt[strlen(dt) - 1] = '\0';
+  //
+  flu_list_set(headers, "date", strdup(dt));
 
-  char *lo = "northpole"; // FIXME
+  flu_list_set_last(
+    headers, "server", flu_sprintf("shervin %s", SHV_VERSION));
+  flu_list_set_last(
+    headers, "content-type", strdup("text/plain; charset=utf-8"));
 
-  flu_sbuffer *b = flu_sbuffer_malloc();
+  flu_list_set(
+    headers, "location", strdup("northpole")); // FIXME
 
-  flu_sbprintf(b, "HTTP/1.1 %i %s\r\n", status_code, shv_reason(status_code));
-  flu_sbprintf(b, "Server: shervin %s\r\n", SHV_VERSION);
-  flu_sbprintf(b, "Location: %s\r\n", lo);
-  flu_sbprintf(b, "Date: %s\r\n", dt);
-  flu_sbprintf(b, "Content-Type: %s\r\n", content_type);
-  flu_sbprintf(b, "Content-Length: %zu\r\n", strlen(body));
+  size_t cl = 0;
+  if (body) for (flu_node *n = con->res->body->first; n; n = n->next)
+  {
+    cl += strlen((char *)n->item);
+  }
+  //
+  flu_list_set(headers, "content-length", flu_sprintf("%zu", cl));
 
   long long now = flu_getMs();
-  flu_sbprintf(b,
-    "x-flon-shervin: c%.3fms;r%.3fms;rq%i\r\n",
-    (now - con->startMs) / 1000.0,
-    (now - con->req->startMs) / 1000.0,
-    con->rqount);
+  //
+  flu_list_set(
+    headers,
+    "x-flon-shervin",
+    flu_sprintf(
+      "c%.3fms;r%.3fms;rq%i",
+      (now - con->startMs) / 1000.0,
+      (now - con->req->startMs) / 1000.0,
+      con->rqount));
+
+  flu_sbuffer *b = flu_sbuffer_malloc();
+  flu_sbprintf(b, "HTTP/1.1 %i %s\r\n", status_code, shv_reason(status_code));
+
+  shv_lower_keys(headers);
+  flu_list *ths = flu_list_dtrim(headers);
+  for (flu_node *n = ths->first; n != NULL; n = n->next)
+  {
+    flu_sbprintf(b, "%s: %s\r\n", n->key, (char *)n->item);
+  }
+  flu_list_free(ths);
 
   flu_sbprintf(b, "\r\n");
 
-  //free(dt); // not necessary
-
-  flu_sbprintf(b, body);
+  if (body) for (flu_node *n = body->first; n; n = n->next)
+  {
+    flu_sbputs(b, (char *)n->item);
+  }
 
   flu_sbuffer_close(b);
 
-  if (l != NULL) send(eio->fd, b->string, b->len, 0);
+  /*if (l != NULL) */send(eio->fd, b->string, b->len, 0);
 
   flu_sbuffer_free(b);
 

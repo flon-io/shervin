@@ -244,6 +244,11 @@ void *flu_list_shift(flu_list *l);
  */
 void flu_list_set(flu_list *l, const char *key, void *item);
 
+/* Sets an item under a given key, but at then end of the list.
+ * Useful for "defaults".
+ */
+void flu_list_set_last(flu_list *l, const char *key, void *item);
+
 /* Given a key, returns the item bound for it, NULL instead.
  * (O(n)).
  */

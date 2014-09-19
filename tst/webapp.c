@@ -43,8 +43,7 @@ void htime_handler(
   char *dt = asctime(tm);
 
   res->status_code = 200;
-  res->content_type = "text/plain; charset=utf-8";
-  res->body = strdup(dt);
+  flu_list_add(res->body, strdup(dt));
 }
 
 int main()

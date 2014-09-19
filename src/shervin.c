@@ -135,6 +135,11 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   shv_handle(l, eio);
 }
 
+// guard vs handler
+// if guard returns NULL, it rejected
+// if handler returns NULL it accepted
+// ...
+
 void shv_handle(struct ev_loop *l, struct ev_io *eio)
 {
   shv_con *con = (shv_con *)eio->data;

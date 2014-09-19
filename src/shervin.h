@@ -49,8 +49,8 @@ typedef struct shv_request {
 
 typedef struct shv_response {
   short status_code; // 200, 404, 500, ...
-  char *content_type;
-  char *body;
+  flu_dict *headers;
+  flu_list *body;
 } shv_response;
 
 // route
