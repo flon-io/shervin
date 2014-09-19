@@ -25,7 +25,16 @@ context "handle"
     flu_list_set(
       res->headers, "x-handled", rdz_strdup(flu_list_get(params, "han")));
 
-    return 1;
+    return 1; // yes it's over
+  }
+
+  int fil(
+    shv_request *req, flu_dict *guard, shv_response *res, flu_dict *params)
+  {
+    flu_list_set(
+      res->headers, "x-filtered", rdz_strdup(flu_list_get(params, "fil")));
+
+    return 0; // ok, I've dealt with it, let others see it
   }
 
   before each
@@ -86,6 +95,25 @@ context "handle"
       shv_handle(NULL, eio);
 
       ensure(flu_list_get(con->res->headers, "x-handled") === "b");
+    }
+
+    it "triggers handlers until one says 1"
+    {
+      con->routes = (shv_route *[]){
+        shv_route_malloc(gua, fil, "gua", "true", "fil", "z", NULL),
+        shv_route_malloc(NULL, han, "gua", "true", "han", "a", NULL),
+        NULL // do not forget it
+      };
+
+      con->req = shv_parse_request(""
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      shv_handle(NULL, eio);
+
+      ensure(flu_list_get(con->res->headers, "x-handled") === "a");
+      ensure(flu_list_get(con->res->headers, "x-filtered") === "z");
     }
   }
 
