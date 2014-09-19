@@ -15,16 +15,15 @@ context "handle"
   int gua(
     shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
   {
-    if (flu_list_get(params, "accept")) return 1;
-    return 0;
+    char *g = flu_list_get(params, "gua");
+    return (g && strcmp(g, "true") == 0);
   }
 
   int han(
     shv_request *req, flu_dict *guard, shv_response *res, flu_dict *params)
   {
     flu_list_set(
-      res->headers,
-      "x-handled", rdz_strdup(flu_list_get(params, "mh_val")));
+      res->headers, "x-handled", rdz_strdup(flu_list_get(params, "han")));
 
     return 1;
   }
@@ -51,11 +50,11 @@ context "handle"
 
   describe "shv_handle()"
   {
-    it "iterates and calls the first handler for which the guard said 1"
+    it "triggers handler when guard says 1"
     {
       con->routes = (shv_route *[]){
-        shv_route_malloc(gua, han, "mh_val", "0", NULL),
-        shv_route_malloc(gua, han, "accept", "true", "mh_val", "1", NULL),
+        shv_route_malloc(gua, han, "gua", "false", "han", "a", NULL),
+        shv_route_malloc(gua, han, "gua", "true", "han", "b", NULL),
         NULL // do not forget it
       };
 
@@ -66,7 +65,27 @@ context "handle"
 
       shv_handle(NULL, eio);
 
-      ensure(flu_list_get(con->res->headers, "x-handled") === "1");
+      ensure(flu_list_get(con->res->headers, "x-handled") === "b");
+    }
+
+    it "triggers next handler when guard says 1"
+    {
+      con->routes = (shv_route *[]){
+        shv_route_malloc(gua, NULL, "gua", "false", NULL),
+        shv_route_malloc(NULL, han, "han", "a", NULL),
+        shv_route_malloc(gua, NULL, "gua", "true", NULL),
+        shv_route_malloc(NULL, han, "han", "b", NULL),
+        NULL // do not forget it
+      };
+
+      con->req = shv_parse_request(""
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      shv_handle(NULL, eio);
+
+      ensure(flu_list_get(con->res->headers, "x-handled") === "b");
     }
   }
 
