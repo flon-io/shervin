@@ -118,21 +118,6 @@ context "handle"
   }
 
   //shv_route **routes = (shv_route *[]){
-  //  shv_route_malloc(guard0, handler0, ps0),
-  //  shv_route_malloc(guard1, handler1, ps1),
-  //  NULL
-  //};
-
-  //shv_route **routes = (shv_route *[]){
-  //  shv_route_malloc(guard0, NULL, ps0),
-  //  shv_route_malloc(NULL, handler0, ps1),
-  //  shv_route_malloc(NULL, handler1, ps2),
-  //  shv_route_malloc(guard1, NULL, ps3),
-  //  shv_route_malloc(NULL, handler2, ps4),
-  //  NULL
-  //};
-
-  //shv_route **routes = (shv_route *[]){
   //  shv_route_malloc(shv_pre_guard, handler1, ps1),
   //  shv_route_malloc(guard0, handler0, ps0),
   //  shv_route_malloc(guard1, handler1, ps1),

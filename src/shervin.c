@@ -144,7 +144,8 @@ void shv_handle(struct ev_loop *l, struct ev_io *eio)
   con->res = shv_response_malloc(404);
 
   flu_dict *rod = flu_list_malloc();
-  int g = 0;
+  int guarded = 0;
+  int handled = 0;
 
   for (size_t i = 0; ; ++i)
   {
@@ -152,15 +153,18 @@ void shv_handle(struct ev_loop *l, struct ev_io *eio)
 
     if (route == NULL) break;
 
-    if (route->guard) g = route->guard(con->req, rod, con->res, route->params);
+    if (route->guard)
+    {
+      guarded = route->guard(con->req, rod, con->res, route->params);
+    }
 
-    if (g != 1) continue;
+    if (guarded != 1) continue;
 
     if (route->handler)
     {
-      int h = route->handler(con->req, rod, con->res, route->params);
+      handled = route->handler(con->req, rod, con->res, route->params);
 
-      if (h == 1) break;
+      if (handled == 1) break;
     }
   }
 
