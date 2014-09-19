@@ -54,7 +54,7 @@ flu_dict *shv_parse_host_and_path(char *host, char *path);
 shv_response *shv_response_malloc(short status_code);
 void shv_response_free(shv_response *r);
 
-void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio);
+void shv_respond(struct ev_loop *l, struct ev_io *eio);
 
 
 //

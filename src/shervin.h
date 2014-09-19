@@ -55,8 +55,8 @@ typedef struct shv_response {
 
 // route
 
-typedef flu_dict *shv_handler(
-  shv_request *req, flu_dict *guard, shv_response *res, flu_dict *params);
+typedef int shv_handler(
+  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params);
 
 typedef struct shv_route {
   shv_handler *guard;
@@ -69,14 +69,14 @@ shv_route *shv_route_malloc(
 
 // guards
 
-flu_dict *shv_any_guard(
-  shv_request *req, flu_dict *d, shv_response *res, flu_dict *params);
-flu_dict *shv_path_guard(
-  shv_request *req, flu_dict *d, shv_response *res, flu_dict *params);
+int shv_any_guard(
+  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params);
+int shv_path_guard(
+  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params);
 
 // handlers
 
-flu_dict *shv_dir_handler(
+int shv_dir_handler(
   shv_request *req, flu_dict *guard, shv_response *res, flu_dict *params);
 
 // serving

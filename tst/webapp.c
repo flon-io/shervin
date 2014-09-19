@@ -35,7 +35,7 @@
 /*
  * Respond with 200 and the time.
  */
-void htime_handler(
+int htime_handler(
   shv_request *req, flu_dict *d, shv_response *res, void *params)
 {
   time_t tt; time(&tt);
@@ -44,17 +44,15 @@ void htime_handler(
 
   res->status_code = 200;
   flu_list_add(res->body, strdup(dt));
+
+  return 1;
 }
 
 int main()
 {
-  //shv_route **routes = (shv_route *[]){
-  //  &(shv_route){ shv_any_guard, htime_handler, NULL },
-  //  NULL // optional since we have a "shv_any_guard" above
-  //};
   shv_route **routes = (shv_route *[]){
-    shv_route_malloc(NULL, htime_handler, NULL),
-    NULL // optional since we have a NULL guard above
+    shv_route_malloc(shv_any_guard, htime_handler, NULL),
+    NULL
   };
 
   shv_serve(4001, routes);

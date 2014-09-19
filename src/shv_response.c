@@ -118,46 +118,38 @@ static void shv_lower_keys(flu_dict *d)
   }
 }
 
-void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
+void shv_respond(struct ev_loop *l, struct ev_io *eio)
 {
   shv_con *con = (shv_con *)eio->data;
-
-  if (status_code == -1)
-  {
-    if (con->res) status_code = con->res->status_code;
-    else status_code = con->req->status_code;
-  }
-
-  flu_list *body = con->res ? con->res->body : NULL;
-  flu_dict *headers = con->res ? con->res->headers : flu_list_malloc();
 
   time_t tt; time(&tt);
   struct tm *tm; tm = gmtime(&tt);
   char *dt = asctime(tm); // TODO: upgrade to rfc1123
   dt[strlen(dt) - 1] = '\0';
   //
-  flu_list_set(headers, "date", strdup(dt));
+  flu_list_set(con->res->headers, "date", strdup(dt));
 
   flu_list_set_last(
-    headers, "server", flu_sprintf("shervin %s", SHV_VERSION));
+    con->res->headers, "server", flu_sprintf("shervin %s", SHV_VERSION));
   flu_list_set_last(
-    headers, "content-type", strdup("text/plain; charset=utf-8"));
+    con->res->headers, "content-type", strdup("text/plain; charset=utf-8"));
 
   flu_list_set(
-    headers, "location", strdup("northpole")); // FIXME
+    con->res->headers, "location", strdup("northpole")); // FIXME
 
   size_t cl = 0;
-  if (body) for (flu_node *n = con->res->body->first; n; n = n->next)
+  for (flu_node *n = con->res->body->first; n; n = n->next)
   {
     cl += strlen((char *)n->item);
   }
   //
-  flu_list_set(headers, "content-length", flu_sprintf("%zu", cl));
+  flu_list_set(
+    con->res->headers, "content-length", flu_sprintf("%zu", cl));
 
   long long now = flu_getMs();
   //
   flu_list_set(
-    headers,
+    con->res->headers,
     "x-flon-shervin",
     flu_sprintf(
       "c%.3fms;r%.3fms;rq%i",
@@ -166,10 +158,15 @@ void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
       con->rqount));
 
   flu_sbuffer *b = flu_sbuffer_malloc();
-  flu_sbprintf(b, "HTTP/1.1 %i %s\r\n", status_code, shv_reason(status_code));
 
-  shv_lower_keys(headers);
-  flu_list *ths = flu_list_dtrim(headers);
+  flu_sbprintf(
+    b,
+    "HTTP/1.1 %i %s\r\n",
+    con->res->status_code,
+    shv_reason(con->res->status_code));
+
+  shv_lower_keys(con->res->headers);
+  flu_list *ths = flu_list_dtrim(con->res->headers);
   for (flu_node *n = ths->first; n != NULL; n = n->next)
   {
     flu_sbprintf(b, "%s: %s\r\n", n->key, (char *)n->item);
@@ -178,7 +175,7 @@ void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
 
   flu_sbprintf(b, "\r\n");
 
-  if (body) for (flu_node *n = body->first; n; n = n->next)
+  for (flu_node *n = con->res->body->first; n; n = n->next)
   {
     flu_sbputs(b, (char *)n->item);
   }
@@ -196,7 +193,7 @@ void shv_respond(short status_code, struct ev_loop *l, struct ev_io *eio)
     inet_ntoa(con->client->sin_addr),
     shv_char_to_method(con->req->method),
     con->req->uri,
-    status_code,
+    con->res->status_code,
     (flu_getMs() - con->startMs) / 1000.0,
     (flu_getMs() - con->req->startMs) / 1000.0);
 

@@ -120,7 +120,9 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     {
       fgaj_d("c%p r%i couldn't parse request head", eio, con->rqount);
 
-      shv_respond(-1, l, eio); return;
+      con->res = shv_response_malloc(con->req->status_code);
+      shv_respond(l, eio);
+      return;
     }
   }
 
@@ -135,14 +137,14 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   shv_handle(l, eio);
 }
 
-// guard vs handler
-// if guard returns NULL, it rejected
-// if handler returns NULL it accepted
-// ...
-
 void shv_handle(struct ev_loop *l, struct ev_io *eio)
 {
   shv_con *con = (shv_con *)eio->data;
+
+  con->res = shv_response_malloc(404);
+
+  flu_dict *rod = flu_list_malloc();
+  int g = 0;
 
   for (size_t i = 0; ; ++i)
   {
@@ -150,22 +152,21 @@ void shv_handle(struct ev_loop *l, struct ev_io *eio)
 
     if (route == NULL) break;
 
-    flu_dict *d = NULL;
-    if (route->guard) d = route->guard(con->req, NULL, NULL, route->params);
-    else d = flu_list_malloc(); // no guard
+    if (route->guard) g = route->guard(con->req, rod, con->res, route->params);
 
-    if (d == NULL) continue;
+    if (g != 1) continue;
 
-    con->res = shv_response_malloc(-1);
-    route->handler(con->req, d, con->res, route->params);
-    shv_respond(-1, l, eio);
+    if (route->handler)
+    {
+      int h = route->handler(con->req, rod, con->res, route->params);
 
-    flu_list_free_all(d);
-
-    return;
+      if (h == 1) break;
+    }
   }
 
-  shv_respond(404, l, eio);
+  flu_list_free_all(rod);
+
+  shv_respond(l, eio);
 }
 
 static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)

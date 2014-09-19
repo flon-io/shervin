@@ -8,6 +8,21 @@
 #include "shervin.h"
 #include "shv_protected.h" // direct access to shv_request methods
 
+//int myGuard(
+//  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+//{
+//  if (flu_list_get(params, "accept")) return 1;
+//  return 0;
+//}
+//
+//int myHandler(
+//  shv_request *req, flu_dict *guard, shv_response *res, flu_dict *params)
+//{
+//  flu_list_set(res->headers, "x-handled", flu_list_get(params, "mh_val"));
+//
+//  return 1;
+//}
+
 
 context "handle"
 {

@@ -15,13 +15,13 @@ context "guards"
   {
     shv_request *req = NULL;
     flu_dict *params = NULL;
-    flu_dict *d = NULL;
+    flu_dict *rod = flu_list_malloc();
   }
   after each
   {
     if (req != NULL) shv_request_free(req);
     if (params != NULL) flu_list_free(params);
-    if (d != NULL) flu_list_free_all(d);
+    flu_list_free_all(rod);
   }
 
   describe "shv_any_guard()"
@@ -33,15 +33,15 @@ context "guards"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      d = shv_any_guard(req, NULL, NULL, NULL);
-      ensure(d != NULL);
-      ensure(d->size == 0);
+      int r = shv_any_guard(req, rod, NULL, NULL);
+      ensure(r == 1);
+      ensure(rod->size == 0);
     }
   }
 
   describe "shv_path_guard()"
   {
-    it "returns a(n empty) dict if the path matches"
+    it "returns 1 if the path matches"
     {
       req = shv_parse_request(""
         "GET /x HTTP/1.1\r\n"
@@ -49,9 +49,10 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/x", NULL);
-      d = shv_path_guard(req, NULL, NULL, params);
-      ensure(d != NULL);
-      ensure(d->size == 0);
+      int r = shv_path_guard(req, rod, NULL, params);
+
+      ensure(r == 1);
+      ensure(rod->size == 0);
     }
 
     it "returns a dict for /book/:name"
@@ -62,10 +63,11 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/book/:name", NULL);
-      d = shv_path_guard(req, NULL, NULL, params);
-      ensure(d != NULL);
-      ensure(d->size == 1);
-      ensure(flu_list_get(d, "name") === "anna_karenine");
+      int r = shv_path_guard(req, rod, NULL, params);
+
+      ensure(r == 1);
+      ensure(rod->size == 1);
+      ensure(flu_list_get(rod, "name") === "anna_karenine");
     }
 
     it "includes the query string in the dict"
@@ -76,10 +78,11 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/book/:name", NULL);
-      d = shv_path_guard(req, NULL, NULL, params);
-      ensure(d != NULL);
-      ensure(d->size == 1);
-      ensure(flu_list_get(d, "name") === "anna_karenine");
+      int r = shv_path_guard(req, rod, NULL, params);
+
+      ensure(r == 1);
+      ensure(rod->size == 1);
+      ensure(flu_list_get(rod, "name") === "anna_karenine");
     }
 
     it "fails if the path is too short"
@@ -90,8 +93,9 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/x/y", NULL);
-      d = shv_path_guard(req, NULL, NULL, params);
-      ensure(d == NULL);
+      int r = shv_path_guard(req, rod, NULL, params);
+
+      ensure(r == 0);
     }
 
     it "fails if the path is too long"
@@ -102,11 +106,12 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/x", NULL);
-      d = shv_path_guard(req, NULL, NULL, params);
-      ensure(d == NULL);
+      int r = shv_path_guard(req, rod, NULL, params);
+
+      ensure(r == 0);
     }
 
-    it "returns NULL else"
+    it "returns 0 else"
     {
       req = shv_parse_request(""
         "GET /x HTTP/1.1\r\n"
@@ -114,9 +119,9 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/y", NULL);
-      d = shv_path_guard(req, NULL, NULL, params);
+      int r = shv_path_guard(req, rod, NULL, params);
 
-      ensure(d == NULL);
+      ensure(r == 0);
     }
   }
 }

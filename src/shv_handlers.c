@@ -37,25 +37,23 @@
 //
 // guards
 
-flu_dict *shv_any_guard(
-  shv_request *req, flu_dict *guard, shv_response *res, flu_dict *params)
+int shv_any_guard(
+  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
 {
-  return flu_list_malloc(); // that's a yes
+  return 1;
 }
 
 // IDEA:
 //   "/book/:name" for any method
 //   "GET /book/:name" to limit to GET
 
-flu_dict *shv_path_guard(
-  shv_request *req, flu_dict *guard, shv_response *res, flu_dict *params)
+int shv_path_guard(
+  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
 {
-  flu_dict *r = flu_list_malloc();
-
   char *path = (char *)flu_list_get(params, "path");
   char *rpath = (char *)flu_list_get(req->uri_d, "_path");
 
-  short success = 1;
+  int success = 1;
 
   while (1)
   {
@@ -68,7 +66,7 @@ flu_dict *shv_path_guard(
     if (path[0] == ':')
     {
       char *k = strndup(path + 1, slash - path - 1);
-      flu_list_set(r, k, strndup(rpath, rslash - rpath));
+      flu_list_set(rod, k, strndup(rpath, rslash - rpath));
       free(k);
     }
     else
@@ -83,10 +81,7 @@ flu_dict *shv_path_guard(
     rpath = rslash + 1;
   }
 
-  if (success) return r;
-
-  flu_list_free_all(r);
-  return NULL;
+  return success;
 }
 
 //
