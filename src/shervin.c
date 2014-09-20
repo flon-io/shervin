@@ -151,7 +151,15 @@ void shv_handle(struct ev_loop *l, struct ev_io *eio)
   {
     shv_route *route = con->routes[i];
 
-    if (route == NULL) break;
+    if (route == NULL) break; // end reached
+
+    if (route->guard == shv_filter_guard && route->handler)
+    {
+      route->handler(con->req, rod, con->res, route->params);
+      continue;
+    }
+
+    if (handled) continue;
 
     if (route->guard)
     {
@@ -163,8 +171,6 @@ void shv_handle(struct ev_loop *l, struct ev_io *eio)
     if (route->handler)
     {
       handled = route->handler(con->req, rod, con->res, route->params);
-
-      if (handled == 1) break;
     }
   }
 

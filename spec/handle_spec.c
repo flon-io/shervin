@@ -22,10 +22,19 @@ context "handle"
   int han(
     shv_request *req, flu_dict *guard, shv_response *res, flu_dict *params)
   {
-    flu_list_set(
-      res->headers, "x-handled", rdz_strdup(flu_list_get(params, "han")));
+    if (flu_list_get(params, "sta"))
+    {
+      char *k = flu_sprintf("x-stamp-%s", flu_list_get(params, "han"));
+      flu_list_set(res->headers, k, rdz_strdup("seen"));
+      free(k);
+    }
+    else
+    {
+      flu_list_set(
+        res->headers, "x-handled", rdz_strdup(flu_list_get(params, "han")));
+    }
 
-    return 1; // yes it's over
+    return 1; // yes, it's over
   }
 
   int fil(
@@ -62,8 +71,8 @@ context "handle"
     it "triggers handler when guard says 1"
     {
       con->routes = (shv_route *[]){
-        shv_route_malloc(gua, han, "gua", "false", "han", "a", NULL),
-        shv_route_malloc(gua, han, "gua", "true", "han", "b", NULL),
+        shv_r(gua, han, "gua", "false", "han", "a", NULL),
+        shv_r(gua, han, "gua", "true", "han", "b", NULL),
         NULL // do not forget it
       };
 
@@ -80,10 +89,10 @@ context "handle"
     it "triggers next handler when guard says 1"
     {
       con->routes = (shv_route *[]){
-        shv_route_malloc(gua, NULL, "gua", "false", NULL),
-        shv_route_malloc(NULL, han, "han", "a", NULL),
-        shv_route_malloc(gua, NULL, "gua", "true", NULL),
-        shv_route_malloc(NULL, han, "han", "b", NULL),
+        shv_r(gua, NULL, "gua", "false", NULL),
+        shv_r(NULL, han, "han", "a", NULL),
+        shv_r(gua, NULL, "gua", "true", NULL),
+        shv_r(NULL, han, "han", "b", NULL),
         NULL // do not forget it
       };
 
@@ -100,8 +109,8 @@ context "handle"
     it "triggers handlers until one says 1"
     {
       con->routes = (shv_route *[]){
-        shv_route_malloc(gua, fil, "gua", "true", "fil", "z", NULL),
-        shv_route_malloc(NULL, han, "gua", "true", "han", "a", NULL),
+        shv_r(gua, fil, "gua", "true", "fil", "z", NULL),
+        shv_r(NULL, han, "gua", "true", "han", "a", NULL),
         NULL // do not forget it
       };
 
@@ -115,14 +124,44 @@ context "handle"
       ensure(flu_list_get(con->res->headers, "x-handled") === "a");
       ensure(flu_list_get(con->res->headers, "x-filtered") === "z");
     }
-  }
 
-  //shv_route **routes = (shv_route *[]){
-  //  shv_route_malloc(shv_pre_guard, handler1, ps1),
-  //  shv_route_malloc(guard0, handler0, ps0),
-  //  shv_route_malloc(guard1, handler1, ps1),
-  //  shv_route_malloc(shv_post_guard, handler1, ps1),
-  //  NULL
-  //};
+    it "triggers pre-filters"
+    {
+      con->routes = (shv_route *[]){
+        shv_r(shv_filter_guard, han, "sta", "true", "han", "a", NULL),
+        shv_r(gua, han, "gua", "true", "han", "b", NULL),
+        NULL // do not forget it
+      };
+
+      con->req = shv_parse_request(""
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      shv_handle(NULL, eio);
+
+      ensure(flu_list_get(con->res->headers, "x-handled") === "b");
+      ensure(flu_list_get(con->res->headers, "x-stamp-a") === "seen");
+    }
+
+    it "triggers post-filters"
+    {
+      con->routes = (shv_route *[]){
+        shv_r(gua, han, "gua", "true", "han", "a", NULL),
+        shv_r(shv_filter_guard, han, "sta", "true", "han", "b", NULL),
+        NULL // do not forget it
+      };
+
+      con->req = shv_parse_request(""
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      shv_handle(NULL, eio);
+
+      ensure(flu_list_get(con->res->headers, "x-handled") === "a");
+      ensure(flu_list_get(con->res->headers, "x-stamp-b") === "seen");
+    }
+  }
 }
 

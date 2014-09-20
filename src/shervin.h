@@ -66,8 +66,14 @@ typedef struct shv_route {
 
 shv_route *shv_route_malloc(
   shv_handler *guard, shv_handler *handler, ...);
+#define shv_r(...) shv_route_malloc(__VA_ARGS__)
 
 // guards
+
+/* Merely a marker function, corresponding handlers are called as filters.
+ */
+int shv_filter_guard(
+  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params);
 
 int shv_any_guard(
   shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params);

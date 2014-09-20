@@ -37,6 +37,12 @@
 //
 // guards
 
+int shv_filter_guard(
+  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+{
+  return 1;
+}
+
 int shv_any_guard(
   shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
 {
