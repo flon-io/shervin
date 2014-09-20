@@ -11,12 +11,17 @@
 
 context "handle"
 {
-
   int gua(
     shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
   {
     char *g = flu_list_get(params, "gua");
     return (g && strcmp(g, "true") == 0);
+  }
+
+  int fgua(
+    shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+  {
+    return -1; // force handlers to behave like filters
   }
 
   int han(
@@ -194,6 +199,29 @@ context "handle"
       ensure(flu_list_get(con->res->headers, "x-stamp-x") === "seen");
       ensure(flu_list_get(con->res->headers, "x-stamp-y") === "seen");
       ensure(flu_list_get(con->res->headers, "x-stamp-z") === "seen");
+    }
+
+    it "treats handlers like filters when guard says -1"
+    {
+      con->routes = (shv_route *[]){
+        shv_r(fgua, han, "sta", "true", "han", "a", NULL),
+        shv_r(NULL, han, "sta", "true", "han", "b", NULL),
+        shv_r(gua, han, "gua", "true", "han", "c", NULL),
+        shv_r(fgua, han, "sta", "true", "han", "d", NULL), // no
+        NULL // do not forget it
+      };
+
+      con->req = shv_parse_request(""
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      shv_handle(NULL, eio);
+
+      ensure(flu_list_get(con->res->headers, "x-stamp-a") === "seen");
+      ensure(flu_list_get(con->res->headers, "x-stamp-b") === "seen");
+      ensure(flu_list_get(con->res->headers, "x-stamp-d") == NULL);
+      ensure(flu_list_get(con->res->headers, "x-handled") === "c");
     }
   }
 }

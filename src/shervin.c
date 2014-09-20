@@ -172,7 +172,7 @@ void shv_handle(struct ev_loop *l, struct ev_io *eio)
     if (route->handler)
     {
       int h = route->handler(con->req, rod, con->res, route->params);
-      if ( ! filtering) handled = h;
+      if (filtering != 1 && guarded != -1) handled = h;
     }
   }
 
