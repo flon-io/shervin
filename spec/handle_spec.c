@@ -224,7 +224,7 @@ context "handle"
       ensure(flu_list_get(con->res->headers, "x-handled") === "c");
     }
 
-    it "accepts shv_rp(path, handler, ...) (1)"
+    it "accepts shv_rp(path, handler, ...) (get)"
     {
       con->routes = (shv_route *[]){
         shv_rp("POST /nada", han, "han", "a", NULL),
@@ -242,7 +242,7 @@ context "handle"
       ensure(flu_list_get(con->res->headers, "x-handled") === "b");
     }
 
-    it "accepts shv_rp(path, handler, ...) (2)"
+    it "accepts shv_rp(path, handler, ...) (post)"
     {
       con->routes = (shv_route *[]){
         shv_rp("POST /nada", han, "han", "a", NULL),
@@ -260,6 +260,25 @@ context "handle"
       shv_handle(NULL, eio);
 
       ensure(flu_list_get(con->res->headers, "x-handled") === "a");
+    }
+
+    it "accepts shv_rp(path, handler, ...) (head)"
+    {
+      con->routes = (shv_route *[]){
+        shv_rp("POST /nada", han, "han", "a", NULL),
+        shv_rp("DELETE /nada", han, "han", "b", NULL),
+        shv_rp("GET /nada", han, "han", "c", NULL),
+        NULL // do not forget it
+      };
+
+      con->req = shv_parse_request(""
+        "HEAD /nada HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      shv_handle(NULL, eio);
+
+      ensure(flu_list_get(con->res->headers, "x-handled") === "c");
     }
   }
 }
