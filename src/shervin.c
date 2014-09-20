@@ -238,8 +238,7 @@ void shv_serve(int port, shv_route **routes)
   //if (r != 0) { fgaj_r("close error"); /*exit(4);*/ }
 }
 
-shv_route *shv_route_malloc(
-  shv_handler *guard, shv_handler *handler, ...)
+shv_route *shv_route_malloc(shv_handler *guard, shv_handler *handler, ...)
 {
   va_list ap; va_start(ap, handler);
   flu_dict *params = flu_vd(ap);
@@ -248,6 +247,23 @@ shv_route *shv_route_malloc(
   shv_route *r = calloc(1, sizeof(shv_route));
 
   r->guard = guard;
+  r->handler = handler;
+  r->params = params;
+
+  return r;
+}
+
+shv_route *shv_rp(char *path, shv_handler *handler, ...)
+{
+  va_list ap; va_start(ap, handler);
+  flu_dict *params = flu_vd(ap);
+  va_end(ap);
+
+  flu_list_set(params, "path", path);
+
+  shv_route *r = calloc(1, sizeof(shv_route));
+
+  r->guard = shv_path_guard;
   r->handler = handler;
   r->params = params;
 

@@ -223,6 +223,44 @@ context "handle"
       ensure(flu_list_get(con->res->headers, "x-stamp-d") == NULL);
       ensure(flu_list_get(con->res->headers, "x-handled") === "c");
     }
+
+    it "accepts shv_rp(path, handler, ...) (1)"
+    {
+      con->routes = (shv_route *[]){
+        shv_rp("POST /nada", han, "han", "a", NULL),
+        shv_rp("/nada", han, "han", "b", NULL),
+        NULL // do not forget it
+      };
+
+      con->req = shv_parse_request(""
+        "GET /nada HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      shv_handle(NULL, eio);
+
+      ensure(flu_list_get(con->res->headers, "x-handled") === "b");
+    }
+
+    it "accepts shv_rp(path, handler, ...) (2)"
+    {
+      con->routes = (shv_route *[]){
+        shv_rp("POST /nada", han, "han", "a", NULL),
+        shv_rp("/nada", han, "han", "b", NULL),
+        NULL // do not forget it
+      };
+
+      con->req = shv_parse_request(""
+        "POST /nada HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "Content-Length: 1\r\n"
+        "\r\n"
+        "x");
+
+      shv_handle(NULL, eio);
+
+      ensure(flu_list_get(con->res->headers, "x-handled") === "a");
+    }
   }
 }
 
