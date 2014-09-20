@@ -104,7 +104,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     char *head = flu_sbuffer_to_string(con->head);
     con->head = NULL;
 
-    con->req = shv_parse_request(head);
+    con->req = shv_parse_request_head(head);
     con->rqount++;
 
     free(head);

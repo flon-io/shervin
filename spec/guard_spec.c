@@ -28,7 +28,7 @@ context "guards"
   {
     it "provides the query string and fragment"
     {
-      req = shv_parse_request(""
+      req = shv_parse_request_head(""
         "GET /x?a=b#f HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -43,7 +43,7 @@ context "guards"
   {
     it "returns 1 if the path matches"
     {
-      req = shv_parse_request(""
+      req = shv_parse_request_head(""
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -57,7 +57,7 @@ context "guards"
 
     it "returns a dict for /book/:name"
     {
-      req = shv_parse_request(""
+      req = shv_parse_request_head(""
         "GET /book/anna_karenine HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -72,7 +72,7 @@ context "guards"
 
     it "includes the query string in the dict"
     {
-      req = shv_parse_request(""
+      req = shv_parse_request_head(""
         "GET /book/anna_karenine?v=2.0 HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -87,7 +87,7 @@ context "guards"
 
     it "fails if the path is too short"
     {
-      req = shv_parse_request(""
+      req = shv_parse_request_head(""
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -100,7 +100,7 @@ context "guards"
 
     it "fails if the path is too long"
     {
-      req = shv_parse_request(""
+      req = shv_parse_request_head(""
         "GET /x/y HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -113,7 +113,7 @@ context "guards"
 
     it "accepts the HTTP method as prefix (0)"
     {
-      req = shv_parse_request(""
+      req = shv_parse_request_head(""
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -126,7 +126,7 @@ context "guards"
 
     it "accepts the HTTP method as prefix (1)"
     {
-      req = shv_parse_request(""
+      req = shv_parse_request_head(""
         "POST /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -139,7 +139,7 @@ context "guards"
 
     it "returns 0 else"
     {
-      req = shv_parse_request(""
+      req = shv_parse_request_head(""
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
