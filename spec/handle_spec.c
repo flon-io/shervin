@@ -162,6 +162,39 @@ context "handle"
       ensure(flu_list_get(con->res->headers, "x-handled") === "a");
       ensure(flu_list_get(con->res->headers, "x-stamp-b") === "seen");
     }
+
+    it "triggers filters in row"
+    {
+      con->routes = (shv_route *[]){
+        //
+        shv_r(shv_filter_guard, NULL, NULL),
+        shv_r(NULL, han, "sta", "true", "han", "w", NULL),
+        shv_r(NULL, han, "sta", "true", "han", "x", NULL),
+        //
+        shv_r(gua, han, "gua", "false", "han", "a", NULL),
+        shv_r(gua, han, "gua", "true", "han", "b", NULL),
+        //
+        shv_r(shv_filter_guard, NULL, NULL),
+        shv_r(NULL, han, "sta", "true", "han", "y", NULL),
+        shv_r(NULL, han, "sta", "true", "han", "z", NULL),
+        //
+        shv_r(gua, han, "gua", "true", "han", "c", NULL),
+        NULL // do not forget it
+      };
+
+      con->req = shv_parse_request(""
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      shv_handle(NULL, eio);
+
+      ensure(flu_list_get(con->res->headers, "x-handled") === "b");
+      ensure(flu_list_get(con->res->headers, "x-stamp-w") === "seen");
+      ensure(flu_list_get(con->res->headers, "x-stamp-x") === "seen");
+      ensure(flu_list_get(con->res->headers, "x-stamp-y") === "seen");
+      ensure(flu_list_get(con->res->headers, "x-stamp-z") === "seen");
+    }
   }
 }
 
