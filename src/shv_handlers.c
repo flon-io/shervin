@@ -27,6 +27,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -58,6 +59,14 @@ int shv_path_guard(
 {
   char *path = (char *)flu_list_get(params, "path");
   char *rpath = (char *)flu_list_get(req->uri_d, "_path");
+
+  if (path[0] != '/')
+  {
+    char m = tolower(path[0]);
+    if (tolower(path[1]) == 'u') m = 'u';
+    if (m != req->method) return 0;
+    path = strchr(path, ' ') + 1;
+  }
 
   int success = 1;
 

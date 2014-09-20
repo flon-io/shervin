@@ -111,6 +111,32 @@ context "guards"
       ensure(r == 0);
     }
 
+    it "accepts the HTTP method as prefix (0)"
+    {
+      req = shv_parse_request(""
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      params = flu_d("path", "POST /x", NULL);
+      int r = shv_path_guard(req, rod, NULL, params);
+
+      ensure(r == 0);
+    }
+
+    it "accepts the HTTP method as prefix (1)"
+    {
+      req = shv_parse_request(""
+        "POST /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      params = flu_d("path", "POST /x", NULL);
+      int r = shv_path_guard(req, rod, NULL, params);
+
+      ensure(r == 1);
+    }
+
     it "returns 0 else"
     {
       req = shv_parse_request(""
