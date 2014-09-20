@@ -4,13 +4,10 @@ LDLIBS=/usr/lib/libev.so # :-(
 CC=c99
 VPATH=../src
 
-FLIBS=flutil gajeta aabro
-SNAME=shv
-
-NAMES=$(patsubst $(VPATH)/%.c, ./%.o, $(wildcard $(VPATH)/$(SNAME)_*.c))
+NAMES=$(patsubst $(VPATH)/%.c, ./%.o, $(wildcard $(VPATH)/$(SNAME)*.c))
   # since wildcard doesn't care about VPATH...
 
-webapp: webapp.o shervin.o $(NAMES) $(FLIBS:=.o)
+webapp: webapp.o $(NAMES)
 
 serve: webapp
 	FGAJ_HOST=g FGAJ_LEVEL=10 ./webapp
