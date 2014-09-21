@@ -25,7 +25,6 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include <time.h>
 #include <string.h>
 
 #include "flutil.h"
@@ -35,15 +34,13 @@
 /*
  * Respond with 200 and the time.
  */
-int htime_handler(
+int hello_handler(
   shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
 {
-  time_t tt; time(&tt);
-  struct tm *tm; tm = gmtime(&tt);
-  char *dt = asctime(tm);
-
   res->status_code = 200;
-  flu_list_add(res->body, strdup(dt));
+
+  flu_list_add(
+    res->body, flu_sprintf("hello %s\n", flu_list_get(rod, "name")));
 
   return 1;
 }
@@ -51,7 +48,7 @@ int htime_handler(
 int main()
 {
   shv_route **routes = (shv_route *[]){
-    shv_route_malloc(shv_any_guard, htime_handler, NULL),
+    shv_rp("/hello/:name", hello_handler, NULL),
     NULL
   };
 

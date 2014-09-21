@@ -15,8 +15,12 @@ NAMES=$(patsubst $(VPATH)/%.c, ./%.o, $(wildcard $(VPATH)/*.c))
 
 s.c: ../spec/*_spec.c
 	$(RODZO) ../spec -o s.c
+	cp ../spec/*.[ch] .
+	rm ./*_spec.c
 
-s: $(NAMES)
+servman.o: servman.c
+
+s: $(NAMES) servman.o
 
 spec: s
 	time ./s
@@ -32,7 +36,7 @@ dspec: s
 clean:
 	rm -f *.o
 	rm -f *.so
-	rm -f *.c
+	rm -f *.[ch]
 	rm -f s
 
 .PHONY: spec vspec gspec clean
