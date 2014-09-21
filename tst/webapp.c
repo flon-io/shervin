@@ -28,8 +28,18 @@
 #include <string.h>
 
 #include "flutil.h"
+#include "gajeta.h"
 #include "shervin.h"
 
+
+void grey_logger(char level, const char *pref, const char *msg)
+{
+  char *lstr = fgaj_level_to_string(level);
+
+  printf("[1;30m%19s %-38s %s[0;0m\n", lstr, pref, msg);
+
+  fgaj_level_string_free(lstr);
+}
 
 /*
  * Respond with 200 and the time.
@@ -47,7 +57,10 @@ int hello_handler(
 
 int main()
 {
-  shv_route **routes = (shv_route *[]){
+  fgaj_conf_get()->logger = grey_logger;
+  //fgaj_conf_get()->level = 10;
+
+  shv_route *routes[] = {
     shv_rp("/hello/:name", hello_handler, NULL),
     NULL
   };
