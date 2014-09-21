@@ -34,11 +34,13 @@ void server_start()
 
     if (v != NULL && (strcmp(v, "1") == 0 || strcmp(v, "true") == 0))
     {
-      execl("/usr/bin/valgrind", "", "../tst/webapp", "", NULL);
+      char *env[] = { "FGAJ_HOST=g", "FGAJ_LEVEL=10", NULL };
+      execle("/usr/bin/valgrind", "", "../tst/webapp", "", NULL, env);
     }
     else
     {
-      execl("../tst/webapp", "", NULL);
+      char *env[] = { "FGAJ_HOST=g", "FGAJ_LEVEL=10", NULL };
+      execle("../tst/webapp", "", NULL, env);
     }
 
     perror("execl failed"); exit(1);
