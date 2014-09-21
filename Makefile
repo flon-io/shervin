@@ -13,6 +13,9 @@ upgrade:
 	cp -v ../gajeta/src/*.[ch] src/
 	cp -v ../flutil/src/*.[ch] src/
 
+cupgrade:
+	cp -v ../bocla/src/bocla.[ch] spec/
+
 cs: clean spec
 
 .PHONY: spec clean upgrade cs
