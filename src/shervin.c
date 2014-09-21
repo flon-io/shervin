@@ -134,6 +134,9 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     (con->blen < shv_request_content_length(con->req))
   ) return; // request body not yet complete
 
+  con->req->body = flu_sbuffer_to_string(con->body);
+  con->body = NULL;
+
   shv_handle(l, eio);
 }
 

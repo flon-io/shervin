@@ -40,6 +40,15 @@ context "live"
 
       ensure(res->body === "hello toto\n");
     }
+
+    it "serves back the body it received in /mirror"
+    {
+      res = fcla_post("http://127.0.0.1:4001/mirror", NULL, "nada");
+
+      char *body = strstr(res->body, "\r\n\r\n") + 4;
+
+      ensure(body === "nada");
+    }
   }
 }
 
