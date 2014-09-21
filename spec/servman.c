@@ -22,9 +22,11 @@ pid_t server_pid = -1;
 
 void server_start()
 {
-  system("make -C ../tst webapp");
-
   if (server_pid > 0) return;
+
+  printf("[1;30m\n");
+  system("make -C ../tst webapp");
+  printf("[0;0m\n");
 
   server_pid = fork();
 
@@ -39,7 +41,8 @@ void server_start()
     }
     else
     {
-      char *env[] = { "FGAJ_HOST=g", "FGAJ_LEVEL=10", NULL };
+      //char *env[] = { "FGAJ_HOST=g", "FGAJ_LEVEL=10", NULL };
+      char *env[] = { "FGAJ_HOST=g", NULL };
       execle("../tst/webapp", "", NULL, env);
     }
 

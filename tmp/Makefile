@@ -1,7 +1,6 @@
 
 CFLAGS=-I../src -g -Wall -O3
-#LDLIBS=/usr/lib/libev.so /usr/lib/x86_64-linux-gnu/libcurl.so # :-(
-LDLIBS=/usr/lib/libev.so # :-(
+LDLIBS=/usr/lib/libev.so /usr/lib/x86_64-linux-gnu/libcurl.so # :-(
 CC=c99
 VPATH=../src
 
@@ -19,8 +18,9 @@ s.c: ../spec/*_spec.c
 	rm ./*_spec.c
 
 servman.o: servman.c
+bocla.o: bocla.c
 
-s: $(NAMES) servman.o
+s: $(NAMES) servman.o bocla.o
 
 spec: s
 	time ./s

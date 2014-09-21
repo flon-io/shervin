@@ -9,6 +9,7 @@
 #include "shv_protected.h" // direct access to shv_request methods
 
 #include "servman.h"
+#include "bocla.h"
 
 
 context "live"
@@ -22,9 +23,23 @@ context "live"
     server_stop();
   }
 
-  it "flips burgers"
+  describe "shervin"
   {
-    ensure(1 == 1);
+    before each
+    {
+      fcla_response *res = NULL;
+    }
+    after each
+    {
+      if (res) fcla_response_free(res);
+    }
+
+    it "serves /hello/toto"
+    {
+      res = fcla_get("http://127.0.0.1:4001/hello/toto");
+
+      ensure(res->body === "hello toto\n");
+    }
   }
 }
 
