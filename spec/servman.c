@@ -46,7 +46,7 @@ void server_start()
       execle("../tst/webapp", "", NULL, env);
     }
 
-    perror("execl failed"); exit(1);
+    perror("execle failed"); exit(1);
   }
   else
   {
