@@ -23,6 +23,8 @@
 // Made in Japan.
 //
 
+// https://github.com/flon-io/shervin
+
 // shervin.h
 
 #ifndef FLON_SHERVIN_H
