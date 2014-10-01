@@ -23,6 +23,8 @@
 // Made in Japan.
 //
 
+// https://github.com/flon-io/gajeta
+
 // gajeta.h
 
 #ifndef FLON_GAJETA_H
