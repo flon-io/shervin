@@ -1,6 +1,6 @@
 
-CFLAGS=-I../src -g -Wall -O3
-LDLIBS=/usr/lib/libev.so # :-(
+CFLAGS=-I../src -g -Wall -O3 -lrt -lev
+LDLIBS=
 CC=c99
 VPATH=../src
 
@@ -8,6 +8,7 @@ NAMES=$(patsubst $(VPATH)/%.c, ./%.o, $(wildcard $(VPATH)/$(SNAME)*.c))
   # since wildcard doesn't care about VPATH...
 
 webapp: webapp.o $(NAMES)
+	$(CC) -lrt -lev webapp.o $(NAMES) -o webapp # grrr...
 
 serve: webapp
 	FGAJ_HOST=g FGAJ_LEVEL=10 ./webapp

@@ -40,25 +40,6 @@
 fabr_parser *uri_parser = NULL;
 
 
-static char *shv_unescape(char *s)
-{
-  size_t l = strlen(s);
-  char *r = calloc(l + 1, sizeof(char));
-
-  for (size_t i = 0, j = 0; i < l; ++j)
-  {
-    if (s[i] != '%') { r[j] = s[i++]; continue; }
-
-    char *code = strndup(s + i + 1, 2);
-    char c = strtol(code, NULL, 16);
-    free(code);
-    i = i + 3;
-    r[j] = c;
-  }
-
-  return r;
-}
-
 static void shv_init_uri_parser()
 {
   fabr_parser *scheme =
@@ -131,7 +112,7 @@ flu_dict *shv_parse_uri(char *uri)
 
     t = fabr_tree_lookup((fabr_tree *)n->item, "val");
     char *v = fabr_tree_string(uri, t);
-    char *vv = shv_unescape(v);
+    char *vv = flu_urldecode(v, -1);
 
     flu_list_set(d, k, vv);
 
