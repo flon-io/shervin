@@ -148,15 +148,15 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
   flu_list_set(
     con->res->headers, "content-length", flu_sprintf("%zu", cl));
 
-  long long now = flu_getMs();
+  long long now = flu_gets('u');
   //
   flu_list_set(
     con->res->headers,
     "x-flon-shervin",
     flu_sprintf(
       "c%.3fms;r%.3fms;rq%i",
-      (now - con->startMs) / 1000.0,
-      (now - con->req->startMs) / 1000.0,
+      (now - con->startus) / 1000.0,
+      (now - con->req->startus) / 1000.0,
       con->rqount));
 
   flu_sbuffer *b = flu_sbuffer_malloc();
@@ -190,7 +190,7 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
 
   if (l == NULL) return; // only in spec/handle_spec.c
 
-  now = flu_getMs();
+  now = flu_gets('u');
   //
   fgaj_i(
     "c%p r%i %s %s %s %i c%.3fms r%.3fms",
@@ -199,8 +199,8 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
     shv_char_to_method(con->req->method),
     con->req->uri,
     con->res->status_code,
-    (flu_getMs() - con->startMs) / 1000.0,
-    (flu_getMs() - con->req->startMs) / 1000.0);
+    (now - con->startus) / 1000.0,
+    (now - con->req->startus) / 1000.0);
 
   shv_con_reset(con);
 }

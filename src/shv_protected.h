@@ -65,7 +65,7 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio);
 typedef struct shv_con {
 
   struct sockaddr_in *client;
-  long long startMs;
+  long long startus;
 
   shv_route **routes;
 

@@ -38,7 +38,7 @@
 // request
 
 typedef struct shv_request {
-  long long startMs; // microseconds since the Epoch
+  long long startus; // microseconds since the Epoch
   char method;
   char *uri;
   flu_dict *uri_d;
