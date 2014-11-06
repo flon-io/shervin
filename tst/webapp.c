@@ -44,21 +44,20 @@ void grey_logger(char level, const char *pref, const char *msg)
 
 /* Respond with 200 and the time.
  */
-static int hello_handler(
-  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+static int hello_handler(shv_request *req, shv_response *res, flu_dict *params)
 {
   res->status_code = 200;
 
   flu_list_add(
-    res->body, flu_sprintf("hello %s\n", flu_list_get(rod, "name")));
+    res->body,
+    flu_sprintf("hello %s\n", flu_list_get(req->routing_d, "name")));
 
   return 1;
 }
 
 /* Respond with a copy of the incoming request.
  */
-static int mirror_handler(
-  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+static int mirror_handler(shv_request *req, shv_response *res, flu_dict *params)
 {
   res->status_code = 200;
   //flu_list_set(res->headers, "content-type", "text/plain; charset=utf-8");

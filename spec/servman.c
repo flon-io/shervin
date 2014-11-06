@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 
 #include "servman.h"
 
@@ -61,6 +62,7 @@ void server_stop()
   printf("stopping %i...\n", server_pid);
   kill(server_pid, SIGTERM);
 
-  sleep(1);
+  int status;
+  waitpid(server_pid, &status, 0);
 }
 

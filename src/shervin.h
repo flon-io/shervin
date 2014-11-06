@@ -45,6 +45,7 @@ typedef struct shv_request {
   flu_dict *headers;
   char *body;
   short status_code; // 4xx code set by shervin, 200 else
+  flu_dict *routing_d; // used by guards to pass info to handlers
 } shv_request;
 
 // response
@@ -57,8 +58,7 @@ typedef struct shv_response {
 
 // route
 
-typedef int shv_handler(
-  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params);
+typedef int shv_handler(shv_request *req, shv_response *res, flu_dict *params);
 
 typedef struct shv_route {
   shv_handler *guard;
@@ -76,18 +76,14 @@ shv_route *shv_rp(char *path, shv_handler *handler, ...);
 
 /* Merely a marker function, corresponding handlers are called as filters.
  */
-int shv_filter_guard(
-  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params);
+int shv_filter_guard(shv_request *req, shv_response *res, flu_dict *params);
 
-int shv_any_guard(
-  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params);
-int shv_path_guard(
-  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params);
+int shv_any_guard(shv_request *req, shv_response *res, flu_dict *params);
+int shv_path_guard(shv_request *req, shv_response *res, flu_dict *params);
 
 // handlers
 
-int shv_dir_handler(
-  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params);
+int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params);
 
 // serving
 

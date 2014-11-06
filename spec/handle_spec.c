@@ -11,21 +11,18 @@
 
 context "handle"
 {
-  int gua(
-    shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+  int gua(shv_request *req, shv_response *res, flu_dict *params)
   {
     char *g = flu_list_get(params, "gua");
     return (g && strcmp(g, "true") == 0);
   }
 
-  int fgua(
-    shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+  int fgua(shv_request *req, shv_response *res, flu_dict *params)
   {
     return -1; // force handlers to behave like filters
   }
 
-  int han(
-    shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+  int han(shv_request *req, shv_response *res, flu_dict *params)
   {
     if (flu_list_get(params, "sta"))
     {
@@ -42,8 +39,7 @@ context "handle"
     return 1; // yes, it's over
   }
 
-  int fil(
-    shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+  int fil(shv_request *req, shv_response *res, flu_dict *params)
   {
     flu_list_set(
       res->headers, "x-filtered", rdz_strdup(flu_list_get(params, "fil")));

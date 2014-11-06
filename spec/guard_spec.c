@@ -15,13 +15,11 @@ context "guards"
   {
     shv_request *req = NULL;
     flu_dict *params = NULL;
-    flu_dict *rod = flu_list_malloc();
   }
   after each
   {
     if (req != NULL) shv_request_free(req);
     if (params != NULL) flu_list_free(params);
-    flu_list_free_all(rod);
   }
 
   describe "shv_any_guard()"
@@ -33,9 +31,9 @@ context "guards"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      int r = shv_any_guard(req, rod, NULL, NULL);
+      int r = shv_any_guard(req, NULL, NULL);
       ensure(r == 1);
-      ensure(rod->size == 0);
+      ensure(req->routing_d->size == 0);
     }
   }
 
@@ -49,10 +47,10 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/x", NULL);
-      int r = shv_path_guard(req, rod, NULL, params);
+      int r = shv_path_guard(req, NULL, params);
 
       ensure(r == 1);
-      ensure(rod->size == 0);
+      ensure(req->routing_d->size == 0);
     }
 
     it "returns a dict for /book/:name"
@@ -63,11 +61,11 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/book/:name", NULL);
-      int r = shv_path_guard(req, rod, NULL, params);
+      int r = shv_path_guard(req, NULL, params);
 
       ensure(r == 1);
-      ensure(rod->size == 1);
-      ensure(flu_list_get(rod, "name") === "anna_karenine");
+      ensure(req->routing_d->size == 1);
+      ensure(flu_list_get(req->routing_d, "name") === "anna_karenine");
     }
 
     it "includes the query string in the dict"
@@ -78,11 +76,11 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/book/:name", NULL);
-      int r = shv_path_guard(req, rod, NULL, params);
+      int r = shv_path_guard(req, NULL, params);
 
       ensure(r == 1);
-      ensure(rod->size == 1);
-      ensure(flu_list_get(rod, "name") === "anna_karenine");
+      ensure(req->routing_d->size == 1);
+      ensure(flu_list_get(req->routing_d, "name") === "anna_karenine");
     }
 
     it "fails if the path is too short"
@@ -93,7 +91,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/x/y", NULL);
-      int r = shv_path_guard(req, rod, NULL, params);
+      int r = shv_path_guard(req, NULL, params);
 
       ensure(r == 0);
     }
@@ -106,7 +104,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/x", NULL);
-      int r = shv_path_guard(req, rod, NULL, params);
+      int r = shv_path_guard(req, NULL, params);
 
       ensure(r == 0);
     }
@@ -119,7 +117,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "POST /x", NULL);
-      int r = shv_path_guard(req, rod, NULL, params);
+      int r = shv_path_guard(req, NULL, params);
 
       ensure(r == 0);
     }
@@ -132,7 +130,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "POST /x", NULL);
-      int r = shv_path_guard(req, rod, NULL, params);
+      int r = shv_path_guard(req, NULL, params);
 
       ensure(r == 1);
     }
@@ -145,11 +143,11 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "GET /x/y/**", NULL);
-      int r = shv_path_guard(req, rod, NULL, params);
+      int r = shv_path_guard(req, NULL, params);
 
       ensure(r == 1);
-      ensure(rod->size == 1);
-      ensure(flu_list_get(rod, "**") === "z/bravo");
+      ensure(req->routing_d->size == 1);
+      ensure(flu_list_get(req->routing_d, "**") === "z/bravo");
     }
 
     it "accepts a /** ending (hit 1)"
@@ -160,11 +158,11 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "GET /x/y/**", NULL);
-      int r = shv_path_guard(req, rod, NULL, params);
+      int r = shv_path_guard(req, NULL, params);
 
       ensure(r == 1);
-      ensure(rod->size == 1);
-      ensure(flu_list_get(rod, "**") === "");
+      ensure(req->routing_d->size == 1);
+      ensure(flu_list_get(req->routing_d, "**") === "");
     }
 
     it "accepts a /** ending (miss)"
@@ -175,10 +173,10 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "GET /x/y/**", NULL);
-      int r = shv_path_guard(req, rod, NULL, params);
+      int r = shv_path_guard(req, NULL, params);
 
       ensure(r == 0);
-      ensure(rod->size == 0);
+      ensure(req->routing_d->size == 0);
     }
 
     it "returns 0 else"
@@ -189,7 +187,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/y", NULL);
-      int r = shv_path_guard(req, rod, NULL, params);
+      int r = shv_path_guard(req, NULL, params);
 
       ensure(r == 0);
     }

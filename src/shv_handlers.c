@@ -40,20 +40,17 @@
 //
 // guards
 
-int shv_filter_guard(
-  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+int shv_filter_guard(shv_request *req, shv_response *res, flu_dict *params)
 {
   return 1;
 }
 
-int shv_any_guard(
-  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+int shv_any_guard(shv_request *req, shv_response *res, flu_dict *params)
 {
   return 1;
 }
 
-int shv_path_guard(
-  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+int shv_path_guard(shv_request *req, shv_response *res, flu_dict *params)
 {
   char *path = (char *)flu_list_get(params, "path");
   char *rpath = (char *)flu_list_get(req->uri_d, "_path");
@@ -81,12 +78,12 @@ int shv_path_guard(
     if (*path == ':')
     {
       char *k = strndup(path + 1, slash - path - 1);
-      flu_list_set(rod, k, strndup(rpath, rslash - rpath));
+      flu_list_set(req->routing_d, k, strndup(rpath, rslash - rpath));
       free(k);
     }
     else if (strcmp(path, "**") == 0)
     {
-      flu_list_set(rod, "**", strdup(rpath)); break;
+      flu_list_set(req->routing_d, "**", strdup(rpath)); break;
     }
     else
     {
@@ -97,7 +94,7 @@ int shv_path_guard(
 
     if (*rslash == 0 && strcmp(slash, "/**") == 0)
     {
-      flu_list_set(rod, "**", strdup("")); break;
+      flu_list_set(req->routing_d, "**", strdup("")); break;
     }
     if (*slash == 0 || *rslash == 0)
     {
@@ -115,8 +112,7 @@ int shv_path_guard(
 //
 // handlers
 
-int shv_dir_handler(
-  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
 {
   return 0;
 }
