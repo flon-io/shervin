@@ -36,6 +36,7 @@
 #include <arpa/inet.h>
 #include <ev.h>
 
+#include "flutim.h"
 #include "gajeta.h"
 #include "shervin.h"
 #include "shv_protected.h"
