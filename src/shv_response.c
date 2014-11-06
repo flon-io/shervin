@@ -166,10 +166,16 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
       (now - con->req->startus) / 1000.0,
       con->rqount));
 
-  flu_sbuffer *b = flu_sbuffer_malloc();
+  // write to eio->fd (if there is one)
 
-  flu_sbprintf(
-    b,
+  if (l == NULL) return; // only in spec/handle_spec.c
+
+  FILE *f = fdopen(eio->fd, "w");
+
+  if (f == NULL) { fgaj_r("couldn't open file back to client"); return; }
+
+  fprintf(
+    f,
     "HTTP/1.1 %i %s\r\n",
     con->res->status_code,
     shv_reason(con->res->status_code));
@@ -178,24 +184,18 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
   flu_list *ths = flu_list_dtrim(con->res->headers);
   for (flu_node *n = ths->first; n != NULL; n = n->next)
   {
-    flu_sbprintf(b, "%s: %s\r\n", n->key, (char *)n->item);
+    fprintf(f, "%s: %s\r\n", n->key, (char *)n->item);
   }
   flu_list_free(ths);
 
-  flu_sbprintf(b, "\r\n");
+  fprintf(f, "\r\n");
 
   for (flu_node *n = con->res->body->first; n; n = n->next)
   {
-    flu_sbputs(b, (char *)n->item);
+    fputs((char *)n->item, f);
   }
 
-  flu_sbuffer_close(b);
-
-  if (l != NULL) send(eio->fd, b->string, b->len, 0);
-
-  flu_sbuffer_free(b);
-
-  if (l == NULL) return; // only in spec/handle_spec.c
+  fclose(f);
 
   now = flu_gets('u');
   //
