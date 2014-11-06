@@ -92,6 +92,30 @@ context "handlers"
 
       expect(r i== 0);
     }
+
+    it "accepts an alternative sendfile \"h\" header via the params"
+    {
+      req = shv_parse_request_head(""
+        "GET /x/y/a/b/hello.txt HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      flu_list_set(req->routing_d, "**", rdz_strdup("a/b/hello.txt"));
+
+      params = flu_d("r", "../spec/www", "h", "X-Sendfile", NULL);
+      int r = shv_dir_handler(req, res, params);
+
+      expect(r i== 1);
+
+      expect(flu_list_get(res->headers, "X-Accel-Redirect") == NULL);
+
+      expect(flu_list_get(res->headers, "X-Sendfile") === ""
+        "../spec/www/a/b/hello.txt");
+      expect(flu_list_get(res->headers, "shv_content_length") === ""
+        "12");
+      expect(flu_list_get(res->headers, "content-type") === ""
+        "text/plain");
+    }
   }
 }
 

@@ -147,8 +147,6 @@ int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
 
   char *path = flu_sprintf("%s/%s", r, p);
 
-  // TODO: set shv_content_length
-
   struct stat sta;
   if (stat(path, &sta) != 0) { free(path); return 0; }
 
@@ -158,6 +156,10 @@ int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
     fgaj_d("we don't serve dirs %s", path); free(path); return 0;
   }
 
+  char *h = flu_list_get(params, "header");
+  if (h == NULL) h = flu_list_get(params, "h");
+  if (h == NULL) h = "X-Accel-Redirect";
+
   flu_list_set(
     res->headers, "shv_content_length", flu_sprintf("%zu", sta.st_size));
 
@@ -165,12 +167,8 @@ int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
     res->headers, "content-type", shv_determine_content_type(path));
 
   flu_list_set(
-    res->headers, "X-Accel-Redirect", path);
+    res->headers, h, path);
 
   return 1;
-
-  // TODO:
-  // look at "h" or "header" in params for X-Sendfile instead
-  // of X-Accel-Redirect
 }
 
