@@ -114,6 +114,19 @@ int shv_path_guard(shv_request *req, shv_response *res, flu_dict *params)
 
 int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
 {
-  return 0;
+  char *p = flu_list_get(req->routing_d, "**");
+  if (p == NULL) return 0;
+
+  char *r = flu_list_get(params, "root");
+  if (r == NULL) r = flu_list_get(params, "r");
+  if (r == NULL) return 0;
+
+  flu_list_set(res->headers, "X-Accel-Redirect", flu_sprintf("%s/%s", r, p));
+
+  return 1;
+
+  // TODO:
+  // look at "h" or "header" in params for X-Sendfile instead
+  // of X-Accel-Redirect
 }
 

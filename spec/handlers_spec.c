@@ -13,27 +13,37 @@ context "handlers"
 {
   before each
   {
-    struct ev_io *eio = calloc(1, sizeof(shv_con));
-    shv_con *con = calloc(1, sizeof(shv_con));
-    eio->data = con;
+    shv_request *req = NULL;
+    flu_dict *params = NULL;
+    shv_response *res = shv_response_malloc(200);
   }
   after each
   {
-    for (size_t i = 0; con->routes[i] != NULL; ++i)
-    {
-      flu_list_free(con->routes[i]->params);
-      free(con->routes[i]);
-    }
-    //free(con->routes); // not malloc'ed
-    shv_request_free(con->req);
-    shv_response_free(con->res);
-    free(con);
-    free(eio);
+    if (req != NULL) shv_request_free(req);
+    if (params != NULL) flu_list_free(params);
+    if (res != NULL) shv_response_free(res);
   }
 
   describe "shv_dir_handler()"
   {
     it "serves files"
+    {
+      req = shv_parse_request_head(""
+        "GET /x/y/a/b HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      flu_list_set(req->routing_d, "**", rdz_strdup("a/b"));
+
+      params = flu_d("root", "../spec/www", NULL);
+      int r = shv_dir_handler(req, res, params);
+
+      expect(r i== 1);
+
+      expect(flu_list_get(res->headers, "X-Accel-Redirect") === ""
+        "../spec/www/a/b");
+    }
+
     it "returns 404 if the file is not found"
     it "returns 404 when the request goes ../"
   }

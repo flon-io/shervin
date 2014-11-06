@@ -121,8 +121,10 @@ static void shv_lower_keys(flu_dict *d)
   }
 }
 
-static char *shv_determine_cl(shv_response *res)
+static void shv_set_content_length(shv_response *res)
 {
+  // TODO if X-Real-IP is set and _x_sendfile as well, do not set Content-Length
+
   size_t r = 0;
 
   for (flu_node *n = res->body->first; n; n = n->next)
@@ -130,7 +132,7 @@ static char *shv_determine_cl(shv_response *res)
     r += strlen((char *)n->item);
   }
 
-  return flu_sprintf("%zu", r);
+  flu_list_set(res->headers, "content-length", flu_sprintf("%zu", r));
 }
 
 void shv_respond(struct ev_loop *l, struct ev_io *eio)
@@ -152,8 +154,7 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
   flu_list_set(
     con->res->headers, "location", strdup("northpole")); // FIXME
 
-  flu_list_set(
-    con->res->headers, "content-length", shv_determine_cl(con->res));
+  shv_set_content_length(con->res);
 
   long long now = flu_gets('u');
   //
@@ -190,6 +191,8 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
 
   fprintf(f, "\r\n");
 
+  // TODO if X-Real-IP is set and _x_sendfile, do not send body.
+  //
   for (flu_node *n = con->res->body->first; n; n = n->next)
   {
     fputs((char *)n->item, f);
