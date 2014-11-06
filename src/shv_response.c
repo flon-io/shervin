@@ -123,16 +123,21 @@ static void shv_lower_keys(flu_dict *d)
 
 static void shv_set_content_length(shv_response *res)
 {
-  // TODO if X-Real-IP is set and _x_sendfile as well, do not set Content-Length
+  char *s = flu_list_get(res->headers, "shv_content_length");
 
-  size_t r = 0;
-
-  for (flu_node *n = res->body->first; n; n = n->next)
+  if (s == NULL)
   {
-    r += strlen((char *)n->item);
+    size_t r = 0;
+
+    for (flu_node *n = res->body->first; n; n = n->next)
+    {
+      r += strlen((char *)n->item);
+    }
+
+    s = flu_sprintf("%zu", r);
   }
 
-  flu_list_set(res->headers, "content-length", flu_sprintf("%zu", r));
+  flu_list_set(res->headers, "content-length", s);
 }
 
 void shv_respond(struct ev_loop *l, struct ev_io *eio)
@@ -185,6 +190,8 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
   flu_list *ths = flu_list_dtrim(con->res->headers);
   for (flu_node *n = ths->first; n != NULL; n = n->next)
   {
+    if (strncmp(n->key, "shv_", 4) == 0) continue;
+    //
     fprintf(f, "%s: %s\r\n", n->key, (char *)n->item);
   }
   flu_list_free(ths);

@@ -32,7 +32,11 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
+#include "gajeta.h"
 #include "shervin.h"
 #include "shv_protected.h"
 
@@ -112,16 +116,56 @@ int shv_path_guard(shv_request *req, shv_response *res, flu_dict *params)
 //
 // handlers
 
+static char *shv_determine_content_type(char *path)
+{
+  // TODO: utf-8? "text/html; charset=UTF-8"
+  // TODO: manage that with a conf file
+
+  char *suffix = strrchr(path, '.');
+  char *r = NULL;
+
+  if (suffix == NULL) r = "text/plain";
+  else if (strcmp(suffix, ".txt") == 0) r = "text/plain";
+  else if (strcmp(suffix, ".js") == 0) r = "application/javascript";
+  else if (strcmp(suffix, ".json") == 0) r = "application/json";
+  else if (strcmp(suffix, ".css") == 0) r = "text/css";
+  else if (strcmp(suffix, ".html") == 0) r = "text/html";
+
+  return strdup(r);
+}
+
 int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
 {
   char *p = flu_list_get(req->routing_d, "**");
   if (p == NULL) return 0;
 
+  if (strstr(p, "..")) return 0;
+
   char *r = flu_list_get(params, "root");
   if (r == NULL) r = flu_list_get(params, "r");
   if (r == NULL) return 0;
 
-  flu_list_set(res->headers, "X-Accel-Redirect", flu_sprintf("%s/%s", r, p));
+  char *path = flu_sprintf("%s/%s", r, p);
+
+  // TODO: set shv_content_length
+
+  struct stat sta;
+  if (stat(path, &sta) != 0) { free(path); return 0; }
+
+  //if (r == 0) return S_ISDIR(s.st_mode) ? 'd' : 'f';
+  if (S_ISDIR(sta.st_mode))
+  {
+    fgaj_d("we don't serve dirs %s", path); free(path); return 0;
+  }
+
+  flu_list_set(
+    res->headers, "shv_content_length", flu_sprintf("%zu", sta.st_size));
+
+  flu_list_set(
+    res->headers, "content-type", shv_determine_content_type(path));
+
+  flu_list_set(
+    res->headers, "X-Accel-Redirect", path);
 
   return 1;
 

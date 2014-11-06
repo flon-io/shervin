@@ -29,6 +29,43 @@ context "handlers"
     it "serves files"
     {
       req = shv_parse_request_head(""
+        "GET /x/y/a/b/hello.txt HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      flu_list_set(req->routing_d, "**", rdz_strdup("a/b/hello.txt"));
+
+      params = flu_d("root", "../spec/www", NULL);
+      int r = shv_dir_handler(req, res, params);
+
+      expect(r i== 1);
+
+      expect(flu_list_get(res->headers, "X-Accel-Redirect") === ""
+        "../spec/www/a/b/hello.txt");
+      expect(flu_list_get(res->headers, "shv_content_length") === ""
+        "12");
+      expect(flu_list_get(res->headers, "content-type") === ""
+        "text/plain");
+    }
+
+    it "returns 0 if the file is not found"
+    {
+      req = shv_parse_request_head(""
+        "GET /x/y/a/b/nada.txt HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      flu_list_set(req->routing_d, "**", rdz_strdup("a/b/nada.txt"));
+
+      params = flu_d("root", "../spec/www", NULL);
+      int r = shv_dir_handler(req, res, params);
+
+      expect(r i== 0);
+    }
+
+    it "returns 0 when the file is a dir"
+    {
+      req = shv_parse_request_head(""
         "GET /x/y/a/b HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -38,14 +75,23 @@ context "handlers"
       params = flu_d("root", "../spec/www", NULL);
       int r = shv_dir_handler(req, res, params);
 
-      expect(r i== 1);
-
-      expect(flu_list_get(res->headers, "X-Accel-Redirect") === ""
-        "../spec/www/a/b");
+      expect(r i== 0);
     }
 
-    it "returns 404 if the file is not found"
-    it "returns 404 when the request goes ../"
+    it "returns 0 when the request goes ../"
+    {
+      req = shv_parse_request_head(""
+        "GET /x/y/../www/a/b/hello.txt HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      flu_list_set(req->routing_d, "**", rdz_strdup("../www/a/b/hello.txt"));
+
+      params = flu_d("root", "../spec/www", NULL);
+      int r = shv_dir_handler(req, res, params);
+
+      expect(r i== 0);
+    }
   }
 }
 
