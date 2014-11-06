@@ -137,6 +137,50 @@ context "guards"
       ensure(r == 1);
     }
 
+    it "accepts a /** ending (hit 0)"
+    {
+      req = shv_parse_request_head(""
+        "GET /x/y/z/bravo HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      params = flu_d("path", "GET /x/y/**", NULL);
+      int r = shv_path_guard(req, rod, NULL, params);
+
+      ensure(r == 1);
+      ensure(rod->size == 1);
+      ensure(flu_list_get(rod, "**") === "z/bravo");
+    }
+
+    it "accepts a /** ending (hit 1)"
+    {
+      req = shv_parse_request_head(""
+        "GET /x/y HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      params = flu_d("path", "GET /x/y/**", NULL);
+      int r = shv_path_guard(req, rod, NULL, params);
+
+      ensure(r == 1);
+      ensure(rod->size == 1);
+      ensure(flu_list_get(rod, "**") === "");
+    }
+
+    it "accepts a /** ending (miss)"
+    {
+      req = shv_parse_request_head(""
+        "GET /x/z/y/ HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      params = flu_d("path", "GET /x/y/**", NULL);
+      int r = shv_path_guard(req, rod, NULL, params);
+
+      ensure(r == 0);
+      ensure(rod->size == 0);
+    }
+
     it "returns 0 else"
     {
       req = shv_parse_request_head(""

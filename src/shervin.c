@@ -161,7 +161,7 @@ void shv_handle(struct ev_loop *l, struct ev_io *eio)
 
     if (route->guard == shv_filter_guard) filtering = 1;
 
-    if (handled && !filtering) continue;
+    if (handled && ! filtering) continue;
 
     if (route->guard && route->guard != shv_filter_guard)
     {

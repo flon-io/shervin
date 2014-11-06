@@ -58,7 +58,7 @@ int shv_path_guard(
   char *path = (char *)flu_list_get(params, "path");
   char *rpath = (char *)flu_list_get(req->uri_d, "_path");
 
-  if (path[0] != '/')
+  if (*path != '/')
   {
     char m = tolower(path[0]);
     if (tolower(path[1]) == 'u') m = 'u';
@@ -78,19 +78,31 @@ int shv_path_guard(
     if (slash == NULL) slash = strchr(path, '\0');
     if (rslash == NULL) rslash = strchr(rpath, '\0');
 
-    if (path[0] == ':')
+    if (*path == ':')
     {
       char *k = strndup(path + 1, slash - path - 1);
       flu_list_set(rod, k, strndup(rpath, rslash - rpath));
       free(k);
+    }
+    else if (strcmp(path, "**") == 0)
+    {
+      flu_list_set(rod, "**", strdup(rpath)); break;
     }
     else
     {
       if (strncmp(path, rpath, slash - path) != 0) { success = 0; break; }
     }
 
-    if (slash[0] == '\0' && rslash[0] == '\0') break;
-    if (slash[0] == '\0' || rslash[0] == '\0') { success = 0; break; }
+    if (*slash == 0 && *rslash == 0) break;
+
+    if (*rslash == 0 && strcmp(slash, "/**") == 0)
+    {
+      flu_list_set(rod, "**", strdup("")); break;
+    }
+    if (*slash == 0 || *rslash == 0)
+    {
+      success = 0; break;
+    }
 
     path = slash + 1;
     rpath = rslash + 1;
