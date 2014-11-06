@@ -25,7 +25,7 @@ context "handle"
   }
 
   int han(
-    shv_request *req, flu_dict *guard, shv_response *res, flu_dict *params)
+    shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
   {
     if (flu_list_get(params, "sta"))
     {
@@ -43,7 +43,7 @@ context "handle"
   }
 
   int fil(
-    shv_request *req, flu_dict *guard, shv_response *res, flu_dict *params)
+    shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
   {
     flu_list_set(
       res->headers, "x-filtered", rdz_strdup(flu_list_get(params, "fil")));
