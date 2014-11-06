@@ -121,6 +121,18 @@ static void shv_lower_keys(flu_dict *d)
   }
 }
 
+static char *shv_determine_cl(shv_response *res)
+{
+  size_t r = 0;
+
+  for (flu_node *n = res->body->first; n; n = n->next)
+  {
+    r += strlen((char *)n->item);
+  }
+
+  return flu_sprintf("%zu", r);
+}
+
 void shv_respond(struct ev_loop *l, struct ev_io *eio)
 {
   shv_con *con = (shv_con *)eio->data;
@@ -140,14 +152,8 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
   flu_list_set(
     con->res->headers, "location", strdup("northpole")); // FIXME
 
-  size_t cl = 0;
-  for (flu_node *n = con->res->body->first; n; n = n->next)
-  {
-    cl += strlen((char *)n->item);
-  }
-  //
   flu_list_set(
-    con->res->headers, "content-length", flu_sprintf("%zu", cl));
+    con->res->headers, "content-length", shv_determine_cl(con->res));
 
   long long now = flu_gets('u');
   //

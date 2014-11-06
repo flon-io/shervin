@@ -87,7 +87,7 @@ int shv_path_guard(
 // handlers
 
 int shv_dir_handler(
-  shv_request *req, flu_dict *guard, shv_response *res, flu_dict *params);
+  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params);
 
 // serving
 

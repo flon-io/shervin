@@ -111,6 +111,13 @@ int shv_path_guard(
   return success;
 }
 
+
 //
 // handlers
+
+int shv_dir_handler(
+  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+{
+  return 0;
+}
 
