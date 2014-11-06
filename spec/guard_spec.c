@@ -111,7 +111,7 @@ context "guards"
       ensure(r == 0);
     }
 
-    it "accepts the HTTP method as prefix (0)"
+    it "accepts the HTTP method as prefix (miss)"
     {
       req = shv_parse_request_head(""
         "GET /x HTTP/1.1\r\n"
@@ -124,7 +124,7 @@ context "guards"
       ensure(r == 0);
     }
 
-    it "accepts the HTTP method as prefix (1)"
+    it "accepts the HTTP method as prefix (hit)"
     {
       req = shv_parse_request_head(""
         "POST /x HTTP/1.1\r\n"
