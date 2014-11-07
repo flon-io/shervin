@@ -69,6 +69,31 @@ context "live"
 
       expect(res->status_code i== 200);
       expect(res->body === "hello world\n");
+
+      expect(flu_list_get(res->headers, "x-accel-redirect") === ""
+        "../spec/www/a/b/hello.txt");
+    }
+
+    it "doesn't actually serve the file if x-real-ip is set"
+    {
+      res = fcla_get_h(
+        "http://127.0.0.1:4001/files/a/b/hello.txt",
+        flu_d("X-Real-IP", "127.0.0.1", NULL));
+
+      //printf("res: %i\n", res->status_code);
+      //if (res->headers)
+      //{
+      //  for (flu_node *n = res->headers->first; n; n = n->next)
+      //  {
+      //    printf("* %s: %s\n", n->key, (char *)n->item);
+      //  }
+      //}
+
+      expect(res->status_code i== 200);
+      expect(res->body === "");
+
+      expect(flu_list_get(res->headers, "x-accel-redirect") === ""
+        "../spec/www/a/b/hello.txt");
     }
   }
 }

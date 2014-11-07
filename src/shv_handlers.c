@@ -139,7 +139,6 @@ int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
   char *p = flu_list_get(req->routing_d, "**");
   if (p == NULL) return 0;
 
-  fgaj_d("here: %s", flu_canopath("."));
   //fgaj_d("p: %s", p);
 
   if (strstr(p, "..")) return 0;
@@ -148,7 +147,7 @@ int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
   if (r == NULL) r = flu_list_get(params, "r");
   if (r == NULL) return 0;
 
-  fgaj_d("r: %s", r);
+  //fgaj_d("r: %s", r);
 
   char *path = flu_sprintf("%s/%s", r, p);
 

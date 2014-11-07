@@ -120,19 +120,20 @@ static void shv_lower_keys(flu_dict *d)
   }
 }
 
-static void shv_set_content_length(shv_response *res)
+static void shv_set_content_length(shv_con *con)
 {
-  char *s = flu_list_get(res->headers, "shv_content_length");
+  char *s = flu_list_get(con->res->headers, "shv_content_length");
 
   if (s)
   {
-    s = strdup(s);
+    if (flu_list_get(con->req->headers, "x-real-ip")) s = strdup("");
+    else s = strdup(s);
   }
   else
   {
     size_t r = 0;
 
-    for (flu_node *n = res->body->first; n; n = n->next)
+    for (flu_node *n = con->res->body->first; n; n = n->next)
     {
       r += strlen((char *)n->item);
     }
@@ -140,7 +141,7 @@ static void shv_set_content_length(shv_response *res)
     s = flu_sprintf("%zu", r);
   }
 
-  flu_list_set(res->headers, "content-length", s);
+  flu_list_set(con->res->headers, "content-length", s);
 }
 
 static int pipe_file(char *path, FILE *dst)
@@ -190,7 +191,7 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
   flu_list_set(
     con->res->headers, "location", strdup("northpole")); // FIXME
 
-  shv_set_content_length(con->res);
+  shv_set_content_length(con);
 
   long long now = flu_gets('u');
   //
@@ -238,9 +239,7 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
 
   if (xsf)
   {
-    // TODO if X-Real-IP is set and _x_sendfile, do not send body.
-
-    pipe_file(xsf, f);
+    if ( ! flu_list_get(con->req->headers, "x-real-ip")) pipe_file(xsf, f);
   }
   else
   {
