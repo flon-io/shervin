@@ -254,12 +254,13 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
   now = flu_gets('u');
   //
   fgaj_i(
-    "i%p r%i %s %s %s %i c%.3fms r%.3fms",
+    "i%p r%i %s %s %s %i l%s c%.3fms r%.3fms",
     eio, con->rqount,
     inet_ntoa(con->client->sin_addr),
     shv_char_to_method(con->req->method),
     con->req->uri,
     con->res->status_code,
+    flu_list_get(con->res->headers, "content-length"),
     (now - con->startus) / 1000.0,
     (now - con->req->startus) / 1000.0);
 
