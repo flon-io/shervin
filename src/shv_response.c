@@ -30,7 +30,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include <time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -144,12 +143,7 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
 {
   shv_con *con = (shv_con *)eio->data;
 
-  time_t tt; time(&tt);
-  struct tm *tm; tm = gmtime(&tt);
-  char *dt = asctime(tm); // TODO: upgrade to rfc1123
-  dt[strlen(dt) - 1] = '\0';
-  //
-  flu_list_set(con->res->headers, "date", strdup(dt));
+  flu_list_set(con->res->headers, "date", flu_tstamp(NULL, 1, 'r'));
 
   flu_list_set_last(
     con->res->headers, "server", flu_sprintf("shervin %s", SHV_VERSION));

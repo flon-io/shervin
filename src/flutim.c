@@ -31,6 +31,7 @@
 #include <string.h>
 #include <time.h>
 #include <errno.h>
+#include <locale.h>
 
 #include "flutil.h"
 #include "flutim.h"
@@ -131,7 +132,12 @@ char *flu_tstamp(struct timespec *ts, int utc, char format)
 
   if (format == 'r' || format == 'g')
   {
+    char *loc = strdup(setlocale(LC_TIME, NULL)); setlocale(LC_TIME, "en_US");
+    //
     strftime(r, 32, "%a, %d %b %Y %T UTC", tm);
+    //
+    setlocale(LC_TIME, loc); free(loc);
+
     if (format == 'g') strcpy(r + strlen(r) - 3, "GMT");
     return r;
   }
