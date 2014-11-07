@@ -139,26 +139,34 @@ int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
   char *p = flu_list_get(req->routing_d, "**");
   if (p == NULL) return 0;
 
+  fgaj_d("here: %s", flu_canopath("."));
+  //fgaj_d("p: %s", p);
+
   if (strstr(p, "..")) return 0;
 
   char *r = flu_list_get(params, "root");
   if (r == NULL) r = flu_list_get(params, "r");
   if (r == NULL) return 0;
 
+  fgaj_d("r: %s", r);
+
   char *path = flu_sprintf("%s/%s", r, p);
+
+  fgaj_d("path: %s", flu_canopath(path));
 
   struct stat sta;
   if (stat(path, &sta) != 0) { free(path); return 0; }
 
-  //if (r == 0) return S_ISDIR(s.st_mode) ? 'd' : 'f';
   if (S_ISDIR(sta.st_mode))
   {
     fgaj_d("we don't serve dirs %s", path); free(path); return 0;
   }
 
+  res->status_code = 200;
+
   char *h = flu_list_get(params, "header");
   if (h == NULL) h = flu_list_get(params, "h");
-  if (h == NULL) h = "X-Accel-Redirect";
+  if (h == NULL) h = strdup("X-Accel-Redirect");
 
   flu_list_set(
     res->headers, "shv_content_length", flu_sprintf("%zu", sta.st_size));
@@ -166,6 +174,8 @@ int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
   flu_list_set(
     res->headers, "content-type", shv_determine_content_type(path));
 
+  flu_list_set(
+    res->headers, "shv_file", strdup(path));
   flu_list_set(
     res->headers, h, path);
 

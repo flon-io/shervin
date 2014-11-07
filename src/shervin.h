@@ -35,6 +35,9 @@
 
 #define SHV_VERSION "1.0.0"
 
+#define SHV_BUFFER_SIZE 4096
+
+
 // request
 
 typedef struct shv_request {

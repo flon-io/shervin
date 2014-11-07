@@ -21,17 +21,22 @@ s.c: ../spec/*_spec.c
 servman.o: servman.c
 bocla.o: bocla.c
 
+webapp:
+	@echo "[1;30m"
+	$(MAKE) -C ../tst webapp
+	@echo "[0;0m"
+
 s: $(NAMES) servman.o bocla.o
 
-spec: s
+spec: s webapp
 	time ./s
 
-vspec: s
+vspec: s webapp
 	valgrind --leak-check=full -v ./s
 	#valgrind --leak-check=full --show-reachable=yes -v ./s
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./s
 
-dspec: s
+dspec: s webapp
 	gdb ./s
 
 clean:

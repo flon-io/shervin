@@ -25,10 +25,6 @@ void server_start()
 {
   if (server_pid > 0) return;
 
-  printf("[1;30m\n");
-  system("make -C ../tst webapp");
-  printf("[0;0m\n");
-
   server_pid = fork();
 
   if (server_pid == 0)

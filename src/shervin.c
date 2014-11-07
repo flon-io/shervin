@@ -40,8 +40,6 @@
 #include "gajeta.h"
 #include "shv_protected.h"
 
-#define SHV_BUFFER_SIZE 2048
-
 
 static void shv_close(struct ev_loop *l, struct ev_io *eio)
 {
@@ -62,7 +60,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   ssize_t r = recv(eio->fd, buffer, SHV_BUFFER_SIZE, 0);
 
-  if (r < 0) { fgaj_r("read error"); return; }
+  if (r < 0) { fgaj_r("read error (fd %i)", eio->fd); return; }
   if (r == 0) { shv_close(l, eio); return; }
 
   buffer[r] = '\0';

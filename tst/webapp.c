@@ -33,15 +33,6 @@
 #include "shv_protected.h"
 
 
-void grey_logger(char level, const char *pref, const char *msg)
-{
-  char *lstr = fgaj_level_to_string(level);
-
-  printf("[1;30m%19s %-38s %s[0;0m\n", lstr, pref, msg);
-
-  fgaj_level_string_free(lstr);
-}
-
 /* Respond with 200 and the time.
  */
 static int hello_handler(shv_request *req, shv_response *res, flu_dict *params)
@@ -83,12 +74,15 @@ static int mirror_handler(shv_request *req, shv_response *res, flu_dict *params)
 
 int main()
 {
-  fgaj_conf_get()->logger = grey_logger;
-  //fgaj_conf_get()->level = 10;
+  fgaj_conf_get()->logger = fgaj_grey_logger;
+  fgaj_conf_get()->level = 5;
+  fgaj_conf_get()->out = stderr;
+  fgaj_conf_get()->params = "5p";
 
   shv_route *routes[] = {
     shv_rp("/mirror", mirror_handler, NULL),
     shv_rp("/hello/:name", hello_handler, NULL),
+    shv_rp("/files/**", shv_dir_handler, "r", "../spec/www", NULL),
     NULL
   };
 

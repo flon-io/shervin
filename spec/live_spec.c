@@ -9,6 +9,7 @@
 #include "shv_protected.h" // direct access to shv_request methods
 
 #include "servman.h"
+#include "flutil.h"
 #include "bocla.h"
 
 
@@ -21,6 +22,7 @@ context "live"
   after all
   {
     server_stop();
+    system("lsof -i :4001");
   }
 
   describe "shervin"
@@ -38,7 +40,8 @@ context "live"
     {
       res = fcla_get("http://127.0.0.1:4001/hello/toto");
 
-      ensure(res->body === "hello toto\n");
+      expect(res->status_code i== 200);
+      expect(res->body === "hello toto\n");
     }
 
     it "serves back the body it received in /mirror"
@@ -47,7 +50,25 @@ context "live"
 
       char *body = strstr(res->body, "\r\n\r\n") + 4;
 
-      ensure(body === "nada");
+      expect(res->status_code i== 200);
+      expect(body === "nada");
+    }
+
+    it "serves files"
+    {
+      res = fcla_get("http://127.0.0.1:4001/files/a/b/hello.txt");
+
+      //printf("res: %i\n", res->status_code);
+      //if (res->headers)
+      //{
+      //  for (flu_node *n = res->headers->first; n; n = n->next)
+      //  {
+      //    printf("* %s: %s\n", n->key, (char *)n->item);
+      //  }
+      //}
+
+      expect(res->status_code i== 200);
+      expect(res->body === "hello world\n");
     }
   }
 }
