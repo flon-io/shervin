@@ -38,13 +38,18 @@ void server_start()
     if (v != NULL && (strcmp(v, "1") == 0 || strcmp(v, "true") == 0))
     {
       char *env[] = { "FGAJ_HOST=g", "FGAJ_LEVEL=10", NULL };
-      execle("/usr/bin/valgrind", "", "../tst/webapp", "", NULL, env);
+      execle(
+        "/usr/bin/valgrind", "val_shv_tst_webapp",
+        "--leak-check=full", "-v",
+        "../tst/webapp", NULL, env);
     }
     else
     {
       //char *env[] = { "FGAJ_HOST=g", "FGAJ_LEVEL=10", NULL };
       char *env[] = { "FGAJ_HOST=g", NULL };
-      execle("../tst/webapp", "", NULL, env);
+      execle(
+        "../tst/webapp", "shv_tst_webapp",
+        NULL, env);
     }
 
     perror("execle failed"); exit(1);
