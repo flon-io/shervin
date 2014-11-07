@@ -113,7 +113,9 @@ char *flu_tstamp(struct timespec *ts, int utc, char format)
     ts = &tss;
   }
 
-  if (format == 'z' || format == 'Z') utc = 1;
+  if (
+    format == 'z' || format == 'Z' || format == 'r' || format == 'g'
+  ) utc = 1;
 
   struct tm *tm = utc ? gmtime(&ts->tv_sec) : localtime(&ts->tv_sec);
 
@@ -124,6 +126,13 @@ char *flu_tstamp(struct timespec *ts, int utc, char format)
   if (format == 'z' || format == 'Z')
   {
     strftime(r, 32, "%Y-%m-%dT%H:%M:%SZ", tm);
+    return r;
+  }
+
+  if (format == 'r' || format == 'g')
+  {
+    strftime(r, 32, "%a, %d %b %Y %T UTC", tm);
+    if (format == 'g') strcpy(r + strlen(r) - 3, "GMT");
     return r;
   }
 
