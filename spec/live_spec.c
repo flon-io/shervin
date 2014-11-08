@@ -76,11 +76,9 @@ context "live"
 
     it "doesn't actually serve the file if x-real-ip is set"
     {
-      flu_dict *h = flu_d("X-Real-IP", "127.0.0.1", NULL);
-
-      res = fcla_get_h("http://127.0.0.1:4001/files/a/b/hello.txt", h);
-
-      flu_list_free(h);
+      res = fcla_get_d(
+        "http://127.0.0.1:4001/files/a/b/hello.txt",
+        "X-Real-IP", "127.0.0.1", NULL);
 
       //printf("res: %i\n", res->status_code);
       //if (res->headers)
