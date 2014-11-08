@@ -95,6 +95,14 @@ context "live"
       expect(flu_list_get(res->headers, "x-accel-redirect") === ""
         "../spec/www/a/b/hello.txt");
     }
+
+    it "serves the reason text for 4xx and 5xx responses"
+    {
+      res = fcla_get("http://127.0.0.1:4001/nemo");
+
+      expect(res->status_code i== 404);
+      expect(res->body === "not found");
+    }
   }
 }
 
