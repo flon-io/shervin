@@ -15,8 +15,7 @@ NAMES=$(patsubst $(VPATH)/%.c, ./%.o, $(wildcard $(VPATH)/*.c))
 
 s.c: ../spec/*_spec.c
 	$(RODZO) ../spec -o s.c
-	cp ../spec/*.[ch] .
-	rm ./*_spec.c
+	cp ../spec/src/*.[ch] .
 
 servman.o: servman.c
 bocla.o: bocla.c

@@ -22,7 +22,7 @@ context "live"
   after all
   {
     server_stop();
-    system("lsof -i :4001");
+    //system("lsof -i :4001");
   }
 
   describe "shervin"
