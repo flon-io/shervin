@@ -28,7 +28,7 @@ context "guards"
     {
       req = shv_parse_request_head(""
         "GET /x?a=b#f HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
+        "Host: www.example.com\r\n"
         "\r\n");
 
       int r = shv_any_guard(req, NULL, NULL);
@@ -43,7 +43,7 @@ context "guards"
     {
       req = shv_parse_request_head(""
         "GET /x HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
+        "Host: www.example.com\r\n"
         "\r\n");
 
       params = flu_d("path", "/x", NULL);
@@ -57,7 +57,7 @@ context "guards"
     {
       req = shv_parse_request_head(""
         "GET /book/anna_karenine HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
+        "Host: www.example.com\r\n"
         "\r\n");
 
       params = flu_d("path", "/book/:name", NULL);
@@ -72,7 +72,7 @@ context "guards"
     {
       req = shv_parse_request_head(""
         "GET /book/anna_karenine?v=2.0 HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
+        "Host: www.example.com\r\n"
         "\r\n");
 
       params = flu_d("path", "/book/:name", NULL);
@@ -87,7 +87,7 @@ context "guards"
     {
       req = shv_parse_request_head(""
         "GET /x HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
+        "Host: www.example.com\r\n"
         "\r\n");
 
       params = flu_d("path", "/x/y", NULL);
@@ -100,10 +100,23 @@ context "guards"
     {
       req = shv_parse_request_head(""
         "GET /x/y HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
+        "Host: www.example.com\r\n"
         "\r\n");
 
       params = flu_d("path", "/x", NULL);
+      int r = shv_path_guard(req, NULL, params);
+
+      ensure(r == 0);
+    }
+
+    it "fails if the path is too long (/ vs /favicon.ico)"
+    {
+      req = shv_parse_request_head(""
+        "GET /favicon.ico HTTP/1.1\r\n"
+        "Host: www.example.com\r\n"
+        "\r\n");
+
+      params = flu_d("path", "/", NULL);
       int r = shv_path_guard(req, NULL, params);
 
       ensure(r == 0);
@@ -113,7 +126,7 @@ context "guards"
     {
       req = shv_parse_request_head(""
         "GET /x HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
+        "Host: www.example.com\r\n"
         "\r\n");
 
       params = flu_d("path", "POST /x", NULL);
@@ -126,7 +139,7 @@ context "guards"
     {
       req = shv_parse_request_head(""
         "POST /x HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
+        "Host: www.example.com\r\n"
         "\r\n");
 
       params = flu_d("path", "POST /x", NULL);
@@ -139,7 +152,7 @@ context "guards"
     {
       req = shv_parse_request_head(""
         "GET /x/y/z/bravo HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
+        "Host: www.example.com\r\n"
         "\r\n");
 
       params = flu_d("path", "GET /x/y/**", NULL);
@@ -154,7 +167,7 @@ context "guards"
     {
       req = shv_parse_request_head(""
         "GET /x/y HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
+        "Host: www.example.com\r\n"
         "\r\n");
 
       params = flu_d("path", "GET /x/y/**", NULL);
@@ -169,7 +182,7 @@ context "guards"
     {
       req = shv_parse_request_head(""
         "GET /x/z/y/ HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
+        "Host: www.example.com\r\n"
         "\r\n");
 
       params = flu_d("path", "GET /x/y/**", NULL);
@@ -183,7 +196,7 @@ context "guards"
     {
       req = shv_parse_request_head(""
         "GET /x HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
+        "Host: www.example.com\r\n"
         "\r\n");
 
       params = flu_d("path", "/y", NULL);

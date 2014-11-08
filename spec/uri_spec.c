@@ -102,6 +102,19 @@ context "uri"
       ensure(flu_list_get(d, "_path") === "/a/b");
       ensure(flu_list_get(d, "_fragment") === "anchor");
     }
+
+    it "defaults to http://"
+    {
+      d = shv_parse_host_and_path("example.com:8080", "/a/b#anchor");
+
+      expect(d != NULL);
+      expect(d->size zu== 5);
+      expect(flu_list_get(d, "_scheme") === "http");
+      expect(flu_list_get(d, "_host") === "example.com");
+      expect(flu_list_get(d, "_port") === "8080");
+      expect(flu_list_get(d, "_path") === "/a/b");
+      expect(flu_list_get(d, "_fragment") === "anchor");
+    }
   }
 }
 
