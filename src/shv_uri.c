@@ -34,8 +34,6 @@
 #include "aabro.h"
 #include "shv_protected.h"
 
-//#include "gajeta.h"
-
 
 fabr_parser *uri_parser = NULL;
 

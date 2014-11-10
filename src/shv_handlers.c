@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "flutil.h"
 #include "gajeta.h"
 #include "shervin.h"
 #include "shv_protected.h"
