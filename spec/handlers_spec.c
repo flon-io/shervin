@@ -160,6 +160,28 @@ context "handlers"
       expect(flu_list_get(res->headers, "content-type") === ""
         "text/plain");
     }
+
+    it "defaults to text/plain for unknown filetypes"
+    {
+      req = shv_parse_request_head(""
+        "GET /x/y/a/b/nada.nad HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      flu_list_set(req->routing_d, "**", rdz_strdup("a/b/nada.nad"));
+
+      params = flu_d("root", "../spec/www", NULL);
+      int r = shv_dir_handler(req, res, params);
+
+      expect(r i== 1);
+
+      expect(flu_list_get(res->headers, "X-Accel-Redirect") === ""
+        "../spec/www/a/b/nada.nad");
+      expect(flu_list_get(res->headers, "shv_content_length") === ""
+        "10");
+      expect(flu_list_get(res->headers, "content-type") === ""
+        "text/plain");
+    }
   }
 }
 
