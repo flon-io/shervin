@@ -151,7 +151,7 @@ flu_dict *shv_parse_host_and_path(char *host, char *path)
   return d;
 }
 
-char *shv_absolute_uri(flu_dict *uri_d, int ssl)
+char *shv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel)
 {
   //for (flu_node *n = uri_d->first; n; n = n->next)
   //  printf("      * %s: %s\n", n->key, (char *)n->item);
@@ -173,18 +173,34 @@ char *shv_absolute_uri(flu_dict *uri_d, int ssl)
   s = flu_list_get(uri_d, "_query");
   if (s) query = flu_sprintf("?%s", s);
 
+  char *path = strdup(flu_list_getd(uri_d, "_path", "/"));
+  if (rel && *rel == '/')
+  {
+    free(path);
+    path = strdup(rel);
+  }
+  else if (rel)
+  {
+    char *end = strrchr(path, '/');
+    if (strchr(end, '.')) *end = 0;
+    s = flu_canopath("%s/%s", path, rel);
+    free(path);
+    path = s;
+  }
+
   s = flu_sprintf(
     "%s://%s%s%s%s%s",
     scheme,
     flu_list_getd(uri_d, "_host", "127.0.0.1"),
     port,
-    flu_list_getd(uri_d, "_path", "/"),
+    path,
     query,
     frag);
 
   if (*port != 0) free(port);
   if (*query != 0) free(query);
   if (*frag != 0) free(frag);
+  free(path);
 
   return s;
 }

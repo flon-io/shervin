@@ -119,34 +119,66 @@ context "uri"
 
   describe "shv_absolute_uri()"
   {
-    it "returns an absolute uri (0)"
+    context "shv_abs()"
     {
-      d = shv_parse_host_and_path("example.com:8080", "/a/b#anchor");
+      it "returns an absolute uri (0)"
+      {
+        d = shv_parse_host_and_path("example.com:8080", "/a/b#anchor");
 
-      expect(shv_absolute_uri(d, 0) ===f ""
-        "http://example.com:8080/a/b#anchor");
-      expect(shv_absolute_uri(d, 1) ===f ""
-        "https://example.com:8080/a/b#anchor");
+        expect(shv_abs(0, d) ===f "http://example.com:8080/a/b#anchor");
+        expect(shv_abs(1, d) ===f "https://example.com:8080/a/b#anchor");
+      }
+
+      it "returns an absolute uri (1)"
+      {
+        d = shv_parse_uri("/a?b=c&d=e");
+
+        expect(shv_abs(0, d) ===f "http://127.0.0.1/a?b=c&d=e");
+        expect(shv_abs(1, d) ===f "https://127.0.0.1/a?b=c&d=e");
+      }
+
+      it "returns an absolute uri (2)"
+      {
+        d = shv_parse_uri("/a#frag");
+
+        expect(shv_abs(0, d) ===f "http://127.0.0.1/a#frag");
+        expect(shv_abs(1, d) ===f "https://127.0.0.1/a#frag");
+      }
     }
 
-    it "returns an absolute uri (1)"
+    context "shv_rel()"
     {
-      d = shv_parse_uri("/a?b=c&d=e");
+      it "returns an absolute uri (0)"
+      {
+        d = shv_parse_host_and_path("example.com:8080", "/a/b#anchor");
 
-      expect(shv_absolute_uri(d, 0) ===f ""
-        "http://127.0.0.1/a?b=c&d=e");
-      expect(shv_absolute_uri(d, 1) ===f ""
-        "https://127.0.0.1/a?b=c&d=e");
-    }
+        expect(shv_rel(0, d, "c") ===f ""
+          "http://example.com:8080/a/b/c#anchor");
+        expect(shv_rel(0, d, "/c") ===f ""
+          "http://example.com:8080/c#anchor");
+        expect(shv_rel(0, d, "..") ===f ""
+          "http://example.com:8080/a/#anchor");
+      }
 
-    it "returns an absolute uri (2)"
-    {
-      d = shv_parse_uri("/a#frag");
+      it "returns an absolute uri (2)"
+      {
+        d = shv_parse_uri("http://a.example.com/a/index.htm#frag");
 
-      expect(shv_absolute_uri(d, 0) ===f ""
-        "http://127.0.0.1/a#frag");
-      expect(shv_absolute_uri(d, 1) ===f ""
-        "https://127.0.0.1/a#frag");
+        expect(shv_rel(0, d, "..") ===f ""
+          "http://a.example.com/#frag");
+        expect(shv_rel(0, d, "toto.htm") ===f ""
+          "http://a.example.com/a/toto.htm#frag");
+      }
+
+      it "returns an absolute uri (3)"
+      {
+        d = shv_parse_uri("http://a.example.com/a/index.htm/#frag");
+
+        expect(shv_rel(0, d, "..") ===f ""
+          "http://a.example.com/a/#frag");
+        expect(shv_rel(0, d, "toto.htm") ===f ""
+          "http://a.example.com/a/index.htm/toto.htm#frag");
+      }
     }
   }
 }
