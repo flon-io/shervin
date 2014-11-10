@@ -47,9 +47,6 @@ char *shv_char_to_method(char c);
 
 void shv_handle(struct ev_loop *l, struct ev_io *eio);
 
-flu_dict *shv_parse_uri(char *uri);
-flu_dict *shv_parse_host_and_path(char *host, char *path);
-
 //
 // response
 
@@ -83,6 +80,18 @@ typedef struct shv_con {
 shv_con *shv_con_malloc(struct sockaddr_in *client, shv_route **routes);
 void shv_con_reset(shv_con *c);
 void shv_con_free(shv_con *c);
+
+
+//
+// uri
+
+flu_dict *shv_parse_uri(char *uri);
+flu_dict *shv_parse_host_and_path(char *host, char *path);
+
+/* Renders the uri_d as an absolute URI. When ssl is set to 1, the
+ * scheme will be "https://".
+ */
+char *shv_absolute_uri(flu_dict *uri_d, int ssl);
 
 #endif // FLON_SHV_PROTECTED_H
 

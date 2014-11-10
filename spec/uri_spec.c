@@ -36,7 +36,7 @@ context "uri"
       d = shv_parse_uri("/a?b=c&d=e");
 
       ensure(d != NULL);
-      ensure(d->size == 3);
+      ensure(d->size zu== 4);
       ensure(flu_list_get(d, "_path") === "/a");
       ensure(flu_list_get(d, "b") === "c");
       ensure(flu_list_get(d, "d") === "e");
@@ -70,7 +70,7 @@ context "uri"
       d = shv_parse_uri("/a?x=x%20y%20z");
 
       ensure(d != NULL);
-      ensure(d->size == 2);
+      ensure(d->size zu== 3);
       ensure(flu_list_get(d, "_path") === "/a");
       ensure(flu_list_get(d, "x") === "x y z");
     }
@@ -83,7 +83,7 @@ context "uri"
       d = shv_parse_host_and_path("http://example.com", "/a?x=x%20y%20z");
 
       ensure(d != NULL);
-      ensure(d->size == 4);
+      ensure(d->size zu== 5);
       ensure(flu_list_get(d, "_scheme") === "http");
       ensure(flu_list_get(d, "_host") === "example.com");
       ensure(flu_list_get(d, "_path") === "/a");
@@ -114,6 +114,39 @@ context "uri"
       expect(flu_list_get(d, "_port") === "8080");
       expect(flu_list_get(d, "_path") === "/a/b");
       expect(flu_list_get(d, "_fragment") === "anchor");
+    }
+  }
+
+  describe "shv_absolute_uri()"
+  {
+    it "returns an absolute uri (0)"
+    {
+      d = shv_parse_host_and_path("example.com:8080", "/a/b#anchor");
+
+      expect(shv_absolute_uri(d, 0) ===f ""
+        "http://example.com:8080/a/b#anchor");
+      expect(shv_absolute_uri(d, 1) ===f ""
+        "https://example.com:8080/a/b#anchor");
+    }
+
+    it "returns an absolute uri (1)"
+    {
+      d = shv_parse_uri("/a?b=c&d=e");
+
+      expect(shv_absolute_uri(d, 0) ===f ""
+        "http://127.0.0.1/a?b=c&d=e");
+      expect(shv_absolute_uri(d, 1) ===f ""
+        "https://127.0.0.1/a?b=c&d=e");
+    }
+
+    it "returns an absolute uri (2)"
+    {
+      d = shv_parse_uri("/a#frag");
+
+      expect(shv_absolute_uri(d, 0) ===f ""
+        "http://127.0.0.1/a#frag");
+      expect(shv_absolute_uri(d, 1) ===f ""
+        "https://127.0.0.1/a#frag");
     }
   }
 }

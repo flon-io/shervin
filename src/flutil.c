@@ -657,6 +657,13 @@ void *flu_list_get(flu_list *l, const char *key)
   return n == NULL ? NULL : n->item;
 }
 
+void *flu_list_getd(flu_list *l, const char *key, void *def)
+{
+  void *v = flu_list_get(l, key);
+
+  return v ? v : def;
+}
+
 flu_list *flu_list_dtrim(flu_list *l)
 {
   flu_list *r = flu_list_malloc();
