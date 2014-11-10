@@ -66,11 +66,11 @@ context "handlers"
     it "returns 0 when the file is a dir"
     {
       req = shv_parse_request_head(""
-        "GET /x/y/a/b HTTP/1.1\r\n"
+        "GET /x/y/a HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      flu_list_set(req->routing_d, "**", rdz_strdup("a/b"));
+      flu_list_set(req->routing_d, "**", rdz_strdup("a"));
 
       params = flu_d("root", "../spec/www", NULL);
       int r = shv_dir_handler(req, res, params);
@@ -113,6 +113,50 @@ context "handlers"
         "../spec/www/a/b/hello.txt");
       expect(flu_list_get(res->headers, "shv_content_length") === ""
         "12");
+      expect(flu_list_get(res->headers, "content-type") === ""
+        "text/plain");
+    }
+
+    it "serves a/index.html when asked for a/"
+    {
+      req = shv_parse_request_head(""
+        "GET /web/a/b HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      flu_list_set(req->routing_d, "**", rdz_strdup("a/b"));
+
+      params = flu_d("root", "../spec/www", NULL);
+      int r = shv_dir_handler(req, res, params);
+
+      expect(r i== 1);
+
+      expect(flu_list_get(res->headers, "X-Accel-Redirect") === ""
+        "../spec/www/a/b/index.html");
+      expect(flu_list_get(res->headers, "shv_content_length") === ""
+        "13");
+      expect(flu_list_get(res->headers, "content-type") === ""
+        "text/html");
+    }
+
+    it "accepts alternative indexes"
+    {
+      req = shv_parse_request_head(""
+        "GET /web/a/ HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      flu_list_set(req->routing_d, "**", rdz_strdup("a/"));
+
+      params = flu_d("root", "../spec/www", "index", "index.txt", NULL);
+      int r = shv_dir_handler(req, res, params);
+
+      expect(r i== 1);
+
+      expect(flu_list_get(res->headers, "X-Accel-Redirect") === ""
+        "../spec/www/a/index.txt");
+      expect(flu_list_get(res->headers, "shv_content_length") === ""
+        "21");
       expect(flu_list_get(res->headers, "content-type") === ""
         "text/plain");
     }
