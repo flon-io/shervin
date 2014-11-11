@@ -179,6 +179,13 @@ context "uri"
         expect(shv_rel(0, d, "toto.htm") ===f ""
           "http://a.example.com/a/index.htm/toto.htm#frag");
       }
+
+      it "composes its path"
+      {
+        d = shv_parse_uri("http://a.example.com/a/b");
+
+        expect(shv_rel(0, d, "../%s", "c") ===f "http://a.example.com/a/c");
+      }
     }
   }
 }
