@@ -11,13 +11,10 @@
 
 context "handle"
 {
-  int gua(shv_request *req, shv_response *res, flu_dict *params)
-  {
-    char *g = flu_list_get(params, "gua");
-    return (g && strcmp(g, "true") == 0);
-  }
+  int gyes(shv_request *req, shv_response *res, flu_dict *params) { return 1; }
+  int gno(shv_request *req, shv_response *res, flu_dict *params) { return 0; }
 
-  int fgua(shv_request *req, shv_response *res, flu_dict *params)
+  int gfil(shv_request *req, shv_response *res, flu_dict *params)
   {
     return -1; // force handlers to behave like filters
   }
@@ -72,8 +69,8 @@ context "handle"
     it "triggers handler when guard says 1"
     {
       con->routes = (shv_route *[]){
-        shv_r(gua, han, "gua", "false", "han", "a", NULL),
-        shv_r(gua, han, "gua", "true", "han", "b", NULL),
+        shv_r(gno, han, "han", "a", NULL),
+        shv_r(gyes, han, "han", "b", NULL),
         NULL // do not forget it
       };
 
@@ -90,9 +87,9 @@ context "handle"
     it "triggers next handler when guard says 1"
     {
       con->routes = (shv_route *[]){
-        shv_r(gua, NULL, "gua", "false", NULL),
+        shv_r(gno, NULL, NULL),
         shv_r(NULL, han, "han", "a", NULL),
-        shv_r(gua, NULL, "gua", "true", NULL),
+        shv_r(gyes, NULL, NULL),
         shv_r(NULL, han, "han", "b", NULL),
         NULL // do not forget it
       };
@@ -110,7 +107,7 @@ context "handle"
     it "triggers handlers until one says 1"
     {
       con->routes = (shv_route *[]){
-        shv_r(gua, fil, "gua", "true", "fil", "z", NULL),
+        shv_r(gyes, fil, "fil", "z", NULL),
         shv_r(NULL, han, "gua", "true", "han", "a", NULL),
         NULL // do not forget it
       };
@@ -130,7 +127,7 @@ context "handle"
     {
       con->routes = (shv_route *[]){
         shv_r(shv_filter_guard, han, "sta", "true", "han", "a", NULL),
-        shv_r(gua, han, "gua", "true", "han", "b", NULL),
+        shv_r(gyes, han, "han", "b", NULL),
         NULL // do not forget it
       };
 
@@ -148,7 +145,7 @@ context "handle"
     it "triggers post-filters"
     {
       con->routes = (shv_route *[]){
-        shv_r(gua, han, "gua", "true", "han", "a", NULL),
+        shv_r(gyes, han, "han", "a", NULL),
         shv_r(shv_filter_guard, han, "sta", "true", "han", "b", NULL),
         NULL // do not forget it
       };
@@ -169,17 +166,17 @@ context "handle"
       con->routes = (shv_route *[]){
         //
         shv_r(shv_filter_guard, NULL, NULL),
-        shv_r(NULL, han, "sta", "true", "han", "w", NULL),
-        shv_r(NULL, han, "sta", "true", "han", "x", NULL),
+        shv_r(NULL, han, "sta", "true", "han", "w", NULL), //
+        shv_r(NULL, han, "sta", "true", "han", "x", NULL), // <-- sees
         //
-        shv_r(gua, han, "gua", "false", "han", "a", NULL),
-        shv_r(gua, han, "gua", "true", "han", "b", NULL),
+        shv_r(gno, han, "han", "a", NULL),
+        shv_r(gyes, han, "han", "b", NULL), // <-- handles
         //
         shv_r(shv_filter_guard, NULL, NULL),
-        shv_r(NULL, han, "sta", "true", "han", "y", NULL),
-        shv_r(NULL, han, "sta", "true", "han", "z", NULL),
+        shv_r(NULL, han, "sta", "true", "han", "y", NULL), //
+        shv_r(NULL, han, "sta", "true", "han", "z", NULL), // <-- sees
         //
-        shv_r(gua, han, "gua", "true", "han", "c", NULL),
+        shv_r(gyes, han, "han", "c", NULL), // doesn't handle
         NULL // do not forget it
       };
 
@@ -200,10 +197,10 @@ context "handle"
     it "treats handlers like filters when guard says -1"
     {
       con->routes = (shv_route *[]){
-        shv_r(fgua, han, "sta", "true", "han", "a", NULL),
+        shv_r(gfil, han, "sta", "true", "han", "a", NULL),
         shv_r(NULL, han, "sta", "true", "han", "b", NULL),
-        shv_r(gua, han, "gua", "true", "han", "c", NULL),
-        shv_r(fgua, han, "sta", "true", "han", "d", NULL), // no
+        shv_r(gyes, han, "han", "c", NULL),
+        shv_r(gfil, han, "sta", "true", "han", "d", NULL), // no
         NULL // do not forget it
       };
 
