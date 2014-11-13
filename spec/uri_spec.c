@@ -74,6 +74,16 @@ context "uri"
       ensure(flu_list_get(d, "_path") === "/a");
       ensure(flu_list_get(d, "x") === "x y z");
     }
+
+    it "accepts query entries without values"
+    {
+      d = shv_parse_uri("/a?x");
+
+      ensure(d != NULL);
+      ensure(d->size zu== 3);
+      ensure(flu_list_get(d, "_path") === "/a");
+      ensure(flu_list_get(d, "x") === "");
+    }
   }
 
   describe "shv_parse_host_and_path()"
