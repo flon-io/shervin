@@ -117,7 +117,7 @@ context "handlers"
         "text/plain");
     }
 
-    it "serves a/index.html when asked for a/"
+    it "serves a/b/index.html when asked for a/b"
     {
       req = shv_parse_request_head(""
         "GET /web/a/b HTTP/1.1\r\n"
