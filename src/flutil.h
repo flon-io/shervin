@@ -140,6 +140,10 @@ int flu_writeall(const char *path, ...);
  */
 int flu_unlink(const char *path, ...);
 
+/* Composes a path.
+ */
+char *flu_path(const char *path, ...);
+
 /* It canonicalizes a path, like realpath().
  * Unlike realpath(), it doesn't care if the path points to nowhere.
  */
@@ -392,6 +396,10 @@ int flu_system(const char *format, ...);
  * Returns 0 when in doubt.
  */
 long long flu_stoll(char *s, size_t l, int base);
+
+/* Calls puts() with its argument, then frees it. Returns puts() result.
+ */
+int flu_putf(char *s);
 
 #endif // FLON_FLUTIL_H
 
