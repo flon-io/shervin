@@ -183,5 +183,43 @@ context "handlers"
         "text/plain");
     }
   }
+
+  describe "shv_serve_file()"
+  {
+    before each
+    {
+      params = flu_list_malloc();
+    }
+
+    it "returns -1 when it doesn't find a file"
+    {
+      ssize_t r = shv_serve_file(res, params, "../spec/www/a/b/nada.html");
+
+      expect(r li== -1);
+    }
+
+    it "returns 0 when the file is a directory"
+    {
+      ssize_t r = shv_serve_file(res, params, "../spec/www/a/b");
+      expect(r li== 0);
+
+      r = shv_serve_file(res, params, "../spec/www/a/b/");
+      expect(r li== 0);
+    }
+
+    it "returns the size of the file and sets headers when it's a regular file"
+    {
+      ssize_t r = shv_serve_file(res, params, "../spec/www/a/b/index.html");
+
+      expect(r li== 13);
+
+      expect(flu_list_get(res->headers, "shv_content_length") === ""
+        "13");
+      expect(flu_list_get(res->headers, "shv_file") === ""
+        "../spec/www/a/b/index.html");
+      expect(flu_list_get(res->headers, "content-type") === ""
+        "text/html");
+    }
+  }
 }
 
