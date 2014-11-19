@@ -39,6 +39,11 @@
 // request
 
 shv_request *shv_parse_request_head(char *s);
+
+/* Used by specs.
+ */
+shv_request *shv_parse_request_head_f(const char *s, ...);
+
 void shv_request_free(shv_request *r);
 ssize_t shv_request_content_length(shv_request *r);
 

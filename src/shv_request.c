@@ -180,6 +180,18 @@ shv_request *shv_parse_request_head(char *s)
   return req;
 }
 
+shv_request *shv_parse_request_head_f(const char *s, ...)
+{
+  va_list ap; va_start(ap, s);
+  char *ss = flu_svprintf(s, ap);
+  va_end(ap);
+
+  shv_request *r = shv_parse_request_head(ss);
+  free(ss);
+
+  return r;
+}
+
 ssize_t shv_request_content_length(shv_request *r)
 {
   char *cl = flu_list_get(r->headers, "content-length");

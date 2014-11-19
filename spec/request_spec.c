@@ -90,6 +90,24 @@ context "request"
     }
   }
 
+  describe "shv_request_parse_f()"
+  {
+    it "composes and parses"
+    {
+      req = shv_parse_request_head_f(
+        "GET /%s HTTP/1.0\r\n"
+        "\r\n",
+        "nada"
+      );
+
+      ensure(req != NULL);
+      ensure(req->method == 'g');
+      ensure(req->uri === "/nada");
+
+      ensure(req->status_code == 200);
+    }
+  }
+
   describe "shv_request_content_length()"
   {
     it "returns -1 when there is no content-length header"
