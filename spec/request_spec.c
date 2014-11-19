@@ -24,7 +24,7 @@ context "request"
   {
     it "parses GET requests"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET / HTTP/1.0\r\n"
         "\r\n"
       );
@@ -38,7 +38,7 @@ context "request"
 
     it "parses POST requests"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "POST /msgbin HTTP/1.1\r\n"
         "content-type: application/x-www-form-urlencoded;charset=utf-8\r\n"
         "host: https://www.example.com\r\n"
@@ -66,7 +66,7 @@ context "request"
 
     it "lowers the case of header field names"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET / HTTP/1.0\r\n"
         "Host: http://example.com\r\n"
         "X-Whatever: nada\r\n"
@@ -80,7 +80,7 @@ context "request"
 
     it "returns a req with ->status_code == 400 when it cannot parse"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /\r\n"
         "\r\n"
       );
@@ -94,7 +94,7 @@ context "request"
   {
     it "returns -1 when there is no content-length header"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /msg HTTP/1.1\r\n"
         "Host: https://example.com\r\n"
         "\r\n"
@@ -105,7 +105,7 @@ context "request"
 
     it "returns the number for the content-length header"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "POST /msgbin HTTP/1.1\r\n"
         "content-type: application/x-www-form-urlencoded;charset=utf-8\r\n"
         "host: https://importexport.amazonaws.com\r\n"

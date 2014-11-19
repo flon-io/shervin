@@ -74,7 +74,7 @@ context "handle"
         NULL // do not forget it
       };
 
-      con->req = shv_parse_request_head(""
+      con->req = shv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -94,7 +94,7 @@ context "handle"
         NULL // do not forget it
       };
 
-      con->req = shv_parse_request_head(""
+      con->req = shv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -112,7 +112,7 @@ context "handle"
         NULL // do not forget it
       };
 
-      con->req = shv_parse_request_head(""
+      con->req = shv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -131,7 +131,7 @@ context "handle"
         NULL // do not forget it
       };
 
-      con->req = shv_parse_request_head(""
+      con->req = shv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -150,7 +150,7 @@ context "handle"
         NULL // do not forget it
       };
 
-      con->req = shv_parse_request_head(""
+      con->req = shv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -180,7 +180,7 @@ context "handle"
         NULL // do not forget it
       };
 
-      con->req = shv_parse_request_head(""
+      con->req = shv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -204,7 +204,7 @@ context "handle"
         NULL // do not forget it
       };
 
-      con->req = shv_parse_request_head(""
+      con->req = shv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -225,7 +225,7 @@ context "handle"
         NULL // do not forget it
       };
 
-      con->req = shv_parse_request_head(""
+      con->req = shv_parse_request_head(
         "GET /nada HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -243,7 +243,7 @@ context "handle"
         NULL // do not forget it
       };
 
-      con->req = shv_parse_request_head(""
+      con->req = shv_parse_request_head(
         "POST /nada HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "Content-Length: 1\r\n"
@@ -264,7 +264,7 @@ context "handle"
         NULL // do not forget it
       };
 
-      con->req = shv_parse_request_head(""
+      con->req = shv_parse_request_head(
         "HEAD /nada HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");

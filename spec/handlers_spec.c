@@ -28,7 +28,7 @@ context "handlers"
   {
     it "serves files"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /x/y/a/b/hello.txt HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -50,7 +50,7 @@ context "handlers"
 
     it "returns 0 if the file is not found"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /x/y/a/b/nada.txt HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -65,7 +65,7 @@ context "handlers"
 
     it "returns 0 when the file is a dir"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /x/y/a HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -80,7 +80,7 @@ context "handlers"
 
     it "returns 0 when the request goes ../"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /x/y/../www/a/b/hello.txt HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -95,7 +95,7 @@ context "handlers"
 
     it "accepts an alternative sendfile \"h\" header via the params"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /x/y/a/b/hello.txt HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -119,7 +119,7 @@ context "handlers"
 
     it "serves a/b/index.html when asked for a/b"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /web/a/b HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -141,7 +141,7 @@ context "handlers"
 
     it "accepts alternative indexes"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /web/a/ HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -163,7 +163,7 @@ context "handlers"
 
     it "defaults to text/plain for unknown filetypes"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /x/y/a/b/nada.nad HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");

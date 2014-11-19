@@ -26,7 +26,7 @@ context "guards"
   {
     it "provides the query string and fragment"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /x?a=b#f HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n");
@@ -41,7 +41,7 @@ context "guards"
   {
     it "returns 1 if the path matches"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n");
@@ -55,7 +55,7 @@ context "guards"
 
     it "returns a dict for /book/:name"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /book/anna_karenine HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n");
@@ -70,7 +70,7 @@ context "guards"
 
     it "includes the query string in the dict"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /book/anna_karenine?v=2.0 HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n");
@@ -85,7 +85,7 @@ context "guards"
 
     it "fails if the path is too short"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n");
@@ -98,7 +98,7 @@ context "guards"
 
     it "fails if the path is too long"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /x/y HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n");
@@ -111,7 +111,7 @@ context "guards"
 
     it "fails if the path is too long (/ vs /favicon.ico)"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /favicon.ico HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n");
@@ -124,7 +124,7 @@ context "guards"
 
     it "accepts the HTTP method as prefix (miss)"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n");
@@ -137,7 +137,7 @@ context "guards"
 
     it "accepts the HTTP method as prefix (hit)"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "POST /x HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n");
@@ -150,7 +150,7 @@ context "guards"
 
     it "accepts a /** ending (hit 0)"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /x/y/z/bravo HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n");
@@ -165,7 +165,7 @@ context "guards"
 
     it "accepts a /** ending (hit 1)"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /x/y HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n");
@@ -180,7 +180,7 @@ context "guards"
 
     it "accepts a /** ending (miss)"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /x/z/y/ HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n");
@@ -194,7 +194,7 @@ context "guards"
 
     it "discards a final /"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /x/ HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n");
@@ -208,7 +208,7 @@ context "guards"
 
     it "returns 0 else"
     {
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n");
