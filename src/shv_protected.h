@@ -40,10 +40,6 @@
 
 shv_request *shv_parse_request_head(char *s);
 
-/* Used by specs.
- */
-shv_request *shv_parse_request_head_f(const char *s, ...);
-
 void shv_request_free(shv_request *r);
 ssize_t shv_request_content_length(shv_request *r);
 
@@ -97,6 +93,13 @@ char *shv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...);
 
 #define shv_abs(ssl, uri_d) shv_absolute_uri(ssl, uri_d, NULL)
 #define shv_rel(ssl, uri_d, ...) shv_absolute_uri(ssl, uri_d, __VA_ARGS__)
+
+
+//
+// spec tools
+
+shv_request *shv_parse_request_head_f(const char *s, ...);
+int shv_do_route(char *path, shv_request *req);
 
 #endif // FLON_SHV_PROTECTED_H
 

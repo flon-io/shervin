@@ -90,24 +90,6 @@ context "request"
     }
   }
 
-  describe "shv_request_parse_f()"
-  {
-    it "composes and parses"
-    {
-      req = shv_parse_request_head_f(
-        "GET /%s HTTP/1.0\r\n"
-        "\r\n",
-        "nada"
-      );
-
-      ensure(req != NULL);
-      ensure(req->method == 'g');
-      ensure(req->uri === "/nada");
-
-      ensure(req->status_code == 200);
-    }
-  }
-
   describe "shv_request_content_length()"
   {
     it "returns -1 when there is no content-length header"
@@ -132,6 +114,43 @@ context "request"
       );
 
       ensure(shv_request_content_length(req) == 207);
+    }
+  }
+
+  context "spec helpers"
+  {
+    describe "shv_request_parse_head_f()"
+    {
+      it "composes and parses"
+      {
+        req = shv_parse_request_head_f(
+          "GET /%s HTTP/1.0\r\n"
+          "\r\n",
+          "nada"
+        );
+
+        ensure(req != NULL);
+        ensure(req->method == 'g');
+        ensure(req->uri === "/nada");
+
+        ensure(req->status_code == 200);
+      }
+    }
+
+    describe "shv_do_route()"
+    {
+      it "fills req->routing_d"
+      {
+        req = shv_parse_request_head_f(
+          "GET /letters/%i HTTP/1.0\r\n"
+          "Host: nada.example.org\r\n"
+          "\r\n",
+          12345
+        );
+        shv_do_route("GET /letters/:id", req);
+
+        expect(flu_list_get(req->routing_d, "id") === "12345");
+      }
     }
   }
 }
