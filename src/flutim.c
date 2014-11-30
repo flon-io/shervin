@@ -130,11 +130,12 @@ char *flu_tstamp(struct timespec *ts, int utc, char format)
     return r;
   }
 
-  if (format == 'r' || format == 'g')
+  if (format == 'r' || format == 'g' || format == '2')
   {
     char *loc = strdup(setlocale(LC_TIME, NULL)); setlocale(LC_TIME, "en_US");
     //
-    strftime(r, 32, "%a, %d %b %Y %T UTC", tm);
+    if (format == '2') strftime(r, 32, "%a, %d %b %Y %T %z", tm);
+    else strftime(r, 32, "%a, %d %b %Y %T UTC", tm);
     //
     setlocale(LC_TIME, loc); free(loc);
 
@@ -160,6 +161,15 @@ char *flu_tstamp(struct timespec *ts, int utc, char format)
   *(r + l + 1 + off) = '\0';
 
   return r;
+}
+
+char *flu_sstamp(long long s, int utc, char format)
+{
+  if (s == 0) return flu_tstamp(NULL, utc, format);
+
+  struct timespec ts; ts.tv_sec = s; ts.tv_nsec = 0;
+
+  return flu_tstamp(&ts, utc, format);
 }
 
 static int ptime(char *s, struct tm *tm)
@@ -194,7 +204,7 @@ static int ptime(char *s, struct tm *tm)
 
 struct timespec *flu_parse_tstamp(char *s, int utc)
 {
-  struct tm tm = {};
+  struct tm tm;
   char *subseconds = NULL;
 
   if (strchr(s, '-'))
