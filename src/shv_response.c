@@ -193,7 +193,8 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
 
   // prepare headers
 
-  flu_list_set(con->res->headers, "date", flu_tstamp(NULL, 1, 'r'));
+  flu_list_set(
+    con->res->headers, "date", flu_sstamp(l ? ev_now(l) : 0, 1, 'r'));
 
   flu_list_set_last(
     con->res->headers, "server", flu_sprintf("shervin %s", SHV_VERSION));
