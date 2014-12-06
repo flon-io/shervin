@@ -76,7 +76,11 @@ _over:
   if (r == 1)
   {
     flu_list_set(
-      res->headers, "WWW-Authenticate", strdup("Basic realm=\"shervin\""));
+      res->headers,
+      "WWW-Authenticate",
+      flu_sprintf(
+        "Basic realm=\"%s\"", flu_list_getd(params, "realm", "shervin")));
+
     res->status_code = 401;
   }
 

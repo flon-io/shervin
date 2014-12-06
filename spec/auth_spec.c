@@ -67,6 +67,27 @@ context "auth"
       expect(flu_list_get(res->headers, "WWW-Authenticate") === ""
         "Basic realm=\"shervin\"");
     }
+
+    it "accepts a 'realm' parameter"
+    {
+      req = shv_parse_request_head(
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "Authorization: Basic nadanadanada\r\n"
+        "\r\n");
+
+      params = flu_d("func", specauth, "realm", "wonderland", NULL);
+
+      int r = shv_basic_auth_filter(req, res, params);
+
+      expect(r i== 1); // stop routing
+
+      expect(res->status_code i== 401);
+      expect(flu_list_get(req->routing_d, "_user") == NULL);
+
+      expect(flu_list_get(res->headers, "WWW-Authenticate") === ""
+        "Basic realm=\"wonderland\"");
+    }
   }
 }
 
