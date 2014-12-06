@@ -24,33 +24,49 @@ context "auth"
     if (res != NULL) shv_response_free(res);
   }
 
+  int specauth(const char *user, const char *pass, flu_dict *params)
+  {
+    return (strcmp(user, pass) == 0);
+  }
+
   describe "shv_basic_auth_filter()"
   {
-    it "authentifies"
+    it "authentifies (hit)"
     {
-      expect(0 == 1);
+      req = shv_parse_request_head(
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "Authorization: Basic dG90bzp0b3Rv\r\n"
+        "\r\n");
+
+      params = flu_d("func", specauth, NULL);
+
+      int r = shv_basic_auth_filter(req, res, params);
+
+      expect(r i== 0); // continue routing
+      expect(flu_list_get(req->routing_d, "_user") === "toto");
     }
-//    it "serves files"
-//    {
-//      req = shv_parse_request_head(
-//        "GET /x/y/a/b/hello.txt HTTP/1.1\r\n"
-//        "Host: http://www.example.com\r\n"
-//        "\r\n");
-//
-//      flu_list_set(req->routing_d, "**", rdz_strdup("a/b/hello.txt"));
-//
-//      params = flu_d("root", "../spec/www", NULL);
-//      int r = shv_dir_handler(req, res, params);
-//
-//      expect(r i== 1);
-//
-//      expect(flu_list_get(res->headers, "X-Accel-Redirect") === ""
-//        "../spec/www/a/b/hello.txt");
-//      expect(flu_list_get(res->headers, "shv_content_length") === ""
-//        "12");
-//      expect(flu_list_get(res->headers, "content-type") === ""
-//        "text/plain");
-//    }
+
+    it "authentifies (miss)"
+    {
+      req = shv_parse_request_head(
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "Authorization: Basic nadanadanada\r\n"
+        "\r\n");
+
+      params = flu_d("func", specauth, NULL);
+
+      int r = shv_basic_auth_filter(req, res, params);
+
+      expect(r i== 1); // stop routing
+
+      expect(res->status_code i== 401);
+      expect(flu_list_get(req->routing_d, "_user") == NULL);
+
+      expect(flu_list_get(res->headers, "WWW-Authenticate") === ""
+        "Basic realm=\"shervin\"");
+    }
   }
 }
 
