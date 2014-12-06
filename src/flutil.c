@@ -34,6 +34,8 @@
 #include <unistd.h>
 #include <libgen.h>
 #include <errno.h>
+#include <dirent.h>
+#include <wordexp.h>
 
 #include "flutil.h"
 
@@ -507,6 +509,100 @@ int flu_mkdir_p(const char *path, ...)
   return r;
 }
 
+ssize_t flu_rm_files(const char *path, ...)
+{
+  va_list ap; va_start(ap, path); char *p = flu_svprintf(path, ap); va_end(ap);
+
+  ssize_t r = 0;
+
+  wordexp_t we;
+  wordexp(p, &we, WRDE_NOCMD);
+
+  for (size_t i = 0; i < we.we_wordc; ++i)
+  {
+    if (unlink(we.we_wordv[i]) != 0) { r = -1; goto _over; }
+    ++r;
+  }
+
+_over:
+
+  wordfree(&we);
+  free(p);
+
+  return r;
+}
+
+int flu_empty_dir(const char *path, ...)
+{
+  va_list ap; va_start(ap, path); char *p = flu_svprintf(path, ap); va_end(ap);
+
+  int r = 0;
+  char *pa = NULL;
+
+  DIR *dir = opendir(p);
+  if (dir == NULL) { r = 1; goto _over; }
+
+  struct dirent *de;
+  while ((de = readdir(dir)) != NULL)
+  {
+    if (*de->d_name == '.') continue;
+
+    free(pa); pa = flu_path("%s/%s", p, de->d_name);
+
+    if (de->d_type == 4) // dir
+    {
+      flu_empty_dir(pa);
+
+      if (rmdir(pa) != 0) { r = 2; goto _over; }
+    }
+    else // not a dir
+    {
+      if (unlink(pa) != 0) { r = 3; goto _over; }
+    }
+  }
+
+_over:
+
+  free(pa);
+  if (dir) closedir(dir);
+  free(p);
+
+  return r;
+}
+
+int flu_prune_empty_dirs(const char *path, ...)
+{
+  va_list ap; va_start(ap, path); char *p = flu_svprintf(path, ap); va_end(ap);
+
+  int r = 1;
+
+  DIR *dir = opendir(p);
+  if (dir == NULL) goto _over;
+
+  char *pa = NULL;
+
+  struct dirent *de;
+  while ((de = readdir(dir)) != NULL)
+  {
+    if (strcmp(de->d_name, ".") == 0) continue;
+    if (strcmp(de->d_name, "..") == 0) continue;
+
+    if (de->d_type != 4) { r = 0; continue; }
+
+    free(pa); pa = flu_path("%s/%s", p, de->d_name);
+
+    if (flu_prune_empty_dirs(pa) == 0 || rmdir(pa) != 0) r = 0;
+  }
+
+_over:
+
+  free(pa);
+  if (dir) closedir(dir);
+  free(p);
+
+  return r;
+}
+
 
 //
 // flu_list
@@ -523,6 +619,8 @@ static flu_node *flu_node_malloc(void *item)
 
 void flu_node_free(flu_node *n)
 {
+  if (n == NULL) return;
+
   if (n->key != NULL) free(n->key);
   free(n);
 }
@@ -981,16 +1079,12 @@ char *flu_pline(const char *cmd, ...)
 {
   va_list ap; va_start(ap, cmd); char *c = flu_svprintf(cmd, ap); va_end(ap);
 
-  char *s = NULL; size_t l = 0;
+  char *r = flu_plines(c);
 
-  FILE *f = popen(c, "r"); if (f == NULL) { free(c); return NULL; }
-
-  getline(&s, &l, f);
-
-  fclose(f);
   free(c);
-  if (s) s[strlen(s) - 1] = 0;
 
-  return s;
+  char *lf = strchr(r, '\n'); if (lf) *lf = 0;
+
+  return r;
 }
 
