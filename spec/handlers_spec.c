@@ -298,6 +298,30 @@ context "handlers"
         "text/html");
     }
 
+    it "serves files without a wildcard path (GET)"
+    {
+      con->routes = (shv_route *[]){
+        shv_rp("GET /a/b/index.html",
+          shv_dir_handler,
+            "root", "../spec/www", NULL),
+        NULL // do not forget it
+      };
+
+      con->req = shv_parse_request_head(
+        "GET /a/b/index.html HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      shv_handle(NULL, eio);
+
+      expect(flu_list_get(con->res->headers, "X-Accel-Redirect") === ""
+        "../spec/www/a/b/index.html");
+      expect(flu_list_get(con->res->headers, "shv_content_length") === ""
+        "13");
+      expect(flu_list_get(con->res->headers, "content-type") === ""
+        "text/html");
+    }
+
     it "serves files without a wilcard path but with a start param"
     {
       con->routes = (shv_route *[]){

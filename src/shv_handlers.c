@@ -95,6 +95,7 @@ int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
   if (p == NULL)
   {
     char *path = (char *)flu_list_get(params, "path");
+    char *rpath = (char *)flu_list_get(req->uri_d, "_path");
 
     if (path && strstr(path, "**")) return 0;
 
@@ -104,12 +105,12 @@ int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
     if (s)
     {
       size_t sl = strlen(s);
-      if (strncmp(path, s, sl) != 0) return 0;
-      p = path + sl;
+      if (strncmp(rpath, s, sl) != 0) return 0;
+      p = rpath + sl;
     }
     else
     {
-      p = path;
+      p = rpath;
     }
   }
 
