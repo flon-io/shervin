@@ -46,7 +46,7 @@ context "handle"
 
   before each
   {
-    struct ev_io *eio = calloc(1, sizeof(shv_con));
+    struct ev_io *eio = calloc(1, sizeof(ev_io));
     shv_con *con = calloc(1, sizeof(shv_con));
     eio->data = con;
   }
