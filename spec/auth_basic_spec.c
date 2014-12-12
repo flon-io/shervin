@@ -9,7 +9,7 @@
 #include "shv_protected.h" // direct access to shv_request methods
 
 
-context "auth"
+context "basic auth:"
 {
   before each
   {
@@ -19,9 +19,9 @@ context "auth"
   }
   after each
   {
-    if (req != NULL) shv_request_free(req);
-    if (params != NULL) flu_list_free(params);
-    if (res != NULL) shv_response_free(res);
+    shv_request_free(req);
+    flu_list_free(params);
+    shv_response_free(res);
   }
 
   int specauth(const char *user, const char *pass, flu_dict *params)
