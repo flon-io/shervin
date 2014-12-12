@@ -34,7 +34,6 @@
 
 #include "flutil.h"
 #include "flu64.h"
-//#include "gajeta.h"
 #include "shervin.h"
 #include "shv_protected.h"
 
@@ -65,7 +64,10 @@ int shv_basic_auth_filter(
 
   *pass = 0; pass = pass + 1;
 
-  shv_authenticate *a = flu_list_getd(params, "func", no_auth);
+  shv_authenticate *a = flu_list_get(params, "func");
+  if (a == NULL) a = flu_list_get(params, "a");
+  if (a == NULL) a = no_auth;
+
   if (a(user, pass, params) == 0) goto _over;
 
   r = 0; // success
@@ -88,3 +90,4 @@ _over:
 
   return r;
 }
+

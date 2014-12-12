@@ -39,7 +39,8 @@ context "basic auth:"
         "Authorization: Basic dG90bzp0b3Rv\r\n"
         "\r\n");
 
-      params = flu_d("func", specauth, NULL);
+      //params = flu_d("func", specauth, NULL);
+      params = flu_d("a", specauth, NULL);
 
       int r = shv_basic_auth_filter(req, res, params);
 
@@ -55,7 +56,8 @@ context "basic auth:"
         "Authorization: Basic nadanadanada\r\n"
         "\r\n");
 
-      params = flu_d("func", specauth, NULL);
+      //params = flu_d("func", specauth, NULL);
+      params = flu_d("a", specauth, NULL);
 
       int r = shv_basic_auth_filter(req, res, params);
 
@@ -76,7 +78,8 @@ context "basic auth:"
         "Authorization: Basic nadanadanada\r\n"
         "\r\n");
 
-      params = flu_d("func", specauth, "realm", "wonderland", NULL);
+      //params = flu_d("func", specauth, "realm", "wonderland", NULL);
+      params = flu_d("a", specauth, "realm", "wonderland", NULL);
 
       int r = shv_basic_auth_filter(req, res, params);
 
