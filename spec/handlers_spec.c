@@ -11,21 +11,21 @@
 
 context "handlers"
 {
-  before each
-  {
-    shv_request *req = NULL;
-    flu_dict *params = NULL;
-    shv_response *res = shv_response_malloc(200);
-  }
-  after each
-  {
-    if (req != NULL) shv_request_free(req);
-    if (params != NULL) flu_list_free(params);
-    if (res != NULL) shv_response_free(res);
-  }
-
   describe "shv_dir_handler()"
   {
+    before each
+    {
+      shv_request *req = NULL;
+      flu_dict *params = NULL;
+      shv_response *res = shv_response_malloc(200);
+    }
+    after each
+    {
+      shv_request_free(req);
+      flu_list_free(params);
+      shv_response_free(res);
+    }
+
     it "serves files"
     {
       req = shv_parse_request_head(
@@ -188,7 +188,17 @@ context "handlers"
   {
     before each
     {
+      shv_request *req = NULL;
+      flu_dict *params = NULL;
+      shv_response *res = shv_response_malloc(200);
+
       params = flu_list_malloc();
+    }
+    after each
+    {
+      shv_request_free(req);
+      flu_list_free(params);
+      shv_response_free(res);
     }
 
     it "returns -1 when it doesn't find a file"
