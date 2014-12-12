@@ -92,7 +92,26 @@ ssize_t shv_serve_file(
 int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
 {
   char *p = flu_list_get(req->routing_d, "**");
-  if (p == NULL) return 0;
+  if (p == NULL)
+  {
+    char *path = (char *)flu_list_get(params, "path");
+
+    if (path && strstr(path, "**")) return 0;
+
+    char *s = (char *)flu_list_get(params, "start");
+    if (s == NULL) s = (char *)flu_list_get(params, "s");
+
+    if (s)
+    {
+      size_t sl = strlen(s);
+      if (strncmp(path, s, sl) != 0) return 0;
+      p = path + sl;
+    }
+    else
+    {
+      p = path;
+    }
+  }
 
   //fgaj_d("p: %s", p);
 

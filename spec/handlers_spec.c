@@ -231,5 +231,96 @@ context "handlers"
         "text/html");
     }
   }
+
+  describe "shv_dir_handler()"
+  {
+    before each
+    {
+      struct ev_io *eio = calloc(1, sizeof(ev_io));
+      shv_con *con = calloc(1, sizeof(shv_con));
+      eio->data = con;
+    }
+    after each
+    {
+      for (size_t i = 0; con->routes[i] != NULL; ++i)
+      {
+        flu_list_free(con->routes[i]->params);
+        free(con->routes[i]);
+      }
+      //free(con->routes); // not malloc'ed
+      shv_request_free(con->req);
+      shv_response_free(con->res);
+      free(con);
+      free(eio);
+    }
+
+    it "serves files with a wildcard path"
+    {
+      con->routes = (shv_route *[]){
+        shv_rp("/x/y/**", shv_dir_handler, "root", "../spec/www", NULL),
+        NULL // do not forget it
+      };
+
+      con->req = shv_parse_request_head(
+        "GET /x/y/a/b/index.html HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      shv_handle(NULL, eio);
+
+      expect(flu_list_get(con->res->headers, "X-Accel-Redirect") === ""
+        "../spec/www/a/b/index.html");
+      expect(flu_list_get(con->res->headers, "shv_content_length") === ""
+        "13");
+      expect(flu_list_get(con->res->headers, "content-type") === ""
+        "text/html");
+    }
+
+    it "serves files without a wildcard path"
+    {
+      con->routes = (shv_route *[]){
+        shv_rp("/a/b/index.html", shv_dir_handler, "root", "../spec/www", NULL),
+        NULL // do not forget it
+      };
+
+      con->req = shv_parse_request_head(
+        "GET /a/b/index.html HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      shv_handle(NULL, eio);
+
+      expect(flu_list_get(con->res->headers, "X-Accel-Redirect") === ""
+        "../spec/www/a/b/index.html");
+      expect(flu_list_get(con->res->headers, "shv_content_length") === ""
+        "13");
+      expect(flu_list_get(con->res->headers, "content-type") === ""
+        "text/html");
+    }
+
+    it "serves files without a wilcard path but with a start param"
+    {
+      con->routes = (shv_route *[]){
+        shv_rp("/x/y/a/b/index.html",
+          shv_dir_handler,
+            "root", "../spec/www", "s", "/x/y", NULL),
+        NULL // do not forget it
+      };
+
+      con->req = shv_parse_request_head(
+        "GET /x/y/a/b/index.html HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      shv_handle(NULL, eio);
+
+      expect(flu_list_get(con->res->headers, "X-Accel-Redirect") === ""
+        "../spec/www/a/b/index.html");
+      expect(flu_list_get(con->res->headers, "shv_content_length") === ""
+        "13");
+      expect(flu_list_get(con->res->headers, "content-type") === ""
+        "text/html");
+    }
+  }
 }
 
