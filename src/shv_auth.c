@@ -118,6 +118,11 @@ static void shv_session_free(shv_session *s)
 
 flu_dict *session_store;
 
+flu_dict *shv_session_store()
+{
+  return session_store;
+}
+
 void shv_session_add(const char *user, const char *sid, long long nowus)
 {
   if (session_store == NULL) session_store = flu_list_malloc();
