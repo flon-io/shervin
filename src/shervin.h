@@ -103,8 +103,9 @@ typedef int shv_authenticate(
 
 int shv_basic_auth_filter(
   shv_request *req, shv_response *res, flu_dict *params);
-//int shv_session_auth_filter(
-//  shv_request *req, shv_response *res, flu_dict *params);
+
+int shv_session_auth_filter(
+  shv_request *req, shv_response *res, flu_dict *params);
 
 // serving
 

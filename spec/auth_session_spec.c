@@ -16,38 +16,70 @@ context "session auth:"
     shv_request *req = NULL;
     flu_dict *params = NULL;
     shv_response *res = shv_response_malloc(200);
+
+    params = flu_d(
+      "a", sa_specauth,
+      "n", "shervin.test",
+      NULL);
+
+    shv_sauth_memstore_add("toto", "123abcdef");
   }
   after each
   {
     shv_request_free(req);
     flu_list_free(params);
     shv_response_free(res);
+
+    shv_sauth_memstore_reset();
   }
 
-  //int specauth(const char *user, const char *pass, flu_dict *params)
-  //{
-  //  return (strcmp(user, pass) == 0);
-  //}
+  int sa_specauth(const char *user, const char *pass, flu_dict *params)
+  {
+    return (strcmp(user, pass) == 0);
+  }
 
   describe "shv_session_auth_filter()"
   {
     it "authentifies (hit)"
-//    {
-//      req = shv_parse_request_head(
-//        "GET /x HTTP/1.1\r\n"
-//        "Host: http://www.example.com\r\n"
-//        "Authorization: Basic dG90bzp0b3Rv\r\n"
-//        "\r\n");
-//
-//      params = flu_d("a", specauth, NULL);
-//
-//      int r = shv_basic_auth_filter(req, res, params);
-//
-//      expect(r i== 0); // continue routing
-//      expect(flu_list_get(req->routing_d, "_user") === "toto");
-//    }
+    {
+      req = shv_parse_request_head(
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "Cookie: geo.nada=timbuk; shervin.test=abcdef; o.ther=1234abc\r\n"
+        "\r\n");
 
-    it "authentifies (miss)"
+      int r = shv_session_auth_filter(req, res, params);
+
+      expect(r i== 0); // continue routing
+      expect(flu_list_get(req->routing_d, "_user") === "toto");
+    }
+
+    it "authentifies (hit, cookie last)"
+    {
+      req = shv_parse_request_head(
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "Cookie: geo.nada=timbuk; shervin.test=abcdef\r\n"
+        "\r\n");
+
+      int r = shv_session_auth_filter(req, res, params);
+
+      expect(r i== 0); // continue routing
+      expect(flu_list_get(req->routing_d, "_user") === "toto");
+    }
+
+    it "authentifies (miss, no cookie)"
+    {
+      req = shv_parse_request_head(
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      int r = shv_session_auth_filter(req, res, params);
+
+      expect(r i== 1); // stop routing
+    }
+//    it "authentifies (miss)"
 //    {
 //      req = shv_parse_request_head(
 //        "GET /x HTTP/1.1\r\n"

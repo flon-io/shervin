@@ -37,10 +37,15 @@
 #include "shervin.h"
 #include "shv_protected.h"
 
+
 static int no_auth(const char *user, const char *path, flu_dict *params)
 {
   return 0;
 }
+
+
+//
+// basic authentication
 
 int shv_basic_auth_filter(
   shv_request *req, shv_response *res, flu_dict *params)
@@ -87,6 +92,74 @@ _over:
   }
 
   free(user);
+
+  return r;
+}
+
+
+//
+// session (cookie) authentication
+
+flu_dict *memstore;
+
+void shv_sauth_memstore_add(const char *uname, const char *val)
+{
+  if (memstore == NULL) memstore = flu_list_malloc();
+
+  flu_list_set(memstore, uname, strdup(val));
+}
+
+void shv_sauth_memstore_reset()
+{
+  flu_list_free_all(memstore); memstore = NULL;
+}
+
+char *shv_sauth_memstore_authenticate(const char *cookie)
+{
+}
+
+int shv_session_auth_filter(
+  shv_request *req, shv_response *res, flu_dict *params)
+{
+  int r = 1; // handled (do not got to the next route)
+
+  char *cname = flu_list_get(params, "name");
+  if (cname == NULL) cname = flu_list_get(params, "n");
+  if (cname == NULL) cname = "flon.io.shervin";
+
+  char *cookies = flu_list_get(req->headers, "cookie");
+  if (cookies == NULL) goto _over;
+
+  puts(cookies);
+
+  char *c = NULL;
+  for (char *cs = cookies; cs; cs = strchr(cs, ';'))
+  {
+    while (*cs == ';' || *cs == ' ') ++cs;
+
+    char *eq = strchr(cs, '=');
+    if (eq == NULL) break;
+
+    //printf(">%s<\n", strndup(cs, eq - cs));
+    if (strncmp(cs, cname, eq - cs) != 0) continue;
+
+    char *eoc = strchr(eq + 1, ';');
+    c = eoc ? strndup(eq + 1, eoc - eq - 1) : strdup(eq + 1);
+    break;
+  }
+
+  printf("c >%s<\n", c);
+  char *user = NULL;
+  // TODO: authenticate
+
+  free(c);
+
+  if (user == NULL) goto _over;
+
+  r = 0; // success
+  flu_list_set(req->routing_d, "_user", strdup(user));
+
+_over:
 
   return r;
 }
