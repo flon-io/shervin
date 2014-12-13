@@ -5,6 +5,7 @@
 // Fri Dec 12 22:32:08 JST 2014
 //
 
+#include "flutim.h"
 #include "shervin.h"
 #include "shv_protected.h" // direct access to shv_request methods
 
@@ -22,7 +23,7 @@ context "session auth:"
       "n", "shervin.test",
       NULL);
 
-    shv_sauth_memstore_add("toto", "123abcdef");
+    shv_session_add("toto", "abcdef123", flu_gets('u'));
   }
   after each
   {
@@ -30,7 +31,7 @@ context "session auth:"
     flu_list_free(params);
     shv_response_free(res);
 
-    shv_sauth_memstore_reset();
+    shv_session_store_reset();
   }
 
   int sa_specauth(const char *user, const char *pass, flu_dict *params)
@@ -45,13 +46,15 @@ context "session auth:"
       req = shv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
-        "Cookie: geo.nada=timbuk; shervin.test=abcdef; o.ther=1234abc\r\n"
+        "Cookie: geo.nada=timbuk; shervin.test=abcdef123; o.ther=1234abc\r\n"
         "\r\n");
 
       int r = shv_session_auth_filter(req, res, params);
 
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_user") === "toto");
+
+      expect(flu_list_get(res->headers, "set-cookie") === "xxx");
     }
 
     it "authentifies (hit, cookie last)"
@@ -59,13 +62,15 @@ context "session auth:"
       req = shv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
-        "Cookie: geo.nada=timbuk; shervin.test=abcdef\r\n"
+        "Cookie: geo.nada=timbuk; shervin.test=abcdef123\r\n"
         "\r\n");
 
       int r = shv_session_auth_filter(req, res, params);
 
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_user") === "toto");
+
+      expect(flu_list_get(res->headers, "set-cookie") === "xxx");
     }
 
     it "authentifies (miss, no cookie)"
@@ -78,6 +83,8 @@ context "session auth:"
       int r = shv_session_auth_filter(req, res, params);
 
       expect(r i== 1); // stop routing
+
+      expect(flu_list_get(res->headers, "set-cookie") == NULL);
     }
 //    it "authentifies (miss)"
 //    {

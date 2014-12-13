@@ -32,7 +32,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "flutil.h"
+//#include "flutil.h"
+#include "flutim.h"
 #include "flu64.h"
 #include "shervin.h"
 #include "shv_protected.h"
@@ -100,22 +101,79 @@ _over:
 //
 // session (cookie) authentication
 
-flu_dict *memstore;
+typedef struct {
+  char *user;
+  char *sid;
+  long long mtimeus; // microseconds
+} shv_session;
 
-void shv_sauth_memstore_add(const char *uname, const char *val)
+static void shv_session_free(shv_session *s)
 {
-  if (memstore == NULL) memstore = flu_list_malloc();
+  if (s == NULL) return;
 
-  flu_list_set(memstore, uname, strdup(val));
+  free(s->user);
+  free(s->sid);
+  free(s);
 }
 
-void shv_sauth_memstore_reset()
+flu_dict *session_store;
+
+void shv_session_add(const char *user, const char *sid, long long nowus)
 {
-  flu_list_free_all(memstore); memstore = NULL;
+  if (session_store == NULL) session_store = flu_list_malloc();
+
+  shv_session *e = calloc(1, sizeof(shv_session));
+  e->user = strdup(user);
+  e->sid = strdup(sid);
+  e->mtimeus = nowus;
+
+  flu_list_unshift(session_store, e);
 }
 
-char *shv_sauth_memstore_authenticate(const char *cookie)
+void shv_session_store_reset()
 {
+  flu_list_free_all(session_store);
+  session_store = NULL;
+}
+
+static shv_session *lookup_session(
+  long long nowus, const char *sid, long expus)
+{
+  shv_session *r = NULL;
+
+  size_t count = 0;
+  flu_node *last = NULL;
+
+  for (flu_node *fn = session_store->first; fn; fn = fn->next)
+  {
+    shv_session *s = fn->item;
+
+    if (nowus > s->mtimeus + expus) break;
+
+    if (strcmp(s->sid, sid) == 0) { r = s; last = NULL; break; }
+
+    last = fn; ++count;
+  }
+
+  if (r) return r;
+
+  session_store->size = count;
+  session_store->last = last;
+  if (last == NULL) session_store->first = NULL;
+
+  for (flu_node *fn = last, *next = NULL; fn; fn = next)
+  {
+    next = fn->next;
+    shv_session_free(fn->item);
+    flu_node_free(fn);
+  }
+
+  return NULL;
+}
+
+static void set_session_cookie(shv_response *res, shv_session *ses)
+{
+  // TODO
 }
 
 int shv_session_auth_filter(
@@ -130,9 +188,7 @@ int shv_session_auth_filter(
   char *cookies = flu_list_get(req->headers, "cookie");
   if (cookies == NULL) goto _over;
 
-  puts(cookies);
-
-  char *c = NULL;
+  char *sid = NULL;
   for (char *cs = cookies; cs; cs = strchr(cs, ';'))
   {
     while (*cs == ';' || *cs == ' ') ++cs;
@@ -140,24 +196,25 @@ int shv_session_auth_filter(
     char *eq = strchr(cs, '=');
     if (eq == NULL) break;
 
-    //printf(">%s<\n", strndup(cs, eq - cs));
     if (strncmp(cs, cname, eq - cs) != 0) continue;
 
     char *eoc = strchr(eq + 1, ';');
-    c = eoc ? strndup(eq + 1, eoc - eq - 1) : strdup(eq + 1);
+    sid = eoc ? strndup(eq + 1, eoc - eq - 1) : strdup(eq + 1);
     break;
   }
 
-  printf("c >%s<\n", c);
-  char *user = NULL;
-  // TODO: authenticate
+  shv_session *s =
+    lookup_session(req->startus, sid, 24 * 3600 * 1000 * 1000);
 
-  free(c);
+  free(sid);
 
-  if (user == NULL) goto _over;
+  if (s == NULL) goto _over;
 
   r = 0; // success
-  flu_list_set(req->routing_d, "_user", strdup(user));
+
+  flu_list_set(req->routing_d, "_user", strdup(s->user));
+
+  set_session_cookie(res, s);
 
 _over:
 

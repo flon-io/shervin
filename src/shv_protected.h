@@ -98,8 +98,8 @@ char *shv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...);
 //
 // auth
 
-void shv_sauth_memstore_add(const char *uname, const char *val);
-void shv_sauth_memstore_reset();
+void shv_session_add(const char *user, const char *sid, long long nowus);
+void shv_session_store_reset();
 
 
 //
