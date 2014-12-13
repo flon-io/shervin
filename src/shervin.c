@@ -125,7 +125,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     con->head = NULL;
 
     con->req = shv_parse_request_head(head);
-    con->req->startus = 1000 * 1000 * ev_now(l);
+    con->req->startus = ev_now(l) * 1000000;
     con->rqount++;
 
     free(head);
