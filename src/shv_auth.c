@@ -150,12 +150,16 @@ static shv_session *lookup_session(
 
     if (nowus > s->mtimeus + expus) break;
 
-    if (strcmp(s->sid, sid) == 0) { r = s; last = NULL; break; }
+    if (strcmp(s->sid, sid) == 0) { r = s; break; }
 
     last = fn; ++count;
   }
 
   if (r) return r;
+    // TODO generate new session (or recyle this one) and return it
+    //      instead
+
+  // TODO enventually let clean up before returning found session
 
   session_store->size = count;
   session_store->last = last;
