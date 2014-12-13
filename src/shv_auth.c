@@ -137,7 +137,7 @@ void shv_session_add(const char *user, const char *sid, long long nowus)
 
 void shv_session_store_reset()
 {
-  flu_list_free_all(session_store);
+  flu_list_and_items_free(session_store, (void (*)(void *))shv_session_free);
   session_store = NULL;
 }
 
@@ -213,7 +213,7 @@ int shv_session_auth_filter(
   }
 
   shv_session *s =
-    lookup_session(req->startus, sid, 24 * 3600 * 1000 * 1000);
+    lookup_session(req->startus, sid, (long)24 * 3600 * 1000 * 1000);
 
   free(sid);
 
