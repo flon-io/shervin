@@ -54,6 +54,12 @@ context "session auth:"
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_user") === "toto");
 
+      //expect(shv_session_store()->size == 1);
+      ////
+      //shv_session *s = shv_session_store()->first->item;
+      //expect(s->sid !== "abcdef123");
+      //  // session entry simply got with new sid and new mtimeus
+
       expect(flu_list_get(res->headers, "set-cookie") === "xxx");
     }
 
@@ -69,6 +75,8 @@ context "session auth:"
 
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_user") === "toto");
+
+      expect(shv_session_store()->size == 1);
 
       expect(flu_list_get(res->headers, "set-cookie") === "xxx");
     }

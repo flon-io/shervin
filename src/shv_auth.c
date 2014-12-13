@@ -107,6 +107,30 @@ typedef struct {
   long long mtimeus; // microseconds
 } shv_session;
 
+static shv_session *shv_session_malloc(char *user, char *sid, long long mtimeus)
+{
+  shv_session *r = calloc(1, sizeof(shv_session));
+  if (r == NULL) return NULL;
+
+  r->user = user;
+  r->sid = sid;
+  r->mtimeus = mtimeus;
+
+  return r;
+}
+
+static char *shv_session_to_s(shv_session *s)
+{
+  if (s == NULL) return strdup("(shv_session null)");
+
+  char *ts = flu_sstamp(s->mtimeus / 1000000, 1, 's');
+  char *r = flu_sprintf(
+    "(shv_session '%s', '%s', %lli (%s))", s->user, s->sid, s->mtimeus, ts);
+  free(ts);
+
+  return r;
+}
+
 static void shv_session_free(shv_session *s)
 {
   if (s == NULL) return;
@@ -127,12 +151,9 @@ void shv_session_add(const char *user, const char *sid, long long nowus)
 {
   if (session_store == NULL) session_store = flu_list_malloc();
 
-  shv_session *e = calloc(1, sizeof(shv_session));
-  e->user = strdup(user);
-  e->sid = strdup(sid);
-  e->mtimeus = nowus;
-
-  flu_list_unshift(session_store, e);
+  flu_list_unshift(
+    session_store,
+    shv_session_malloc(strdup(user), strdup(sid), nowus));
 }
 
 void shv_session_store_reset()
@@ -141,10 +162,19 @@ void shv_session_store_reset()
   session_store = NULL;
 }
 
+char *generate_sid(shv_request *req, flu_dict *params)
+{
+  // bringing the params in, eventually grab a pointer to another generate
+  // sid method
+  return strdup("nada");
+}
+
 static shv_session *lookup_session(
-  long long nowus, const char *sid, long expus)
+  shv_request *req, flu_dict *params, const char *sid, long expus)
 {
   shv_session *r = NULL;
+
+  if (session_store == NULL) session_store = flu_list_malloc();
 
   size_t count = 0;
   flu_node *last = NULL;
@@ -153,16 +183,31 @@ static shv_session *lookup_session(
   {
     shv_session *s = fn->item;
 
-    if (nowus > s->mtimeus + expus) break;
+    if (req->startus > s->mtimeus + expus) break;
 
     if (strcmp(s->sid, sid) == 0) { r = s; break; }
 
     last = fn; ++count;
   }
 
-  if (r) return r;
-    // TODO generate new session (or recyle this one) and return it
-    //      instead
+  if (r)
+  {
+    char *sid = generate_sid(req, params);
+
+    if (session_store->first->item == r)
+    {
+      free(r->sid); r->sid = sid;
+      r->mtimeus = req->startus;
+    }
+    else
+    {
+      shv_session *s = shv_session_malloc(strdup(r->user), sid, req->startus);
+      flu_list_unshift(session_store, s);
+      r = s;
+    }
+
+    return r;
+  }
 
   // TODO enventually let clean up before returning found session
 
@@ -180,8 +225,12 @@ static shv_session *lookup_session(
   return NULL;
 }
 
-static void set_session_cookie(shv_response *res, shv_session *ses)
+static void set_session_cookie(
+  shv_request *req, shv_response *res, shv_session *ses)
 {
+  // x-forwarded-proto, "secure"
+  // http-only
+
   // TODO
 }
 
@@ -213,17 +262,19 @@ int shv_session_auth_filter(
   }
 
   shv_session *s =
-    lookup_session(req->startus, sid, (long)24 * 3600 * 1000 * 1000);
+    lookup_session(req, params, sid, (long)24 * 3600 * 1000 * 1000);
 
   free(sid);
 
   if (s == NULL) goto _over;
 
+  flu_putf(shv_session_to_s(s));
+
   r = 0; // success
 
   flu_list_set(req->routing_d, "_user", strdup(s->user));
 
-  set_session_cookie(res, s);
+  set_session_cookie(req, res, s);
 
 _over:
 
