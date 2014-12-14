@@ -162,11 +162,24 @@ void shv_session_store_reset()
   session_store = NULL;
 }
 
+#define RANDSIZE 48
+
 char *generate_sid(shv_request *req, flu_dict *params)
 {
   // bringing the params in, eventually grab a pointer to another generate
   // sid method
-  return strdup("nada");
+
+  char rand[RANDSIZE];
+
+  FILE *f = fopen("/dev/urandom", "r");
+  if (f == NULL) return NULL;
+
+  size_t r = fread(rand, sizeof(char), RANDSIZE, f);
+  if (r < RANDSIZE) return NULL;
+
+  if (fclose(f) != 0) return NULL;
+
+  return flu64_encode(rand, RANDSIZE);
 }
 
 static shv_session *lookup_session(
@@ -193,6 +206,7 @@ static shv_session *lookup_session(
   if (r)
   {
     char *sid = generate_sid(req, params);
+    if (sid == NULL) sid = strdup(r->strdup);
 
     if (session_store->first->item == r)
     {
