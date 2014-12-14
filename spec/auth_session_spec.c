@@ -48,19 +48,22 @@ context "session auth:"
         "Host: http://www.example.com\r\n"
         "Cookie: geo.nada=timbuk; shervin.test=abcdef123; o.ther=1234abc\r\n"
         "\r\n");
+      req->startus = flu_gets('u');
 
       int r = shv_session_auth_filter(req, res, params);
 
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_user") === "toto");
 
-      //expect(shv_session_store()->size == 1);
-      ////
-      //shv_session *s = shv_session_store()->first->item;
-      //expect(s->sid !== "abcdef123");
-      //  // session entry simply got with new sid and new mtimeus
+      expect(shv_session_store()->size == 1);
 
-      expect(flu_list_get(res->headers, "set-cookie") === "xxx");
+      shv_session *ses = shv_session_store()->first->item;
+
+      char *s = flu_list_get(res->headers, "set-cookie");
+      expect(s ^== ses->sid);
+      expect(s >== ";Expires=");
+      expect(s >== ";HttpOnly");
+      expect(strstr(s, ";Secure") == NULL);
     }
 
     it "authentifies (hit, cookie last)"
@@ -70,6 +73,7 @@ context "session auth:"
         "Host: http://www.example.com\r\n"
         "Cookie: geo.nada=timbuk; shervin.test=abcdef123\r\n"
         "\r\n");
+      req->startus = flu_gets('u');
 
       int r = shv_session_auth_filter(req, res, params);
 
@@ -78,7 +82,34 @@ context "session auth:"
 
       expect(shv_session_store()->size == 1);
 
-      expect(flu_list_get(res->headers, "set-cookie") === "xxx");
+      shv_session *ses = shv_session_store()->first->item;
+
+      char *s = flu_list_get(res->headers, "set-cookie");
+      expect(s ^== ses->sid);
+      expect(s >== ";Expires=");
+      expect(s >== ";HttpOnly");
+      expect(strstr(s, ";Secure") == NULL);
+    }
+
+    it "authentifies (hit, https)"
+    {
+      req = shv_parse_request_head(
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "Cookie: geo.nada=timbuk; shervin.test=abcdef123\r\n"
+        "X-Forwarded-Proto: https\r\n"
+        "\r\n");
+      req->startus = flu_gets('u');
+
+      int r = shv_session_auth_filter(req, res, params);
+
+      expect(r i== 0); // continue routing
+      expect(flu_list_get(req->routing_d, "_user") === "toto");
+
+      expect(shv_session_store()->size == 1);
+
+      char *s = flu_list_get(res->headers, "set-cookie");
+      expect(s $== ";Secure");
     }
 
     it "authentifies (miss, no cookie)"
@@ -87,6 +118,7 @@ context "session auth:"
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
+      req->startus = flu_gets('u');
 
       int r = shv_session_auth_filter(req, res, params);
 

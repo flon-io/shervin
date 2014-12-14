@@ -198,6 +198,19 @@ void shv_request_free(shv_request *r)
   free(r);
 }
 
+int shv_request_is_https(shv_request *r)
+{
+  if (strcmp(flu_list_getd(r->uri_d, "_scheme", ""), "https") == 0) return 1;
+
+  char *s = flu_list_getd(r->headers, "forwarded", "");
+  if (strstr(s, "proto=https")) return 1;
+
+  s = flu_list_getd(r->headers, "x-forwarded-proto", "");
+  if (strstr(s, "https")) return 1;
+
+  return 0;
+}
+
 
 //
 // spec helpers (the specs of the projects using shervin)

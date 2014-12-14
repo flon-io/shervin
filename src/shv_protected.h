@@ -45,6 +45,8 @@ ssize_t shv_request_content_length(shv_request *r);
 
 void shv_handle(struct ev_loop *l, struct ev_io *eio);
 
+int shv_request_is_https(shv_request *r);
+
 //
 // response
 
@@ -96,6 +98,16 @@ char *shv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...);
 
 
 //
+// auth
+
+typedef struct {
+  char *user;
+  char *sid;
+  long long mtimeus; // microseconds
+} shv_session;
+
+char *shv_session_to_s(shv_session *s);
+
 // auth, default (memory) session store
 
 flu_dict *shv_session_store();
