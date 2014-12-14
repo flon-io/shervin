@@ -236,8 +236,6 @@ static shv_session *lookup_session(
 static void set_session_cookie(
   shv_request *req, shv_response *res, shv_session *ses, long expiry)
 {
-  // x-forwarded-proto, "secure"
-
   //flu_putf(flu_sstamp(ses->mtimeus / 1000000 , 1, 'g'));
   char *ts = flu_sstamp((ses->mtimeus + expiry) / 1000000 , 1, 'g');
 
@@ -265,7 +263,7 @@ int shv_session_auth_filter(
   if (cname == NULL) cname = "flon.io.shervin";
 
   char *cookies = flu_list_get(req->headers, "cookie");
-  if (cookies == NULL) goto _over;
+  if (cookies == NULL) return r;
 
   char *sid = NULL;
   for (char *cs = cookies; cs; cs = strchr(cs, ';'))
@@ -286,7 +284,7 @@ int shv_session_auth_filter(
 
   free(sid);
 
-  if (s == NULL) goto _over;
+  if (s == NULL) return r;
 
   //flu_putf(shv_session_to_s(s));
 
@@ -295,8 +293,6 @@ int shv_session_auth_filter(
   flu_list_set(req->routing_d, "_user", strdup(s->user));
 
   set_session_cookie(req, res, s, SHV_SA_EXPIRY);
-
-_over:
 
   return r;
 }
