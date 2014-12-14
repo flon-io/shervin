@@ -97,10 +97,10 @@ void shv_session_store_reset()
 
 #define SHV_SA_RANDSIZE 48
 
-char *generate_sid(shv_request *req, flu_dict *params)
+static char *generate_sid(shv_request *req, flu_dict *params)
 {
-  // bringing the params in, eventually grab a pointer to another generate
-  // sid method
+  // bringing the params in,
+  // eventually grab a pointer to another generate sid method
 
   char rand[SHV_SA_RANDSIZE];
 
@@ -112,7 +112,9 @@ char *generate_sid(shv_request *req, flu_dict *params)
 
   if (fclose(f) != 0) return NULL;
 
-  return flu64_encode(rand, SHV_SA_RANDSIZE);
+  return flu64_encode(
+    rand,
+    SHV_SA_RANDSIZE - (req->startus / 1000000) % 10);
 }
 
 static shv_session *lookup_session(
