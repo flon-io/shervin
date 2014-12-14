@@ -25,77 +25,16 @@
 
 // https://github.com/flon-io/shervin
 
-// auth handlers/filters
-
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdlib.h>
 #include <string.h>
 
-//#include "flutil.h"
+#include "flutil.h"
 #include "flutim.h"
 #include "flu64.h"
 #include "shervin.h"
 #include "shv_protected.h"
-
-
-static int no_auth(const char *user, const char *path, flu_dict *params)
-{
-  return 0;
-}
-
-
-//
-// basic authentication
-
-int shv_basic_auth_filter(
-  shv_request *req, shv_response *res, flu_dict *params)
-{
-  int r = 1;
-  char *user = NULL;
-
-  if (params == NULL) goto _over;
-
-  if (flu_list_get(req->uri_d, "logout")) goto _over;
-    // /?logout logs out...
-
-  char *auth = flu_list_get(req->headers, "authorization");
-  if (auth == NULL) goto _over;
-
-  if (strncmp(auth, "Basic ", 6) != 0) goto _over;
-
-  user = flu64_decode(auth + 6, -1);
-  char *pass = strchr(user, ':');
-  if (pass == NULL) goto _over;
-
-  *pass = 0; pass = pass + 1;
-
-  shv_authenticate *a = flu_list_get(params, "func");
-  if (a == NULL) a = flu_list_get(params, "a");
-  if (a == NULL) a = no_auth;
-
-  if (a(user, pass, params) == 0) goto _over;
-
-  r = 0; // success
-  flu_list_set(req->routing_d, "_user", strdup(user));
-
-_over:
-
-  if (r == 1)
-  {
-    flu_list_set(
-      res->headers,
-      "WWW-Authenticate",
-      flu_sprintf(
-        "Basic realm=\"%s\"", flu_list_getd(params, "realm", "shervin")));
-
-    res->status_code = 401;
-  }
-
-  free(user);
-
-  return r;
-}
 
 
 //
