@@ -318,6 +318,10 @@ void flu_list_concat(flu_list *to, flu_list *from);
  */
 char *flu_list_to_s(flu_list *l);
 
+/* Same as flu_list_to_s() but one line per entry.
+ */
+char *flu_list_to_sm(flu_list *l);
+
 /* Returns a string representation of the given flu_list.
  * Instead of displaying the string values, displays their pointer info,
  * so it works with any value (well pointers).
@@ -337,7 +341,7 @@ void flu_list_set(flu_list *l, const char *key, void *item);
 
 /* Like flu_list_set() but doesn't duplicate the string key, uses it as is.
  */
-void flu_list_setk(flu_list *l, char *key, void *item);
+void flu_list_setk(flu_list *l, char *key, void *item, int set_as_last);
 
 /* Sets an item under a given key, but at then end of the list.
  * Useful for "defaults".
