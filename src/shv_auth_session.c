@@ -40,13 +40,15 @@
 //
 // session (cookie) authentication
 
-static shv_session *shv_session_malloc(char *user, char *sid, long long mtimeus)
+static shv_session *shv_session_malloc(
+  char *user, char *id, char *sid, long long mtimeus)
 {
   shv_session *r = calloc(1, sizeof(shv_session));
   if (r == NULL) return NULL;
 
-  r->user = user;
   r->sid = sid;
+  r->user = user;
+  r->id = id;
   r->mtimeus = mtimeus;
 
   return r;
@@ -58,7 +60,8 @@ char *shv_session_to_s(shv_session *s)
 
   char *ts = flu_sstamp(s->mtimeus / 1000000, 1, 's');
   char *r = flu_sprintf(
-    "(shv_session '%s', '%s', %lli (%s))", s->user, s->sid, s->mtimeus, ts);
+    "(shv_session '%s', '%s', '%s', %lli (%s))",
+    s->user, s->id, s->sid, s->mtimeus, ts);
   free(ts);
 
   return r;
@@ -68,25 +71,27 @@ static void shv_session_free(shv_session *s)
 {
   if (s == NULL) return;
 
-  free(s->user);
   free(s->sid);
+  free(s->user);
+  free(s->id);
   free(s);
 }
 
-flu_dict *session_store;
+flu_list *session_store;
 
-flu_dict *shv_session_store()
+flu_list *shv_session_store()
 {
   return session_store;
 }
 
-void shv_session_add(const char *user, const char *sid, long long nowus)
+void shv_session_add(
+  const char *user, const char *id, const char *sid, long long nowus)
 {
   if (session_store == NULL) session_store = flu_list_malloc();
 
   flu_list_unshift(
     session_store,
-    shv_session_malloc(strdup(user), strdup(sid), nowus));
+    shv_session_malloc(strdup(user), strdup(id), strdup(sid), nowus));
 }
 
 void shv_session_store_reset()
@@ -150,8 +155,11 @@ static shv_session *lookup_session(
     }
     else
     {
-      shv_session *s = shv_session_malloc(strdup(r->user), sid, req->startus);
+      shv_session *s =
+        shv_session_malloc(strdup(r->id), strdup(r->user), sid, req->startus);
+
       flu_list_unshift(session_store, s);
+
       r = s;
     }
 

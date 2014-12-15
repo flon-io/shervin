@@ -101,8 +101,9 @@ char *shv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...);
 // auth
 
 typedef struct {
-  char *user;
   char *sid;
+  char *user;
+  char *id;
   long long mtimeus; // microseconds
 } shv_session;
 
@@ -110,8 +111,11 @@ char *shv_session_to_s(shv_session *s);
 
 // auth, default (memory) session store
 
-flu_dict *shv_session_store();
-void shv_session_add(const char *user, const char *sid, long long nowus);
+flu_list *shv_session_store();
+
+void shv_session_add(
+  const char *user, const char *id, const char *sid, long long nowus);
+
 void shv_session_store_reset();
 
 

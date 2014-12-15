@@ -23,7 +23,7 @@ context "session auth:"
       "n", "shervin.test",
       NULL);
 
-    shv_session_add("toto", "abcdef123", flu_gets('u'));
+    shv_session_add("toto", "toto:1234:4567", "abcdef123", flu_gets('u'));
   }
   after each
   {
