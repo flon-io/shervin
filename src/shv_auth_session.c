@@ -124,7 +124,7 @@ static char *generate_sid(fshv_request *req, flu_dict *params)
 
   if (fclose(f) != 0) return NULL;
 
-  return flu64_encode(
+  return flu64_encode_for_url(
     rand,
     SHV_SA_RANDSIZE - (req->startus / 1000000) % 10);
 }
