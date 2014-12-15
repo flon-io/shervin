@@ -40,6 +40,12 @@
 //
 // session (cookie) authentication
 
+#define SHV_SA_RANDSIZE 48
+#define SHV_SA_EXPIRY (long)24 * 3600 * 1000 * 1000
+
+flu_list *session_store;
+char *spid;
+
 static fshv_session *fshv_session_malloc(
   char *user, char *id, char *sid, long long mtimeus)
 {
@@ -77,21 +83,22 @@ static void fshv_session_free(fshv_session *s)
   free(s);
 }
 
-flu_list *session_store;
-
 flu_list *fshv_session_store()
 {
   return session_store;
 }
 
-void fshv_session_add(
+fshv_session *fshv_session_add(
   const char *user, const char *id, const char *sid, long long nowus)
 {
   if (session_store == NULL) session_store = flu_list_malloc();
 
-  flu_list_unshift(
-    session_store,
-    fshv_session_malloc(strdup(user), strdup(id), strdup(sid), nowus));
+  fshv_session *ses =
+    fshv_session_malloc(strdup(user), strdup(id), strdup(sid), nowus);
+
+  flu_list_unshift(session_store, ses);
+
+  return ses;
 }
 
 void fshv_session_store_reset()
@@ -99,8 +106,6 @@ void fshv_session_store_reset()
   flu_list_and_items_free(session_store, (void (*)(void *))fshv_session_free);
   session_store = NULL;
 }
-
-#define SHV_SA_RANDSIZE 48
 
 static char *generate_sid(fshv_request *req, flu_dict *params)
 {
@@ -200,7 +205,23 @@ static void set_session_cookie(
   free(ts);
 }
 
-#define SHV_SA_EXPIRY (long)24 * 3600 * 1000 * 1000
+void fshv_start_session(
+  fshv_request *req, fshv_response *res, flu_dict *params, const char *user)
+{
+  if (spid == NULL) spid = flu_sprintf("%lli_%lli", getppid(), getpid());
+
+  flu_sbuffer *b = flu_sbuffer_malloc();
+  flu_sbputs(b, user); flu_sbputc(b, ':');
+  flu_sbputs(b, spid); flu_sbputc(b, ':');
+  flu_sbputs(b, flu_list_getd(req->uri_d, "_port", "80"));
+  char *id = flu_sbuffer_to_string(b);
+
+  char *sid = generate_sid(req, params);
+
+  fshv_session *ses = fshv_session_add(user, id, sid, req->startus);
+
+  set_session_cookie(req, res, ses, SHV_SA_EXPIRY);
+}
 
 int fshv_session_auth_filter(
   fshv_request *req, fshv_response *res, flu_dict *params)

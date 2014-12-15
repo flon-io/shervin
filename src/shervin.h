@@ -88,6 +88,7 @@ int fshv_filter_guard(fshv_request *req, fshv_response *res, flu_dict *params);
 int fshv_any_guard(fshv_request *req, fshv_response *res, flu_dict *params);
 int fshv_path_guard(fshv_request *req, fshv_response *res, flu_dict *params);
 
+
 // handlers
 
 /* Used by shv_dir_handler(), public since it could get useful on its own.
@@ -96,6 +97,7 @@ ssize_t fshv_serve_file(
   fshv_response *res, flu_dict *params, const char *path, ...);
 
 int fshv_dir_handler(fshv_request *req, fshv_response *res, flu_dict *params);
+
 
 // filters
 
@@ -107,6 +109,10 @@ int fshv_basic_auth_filter(
 
 int fshv_session_auth_filter(
   fshv_request *req, fshv_response *res, flu_dict *params);
+
+void fshv_start_session(
+  fshv_request *req, fshv_response *res, flu_dict *params, const char *user);
+
 
 // serving
 

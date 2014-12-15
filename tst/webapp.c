@@ -74,6 +74,26 @@ static int mirror_handler(
   return 1;
 }
 
+static int login_handler(
+  fshv_request *req, fshv_response *res, flu_dict *params)
+{
+  res->status_code = 401;
+
+  if (req->body == NULL) return 1;
+
+  // user=x;pass=y
+  char *u = strchr(req->body, '=');
+  char *ue = strchr(u, ';');
+  char *p = strchr(ue, '=');
+
+  if (strncmp(u, p, ue - u) != 0) return 1;
+
+  fshv_start_session(req, res, params);
+
+  res->status_code = 200;
+  return 1;
+}
+
 int main()
 {
   fgaj_conf_get()->logger = fgaj_grey_logger;
@@ -82,9 +102,22 @@ int main()
   fgaj_conf_get()->params = "5p";
 
   fshv_route *routes[] = {
+
+    // public zone
+
     fshv_rp("/mirror", mirror_handler, NULL),
     fshv_rp("/hello/:name", hello_handler, NULL),
     fshv_rp("/files/**", fshv_dir_handler, "r", "../spec/www", NULL),
+
+    // authentified zone
+
+    fshv_rp(
+      "POST /login", login_handler, NULL),
+    //fshv_r(
+    //  fshv_any_guard,
+    //  fshv_session_auth_filter,
+    //  "func", flon_auth_enticate, "realm", "flon", NULL),
+
     NULL
   };
 

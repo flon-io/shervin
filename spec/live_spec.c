@@ -104,5 +104,41 @@ context "live"
       expect(res->body === "not found");
     }
   }
+
+  describe "shervin and auth"
+  {
+    before each
+    {
+      fcla_response *res = NULL;
+    }
+    after each
+    {
+      fcla_response_free(res);
+    }
+
+    it "doesn't start a session upon failed login"
+    {
+      res = fcla_post("http://127.0.0.1:4001/login", NULL, "u=toto;p=nada");
+
+      expect(res->status_code i== 401);
+
+      char *s = flu_list_get(res->headers, "set-cookie");
+      expect(s == NULL);
+    }
+
+    it "starts a session upon sucessful login"
+    {
+      res = fcla_post("http://127.0.0.1:4001/login", NULL, "u=toto;p=toto");
+
+      expect(res->status_code i== 200);
+
+      //flu_putf(flu_list_to_s(res->headers));
+      char *s = flu_list_get(res->headers, "set-cookie");
+      expect(s != NULL);
+      expect(s >== ";Expires=");
+      expect(s >== ";HttpOnly");
+      expect(strstr(s, ";Secure") == NULL);
+    }
+  }
 }
 

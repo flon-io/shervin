@@ -113,7 +113,7 @@ char *fshv_session_to_s(fshv_session *s);
 
 flu_list *fshv_session_store();
 
-void fshv_session_add(
+fshv_session *fshv_session_add(
   const char *user, const char *id, const char *sid, long long nowus);
 
 void fshv_session_store_reset();
