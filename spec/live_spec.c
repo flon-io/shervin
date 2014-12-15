@@ -132,10 +132,10 @@ context "live"
 
       expect(res->status_code i== 200);
 
-      flu_putf(flu_list_to_s(res->headers));
+      flu_putf(flu_list_to_sm(res->headers));
       char *s = flu_list_get(res->headers, "set-cookie");
       expect(s != NULL);
-      expect(s ^== "xxx=");
+      expect(s ^== "flon.io.shervin=");
       expect(s >== ";Expires=");
       expect(s >== ";HttpOnly");
       expect(strstr(s, ";Secure") == NULL);
