@@ -185,7 +185,7 @@ context "live"
       res = fcla_post_d(
         "http://127.0.0.1:4001/login", "", "cookie", cookie1, NULL);
 
-      flu_putf(fcla_response_to_s(res));
+      //flu_putf(fcla_response_to_s(res));
       expect(res->status_code i== 200);
 
       // unauthorized
@@ -194,8 +194,10 @@ context "live"
       res = fcla_get_d(
         "http://127.0.0.1:4001/secret", "cookie", cookie1, NULL);
 
-      flu_putf(fcla_response_to_s(res));
+      //flu_putf(fcla_response_to_s(res));
       expect(res->status_code i== 401);
+
+      free(cookie0); free(cookie1);
     }
   }
 }
