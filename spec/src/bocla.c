@@ -34,20 +34,30 @@
 #include <unistd.h>
 #include <curl/curl.h>
 
+#include "flutil.h"
 #include "bocla.h"
 
 
-void fcla_response_free(fcla_response *r)
+char *fcla_response_to_s(fcla_response *r)
 {
-  //if (r->headers != NULL) flu_list_free(r->headers); // not enough
-  if (r->headers != NULL) flu_list_and_items_free(r->headers, free);
-  if (r->body != NULL) free(r->body);
-  free(r);
+  flu_sbuffer *sb = flu_sbuffer_malloc();
+
+  flu_sbprintf(sb, "<--res-->\n");
+  flu_sbprintf(sb, "  status_code: %i\n", r->status_code);
+  if (r->headers) for (flu_node *n = r->headers->first; n; n = n->next)
+    flu_sbprintf(sb, "  * \"%s\": \"%s\"\n", n->key, (char *)n->item);
+  flu_sbprintf(sb, "  body >>>\n%s\n<<<\n", r->body);
+  flu_sbprintf(sb, "</--res-->\n");
+
+  return flu_sbuffer_to_string(sb);
 }
 
-static size_t fcla_w(void *v, size_t s, size_t n, void *b)
+void fcla_response_free(fcla_response *r)
 {
-  return flu_sbfwrite(b, v, s, n);
+  if (r == NULL) return; // like free() does
+  if (r->headers != NULL) flu_list_and_items_free(r->headers, free);
+  free(r->body);
+  free(r);
 }
 
 static short fcla_extract_status(char *head)
@@ -81,10 +91,11 @@ flu_list *fcla_extract_headers(char *head)
   return l;
 }
 
-static fcla_response *fcla_request(
+fcla_response *fcla_do_request(
   char meth,
   char *uri,
   flu_list *headers,
+  char *dpath,
   char *sbody,
   FILE *fbody)
 {
@@ -94,13 +105,17 @@ static fcla_response *fcla_request(
   char *buffer = NULL;
   flu_sbuffer *bhead = NULL;
   flu_sbuffer *bbody = NULL;
+  FILE *dfile = NULL;
 
   CURL *curl;
   struct curl_slist *cheaders = NULL;
 
   curl = curl_easy_init();
 
-  if (curl == NULL) { res->body = "curl initialization failed"; goto _done; }
+  if (curl == NULL) {
+    res->body = strdup("curl initialization failed");
+    goto _done;
+  }
 
   buffer = calloc(512, sizeof(char));
 
@@ -116,13 +131,24 @@ static fcla_response *fcla_request(
   curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, buffer);
   curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
   curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, fcla_w);
 
   bhead = flu_sbuffer_malloc();
-  bbody = flu_sbuffer_malloc();
-  //
-  curl_easy_setopt(curl, CURLOPT_HEADERDATA, bhead);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, bbody);
+  curl_easy_setopt(curl, CURLOPT_HEADERDATA, bhead->stream);
+
+  if (dpath)
+  {
+    dfile = fopen(dpath, "w");
+
+    if (dfile == NULL) {
+      res->body = flu_sprintf("failed to open target file %s", dpath);
+      goto _done;
+    }
+  }
+  else
+  {
+    bbody = flu_sbuffer_malloc();
+  }
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, dfile ? dfile : bbody->stream);
 
   if (meth == 'p' || meth == 'u')
   {
@@ -141,9 +167,35 @@ static fcla_response *fcla_request(
 
   if (headers != NULL)
   {
+    // basic auth
+
+    char *us = flu_list_get(headers, "_u");
+    if (us)
+    {
+      char *pa = flu_list_get(headers, "_p"); if (pa == NULL) pa = "";
+
+      curl_easy_setopt(curl, CURLOPT_USERNAME, us);
+      curl_easy_setopt(curl, CURLOPT_PASSWORD, pa);
+    }
+
+    // verbose?
+
+    char *v = flu_list_get(headers, "_v");
+    if (v && (*v == 'y' || *v == 't' || *v == '1'))
+    {
+      curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+    }
+
+    // pass headers to libcurl
+
     flu_list *tl = flu_list_dtrim(headers);
     for (flu_node *n = tl->first; n != NULL; n = n->next)
     {
+      if (
+        *n->key == '_' &&
+        (n->key[1] == 'u' || n->key[1] == 'p' || n->key[1] == 'v')
+      ) continue;
+
       char *s = flu_sprintf("%s: %s", n->key, (char *)n->item);
       cheaders = curl_slist_append(cheaders, s);
       free(s);
@@ -151,8 +203,6 @@ static fcla_response *fcla_request(
     flu_list_free(tl);
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, cheaders);
   }
-
-  //curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
 
   CURLcode r = curl_easy_perform(curl);
 
@@ -166,15 +216,17 @@ static fcla_response *fcla_request(
 
   free(shead);
 
-  res->body = flu_sbuffer_to_string(bbody); bbody = NULL;
+  if (bbody) res->body = flu_sbuffer_to_string(bbody);
+  bbody = NULL;
 
 _done:
 
   if (curl) curl_easy_cleanup(curl);
-  if (res->status_code > -1 && buffer != NULL) free(buffer);
+  if (buffer != res->body) free(buffer);
   if (bhead) flu_sbuffer_free(bhead);
   if (bbody) flu_sbuffer_free(bbody);
   if (cheaders) curl_slist_free_all(cheaders);
+  if (dfile) fclose(dfile);
 
   return res;
 }
@@ -191,10 +243,33 @@ fcla_response *fcla_ghd(char meth, char hstyle, char *uri, ...)
 
   va_end(ap);
 
-  fcla_response *r = fcla_request(meth, u, h, NULL, NULL);
+  fcla_response *r = fcla_do_request(meth, u, h, NULL, NULL, NULL);
 
   free(u);
   if (hstyle == 'd') flu_list_free_all(h);
+
+  return r;
+}
+
+// fcla_get_hf(uri, ..., flu_ldict *headers, path, ...);
+//
+fcla_response *fcla_get_hf(char *uri, ...)
+{
+  va_list ap; va_start(ap, uri);
+
+  char *u = flu_svprintf(uri, ap);
+
+  flu_dict *h = va_arg(ap, flu_dict *);
+
+  char *path = va_arg(ap, char *);
+  char *p = flu_svprintf(path, ap);
+
+  va_end(ap);
+
+  fcla_response *r = fcla_do_request('g', u, h, p, NULL, NULL);
+
+  free(u);
+  free(p);
 
   return r;
 }
@@ -227,7 +302,7 @@ fcla_response *fcla_popu(char meth, char hstyle, char bstyle, char *uri, ...)
     // TODO: error handling
   }
 
-  fcla_response *r = fcla_request(meth, u, h, f ? NULL : s, f);
+  fcla_response *r = fcla_do_request(meth, u, h, NULL, f ? NULL : s, f);
 
   free(u);
   free(s);

@@ -14,7 +14,7 @@ upgrade:
 	cp -v ../flutil/src/*.[ch] src/
 
 cupgrade:
-	cp -v ../bocla/src/bocla.[ch] spec/
+	cp -v ../bocla/src/bocla.[ch] spec/src/
 
 cs: clean spec
 
