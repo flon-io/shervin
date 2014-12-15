@@ -273,6 +273,26 @@ context "handle"
 
       ensure(flu_list_get(con->res->headers, "x-handled") === "c");
     }
+
+//    it "triggers handler when guard IS 1"
+//    {
+//      con->routes = (fshv_route *[]){
+//        fshv_r(0, han, "han", "a", NULL),
+//        fshv_r(1, han, "han", "b", NULL),
+//        NULL // do not forget it
+//      };
+//
+//      con->req = fshv_parse_request_head(
+//        "GET /x HTTP/1.1\r\n"
+//        "Host: http://www.example.com\r\n"
+//        "\r\n");
+//
+//      fshv_handle(NULL, eio);
+//
+//      ensure(flu_list_get(con->res->headers, "x-handled") === "b");
+//    }
+  //
+  // no: it triggers "makes pointer from integer" warning...
   }
 }
 
