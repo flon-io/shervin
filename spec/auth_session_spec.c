@@ -109,6 +109,8 @@ context "session auth:"
       expect(flu_list_get(req->routing_d, "_user") === "toto");
 
       expect(shv_session_store()->size == 1);
+
+      shv_session *ses = shv_session_store()->first->item;
       expect(ses->id === "toto:1234:4567");
 
       char *s = flu_list_get(res->headers, "set-cookie");

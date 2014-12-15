@@ -33,7 +33,7 @@ context "live"
     }
     after each
     {
-      if (res) fcla_response_free(res);
+      fcla_response_free(res);
     }
 
     it "serves /hello/toto"
