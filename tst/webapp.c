@@ -35,7 +35,8 @@
 
 /* Respond with 200 and the time.
  */
-static int hello_handler(shv_request *req, shv_response *res, flu_dict *params)
+static int hello_handler(
+  fshv_request *req, fshv_response *res, flu_dict *params)
 {
   res->status_code = 200;
 
@@ -48,7 +49,8 @@ static int hello_handler(shv_request *req, shv_response *res, flu_dict *params)
 
 /* Respond with a copy of the incoming request.
  */
-static int mirror_handler(shv_request *req, shv_response *res, flu_dict *params)
+static int mirror_handler(
+  fshv_request *req, fshv_response *res, flu_dict *params)
 {
   res->status_code = 200;
   //flu_list_set(res->headers, "content-type", "text/plain; charset=utf-8");
@@ -56,13 +58,13 @@ static int mirror_handler(shv_request *req, shv_response *res, flu_dict *params)
   flu_sbuffer *b = flu_sbuffer_malloc();
 
   flu_sbprintf(
-    b, "%s %s HTTP/1.1\r\n", shv_char_to_method(req->method), req->uri);
+    b, "%s %s HTTP/1.1\r\n", fshv_char_to_method(req->method), req->uri);
 
   for (flu_node *n = req->headers->first; n; n = n->next)
   {
     flu_sbprintf(b, "%s: %s\r\n", n->key, n->item);
   }
-  flu_sbprintf(b, "method: %s\r\n", shv_char_to_method(req->method));
+  flu_sbprintf(b, "method: %s\r\n", fshv_char_to_method(req->method));
   flu_sbprintf(b, "path: %s\r\n", req->uri);
   flu_sbputs(b, "\r\n");
   if (req->body) flu_sbputs(b, req->body);
@@ -79,13 +81,13 @@ int main()
   fgaj_conf_get()->out = stderr;
   fgaj_conf_get()->params = "5p";
 
-  shv_route *routes[] = {
-    shv_rp("/mirror", mirror_handler, NULL),
-    shv_rp("/hello/:name", hello_handler, NULL),
-    shv_rp("/files/**", shv_dir_handler, "r", "../spec/www", NULL),
+  fshv_route *routes[] = {
+    fshv_rp("/mirror", mirror_handler, NULL),
+    fshv_rp("/hello/:name", hello_handler, NULL),
+    fshv_rp("/files/**", fshv_dir_handler, "r", "../spec/www", NULL),
     NULL
   };
 
-  shv_serve(4001, routes);
+  fshv_serve(4001, routes);
 }
 

@@ -13,15 +13,15 @@ context "basic auth:"
 {
   before each
   {
-    shv_request *req = NULL;
+    fshv_request *req = NULL;
     flu_dict *params = NULL;
-    shv_response *res = shv_response_malloc(200);
+    fshv_response *res = fshv_response_malloc(200);
   }
   after each
   {
-    shv_request_free(req);
+    fshv_request_free(req);
     flu_list_free(params);
-    shv_response_free(res);
+    fshv_response_free(res);
   }
 
   int specauth(const char *user, const char *pass, flu_dict *params)
@@ -29,11 +29,11 @@ context "basic auth:"
     return (strcmp(user, pass) == 0);
   }
 
-  describe "shv_basic_auth_filter()"
+  describe "fshv_basic_auth_filter()"
   {
     it "authentifies (hit)"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "Authorization: Basic dG90bzp0b3Rv\r\n"
@@ -42,7 +42,7 @@ context "basic auth:"
       //params = flu_d("func", specauth, NULL);
       params = flu_d("a", specauth, NULL);
 
-      int r = shv_basic_auth_filter(req, res, params);
+      int r = fshv_basic_auth_filter(req, res, params);
 
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_user") === "toto");
@@ -50,7 +50,7 @@ context "basic auth:"
 
     it "authentifies (miss)"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "Authorization: Basic nadanadanada\r\n"
@@ -59,7 +59,7 @@ context "basic auth:"
       //params = flu_d("func", specauth, NULL);
       params = flu_d("a", specauth, NULL);
 
-      int r = shv_basic_auth_filter(req, res, params);
+      int r = fshv_basic_auth_filter(req, res, params);
 
       expect(r i== 1); // stop routing
 
@@ -72,7 +72,7 @@ context "basic auth:"
 
     it "accepts a 'realm' parameter"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "Authorization: Basic nadanadanada\r\n"
@@ -81,7 +81,7 @@ context "basic auth:"
       //params = flu_d("func", specauth, "realm", "wonderland", NULL);
       params = flu_d("a", specauth, "realm", "wonderland", NULL);
 
-      int r = shv_basic_auth_filter(req, res, params);
+      int r = fshv_basic_auth_filter(req, res, params);
 
       expect(r i== 1); // stop routing
 

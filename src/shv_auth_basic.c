@@ -45,8 +45,8 @@ static int no_auth(const char *user, const char *path, flu_dict *params)
 //
 // basic authentication
 
-int shv_basic_auth_filter(
-  shv_request *req, shv_response *res, flu_dict *params)
+int fshv_basic_auth_filter(
+  fshv_request *req, fshv_response *res, flu_dict *params)
 {
   int r = 1;
   char *user = NULL;
@@ -67,7 +67,7 @@ int shv_basic_auth_filter(
 
   *pass = 0; pass = pass + 1;
 
-  shv_authenticate *a = flu_list_get(params, "func");
+  fshv_authenticate *a = flu_list_get(params, "func");
   if (a == NULL) a = flu_list_get(params, "a");
   if (a == NULL) a = no_auth;
 

@@ -7,31 +7,31 @@
 
 #include "flutim.h"
 #include "shervin.h"
-#include "shv_protected.h" // direct access to shv_request methods
+#include "shv_protected.h" // direct access to fshv_request methods
 
 
 context "session auth:"
 {
   before each
   {
-    shv_request *req = NULL;
+    fshv_request *req = NULL;
     flu_dict *params = NULL;
-    shv_response *res = shv_response_malloc(200);
+    fshv_response *res = fshv_response_malloc(200);
 
     params = flu_d(
       "a", sa_specauth,
       "n", "shervin.test",
       NULL);
 
-    shv_session_add("toto", "toto:1234:4567", "abcdef123", flu_gets('u'));
+    fshv_session_add("toto", "toto:1234:4567", "abcdef123", flu_gets('u'));
   }
   after each
   {
-    shv_request_free(req);
+    fshv_request_free(req);
     flu_list_free(params);
-    shv_response_free(res);
+    fshv_response_free(res);
 
-    shv_session_store_reset();
+    fshv_session_store_reset();
   }
 
   int sa_specauth(const char *user, const char *pass, flu_dict *params)
@@ -39,25 +39,25 @@ context "session auth:"
     return (strcmp(user, pass) == 0);
   }
 
-  describe "shv_session_auth_filter()"
+  describe "fshv_session_auth_filter()"
   {
     it "authentifies (hit)"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "Cookie: geo.nada=timbuk; shervin.test=abcdef123; o.ther=1234abc\r\n"
         "\r\n");
       req->startus = flu_gets('u');
 
-      int r = shv_session_auth_filter(req, res, params);
+      int r = fshv_session_auth_filter(req, res, params);
 
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_user") === "toto");
 
-      expect(shv_session_store()->size == 1);
+      expect(fshv_session_store()->size == 1);
 
-      shv_session *ses = shv_session_store()->first->item;
+      fshv_session *ses = fshv_session_store()->first->item;
       expect(ses->id === "toto:1234:4567");
 
       char *s = flu_list_get(res->headers, "set-cookie");
@@ -69,21 +69,21 @@ context "session auth:"
 
     it "authentifies (hit, cookie last)"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "Cookie: geo.nada=timbuk; shervin.test=abcdef123\r\n"
         "\r\n");
       req->startus = flu_gets('u');
 
-      int r = shv_session_auth_filter(req, res, params);
+      int r = fshv_session_auth_filter(req, res, params);
 
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_user") === "toto");
 
-      expect(shv_session_store()->size == 1);
+      expect(fshv_session_store()->size == 1);
 
-      shv_session *ses = shv_session_store()->first->item;
+      fshv_session *ses = fshv_session_store()->first->item;
       expect(ses->id === "toto:1234:4567");
 
       char *s = flu_list_get(res->headers, "set-cookie");
@@ -95,7 +95,7 @@ context "session auth:"
 
     it "authentifies (hit, https)"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "Cookie: geo.nada=timbuk; shervin.test=abcdef123\r\n"
@@ -103,14 +103,14 @@ context "session auth:"
         "\r\n");
       req->startus = flu_gets('u');
 
-      int r = shv_session_auth_filter(req, res, params);
+      int r = fshv_session_auth_filter(req, res, params);
 
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_user") === "toto");
 
-      expect(shv_session_store()->size == 1);
+      expect(fshv_session_store()->size == 1);
 
-      shv_session *ses = shv_session_store()->first->item;
+      fshv_session *ses = fshv_session_store()->first->item;
       expect(ses->id === "toto:1234:4567");
 
       char *s = flu_list_get(res->headers, "set-cookie");
@@ -119,13 +119,13 @@ context "session auth:"
 
     it "authentifies (miss, no cookie)"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
       req->startus = flu_gets('u');
 
-      int r = shv_session_auth_filter(req, res, params);
+      int r = fshv_session_auth_filter(req, res, params);
 
       expect(r i== 1); // stop routing
 

@@ -6,25 +6,25 @@
 //
 
 #include "shervin.h"
-#include "shv_protected.h" // direct access to shv_request methods
+#include "shv_protected.h" // direct access to fshv_request methods
 
 
 context "request"
 {
   before each
   {
-    shv_request *req = NULL;
+    fshv_request *req = NULL;
   }
   after each
   {
-    if (req != NULL) shv_request_free(req);
+    fshv_request_free(req);
   }
 
-  describe "shv_request_parse()"
+  describe "fshv_request_parse()"
   {
     it "parses GET requests"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET / HTTP/1.0\r\n"
         "\r\n"
       );
@@ -38,7 +38,7 @@ context "request"
 
     it "parses POST requests"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "POST /msgbin HTTP/1.1\r\n"
         "content-type: application/x-www-form-urlencoded;charset=utf-8\r\n"
         "host: https://www.example.com\r\n"
@@ -66,7 +66,7 @@ context "request"
 
     it "lowers the case of header field names"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET / HTTP/1.0\r\n"
         "Host: http://example.com\r\n"
         "X-Whatever: nada\r\n"
@@ -80,7 +80,7 @@ context "request"
 
     it "returns a req with ->status_code == 400 when it cannot parse"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /\r\n"
         "\r\n"
       );
@@ -90,22 +90,22 @@ context "request"
     }
   }
 
-  describe "shv_request_content_length()"
+  describe "fshv_request_content_length()"
   {
     it "returns -1 when there is no content-length header"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /msg HTTP/1.1\r\n"
         "Host: https://example.com\r\n"
         "\r\n"
       );
 
-      ensure(shv_request_content_length(req) == -1);
+      ensure(fshv_request_content_length(req) == -1);
     }
 
     it "returns the number for the content-length header"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "POST /msgbin HTTP/1.1\r\n"
         "content-type: application/x-www-form-urlencoded;charset=utf-8\r\n"
         "host: https://importexport.amazonaws.com\r\n"
@@ -113,17 +113,17 @@ context "request"
         "\r\n"
       );
 
-      ensure(shv_request_content_length(req) == 207);
+      ensure(fshv_request_content_length(req) == 207);
     }
   }
 
   context "spec helpers"
   {
-    describe "shv_request_parse_head_f()"
+    describe "fshv_request_parse_head_f()"
     {
       it "composes and parses"
       {
-        req = shv_parse_request_head_f(
+        req = fshv_parse_request_head_f(
           "GET /%s HTTP/1.0\r\n"
           "\r\n",
           "nada"
@@ -137,17 +137,17 @@ context "request"
       }
     }
 
-    describe "shv_do_route()"
+    describe "fshv_do_route()"
     {
       it "fills req->routing_d"
       {
-        req = shv_parse_request_head_f(
+        req = fshv_parse_request_head_f(
           "GET /letters/%i HTTP/1.0\r\n"
           "Host: nada.example.org\r\n"
           "\r\n",
           12345
         );
-        shv_do_route("GET /letters/:id", req);
+        fshv_do_route("GET /letters/:id", req);
 
         expect(flu_list_get(req->routing_d, "id") === "12345");
       }

@@ -6,29 +6,29 @@
 //
 
 #include "shervin.h"
-//#include "shv_protected.h" // direct access to shv_request methods
+//#include "shv_protected.h" // direct access to fshv_request methods
 
 
 context "handlers"
 {
-  describe "shv_dir_handler()"
+  describe "fshv_dir_handler()"
   {
     before each
     {
-      shv_request *req = NULL;
+      fshv_request *req = NULL;
       flu_dict *params = NULL;
-      shv_response *res = shv_response_malloc(200);
+      fshv_response *res = fshv_response_malloc(200);
     }
     after each
     {
-      shv_request_free(req);
+      fshv_request_free(req);
       flu_list_free(params);
-      shv_response_free(res);
+      fshv_response_free(res);
     }
 
     it "serves files"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /x/y/a/b/hello.txt HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -36,13 +36,13 @@ context "handlers"
       flu_list_set(req->routing_d, "**", rdz_strdup("a/b/hello.txt"));
 
       params = flu_d("root", "../spec/www", NULL);
-      int r = shv_dir_handler(req, res, params);
+      int r = fshv_dir_handler(req, res, params);
 
       expect(r i== 1);
 
       expect(flu_list_get(res->headers, "X-Accel-Redirect") === ""
         "../spec/www/a/b/hello.txt");
-      expect(flu_list_get(res->headers, "shv_content_length") === ""
+      expect(flu_list_get(res->headers, "fshv_content_length") === ""
         "12");
       expect(flu_list_get(res->headers, "content-type") === ""
         "text/plain");
@@ -50,7 +50,7 @@ context "handlers"
 
     it "returns 0 if the file is not found"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /x/y/a/b/nada.txt HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -58,14 +58,14 @@ context "handlers"
       flu_list_set(req->routing_d, "**", rdz_strdup("a/b/nada.txt"));
 
       params = flu_d("root", "../spec/www", NULL);
-      int r = shv_dir_handler(req, res, params);
+      int r = fshv_dir_handler(req, res, params);
 
       expect(r i== 0);
     }
 
     it "returns 0 when the file is a dir"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /x/y/a HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -73,14 +73,14 @@ context "handlers"
       flu_list_set(req->routing_d, "**", rdz_strdup("a"));
 
       params = flu_d("root", "../spec/www", NULL);
-      int r = shv_dir_handler(req, res, params);
+      int r = fshv_dir_handler(req, res, params);
 
       expect(r i== 0);
     }
 
     it "returns 0 when the request goes ../"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /x/y/../www/a/b/hello.txt HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -88,14 +88,14 @@ context "handlers"
       flu_list_set(req->routing_d, "**", rdz_strdup("../www/a/b/hello.txt"));
 
       params = flu_d("root", "../spec/www", NULL);
-      int r = shv_dir_handler(req, res, params);
+      int r = fshv_dir_handler(req, res, params);
 
       expect(r i== 0);
     }
 
     it "accepts an alternative sendfile \"h\" header via the params"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /x/y/a/b/hello.txt HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -103,7 +103,7 @@ context "handlers"
       flu_list_set(req->routing_d, "**", rdz_strdup("a/b/hello.txt"));
 
       params = flu_d("r", "../spec/www", "h", "X-Sendfile", NULL);
-      int r = shv_dir_handler(req, res, params);
+      int r = fshv_dir_handler(req, res, params);
 
       expect(r i== 1);
 
@@ -111,7 +111,7 @@ context "handlers"
 
       expect(flu_list_get(res->headers, "X-Sendfile") === ""
         "../spec/www/a/b/hello.txt");
-      expect(flu_list_get(res->headers, "shv_content_length") === ""
+      expect(flu_list_get(res->headers, "fshv_content_length") === ""
         "12");
       expect(flu_list_get(res->headers, "content-type") === ""
         "text/plain");
@@ -119,7 +119,7 @@ context "handlers"
 
     it "serves a/b/index.html when asked for a/b"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /web/a/b HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -127,13 +127,13 @@ context "handlers"
       flu_list_set(req->routing_d, "**", rdz_strdup("a/b"));
 
       params = flu_d("root", "../spec/www", NULL);
-      int r = shv_dir_handler(req, res, params);
+      int r = fshv_dir_handler(req, res, params);
 
       expect(r i== 1);
 
       expect(flu_list_get(res->headers, "X-Accel-Redirect") === ""
         "../spec/www/a/b/index.html");
-      expect(flu_list_get(res->headers, "shv_content_length") === ""
+      expect(flu_list_get(res->headers, "fshv_content_length") === ""
         "13");
       expect(flu_list_get(res->headers, "content-type") === ""
         "text/html");
@@ -141,7 +141,7 @@ context "handlers"
 
     it "accepts alternative indexes"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /web/a/ HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -149,13 +149,13 @@ context "handlers"
       flu_list_set(req->routing_d, "**", rdz_strdup("a/"));
 
       params = flu_d("root", "../spec/www", "index", "index.txt", NULL);
-      int r = shv_dir_handler(req, res, params);
+      int r = fshv_dir_handler(req, res, params);
 
       expect(r i== 1);
 
       expect(flu_list_get(res->headers, "X-Accel-Redirect") === ""
         "../spec/www/a/index.txt");
-      expect(flu_list_get(res->headers, "shv_content_length") === ""
+      expect(flu_list_get(res->headers, "fshv_content_length") === ""
         "21");
       expect(flu_list_get(res->headers, "content-type") === ""
         "text/plain");
@@ -163,7 +163,7 @@ context "handlers"
 
     it "defaults to text/plain for unknown filetypes"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /x/y/a/b/nada.nad HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
@@ -171,73 +171,73 @@ context "handlers"
       flu_list_set(req->routing_d, "**", rdz_strdup("a/b/nada.nad"));
 
       params = flu_d("root", "../spec/www", NULL);
-      int r = shv_dir_handler(req, res, params);
+      int r = fshv_dir_handler(req, res, params);
 
       expect(r i== 1);
 
       expect(flu_list_get(res->headers, "X-Accel-Redirect") === ""
         "../spec/www/a/b/nada.nad");
-      expect(flu_list_get(res->headers, "shv_content_length") === ""
+      expect(flu_list_get(res->headers, "fshv_content_length") === ""
         "10");
       expect(flu_list_get(res->headers, "content-type") === ""
         "text/plain");
     }
   }
 
-  describe "shv_serve_file()"
+  describe "fshv_serve_file()"
   {
     before each
     {
-      shv_request *req = NULL;
+      fshv_request *req = NULL;
       flu_dict *params = NULL;
-      shv_response *res = shv_response_malloc(200);
+      fshv_response *res = fshv_response_malloc(200);
 
       params = flu_list_malloc();
     }
     after each
     {
-      shv_request_free(req);
+      fshv_request_free(req);
       flu_list_free(params);
-      shv_response_free(res);
+      fshv_response_free(res);
     }
 
     it "returns -1 when it doesn't find a file"
     {
-      ssize_t r = shv_serve_file(res, params, "../spec/www/a/b/nada.html");
+      ssize_t r = fshv_serve_file(res, params, "../spec/www/a/b/nada.html");
 
       expect(r li== -1);
     }
 
     it "returns 0 when the file is a directory"
     {
-      ssize_t r = shv_serve_file(res, params, "../spec/www/a/b");
+      ssize_t r = fshv_serve_file(res, params, "../spec/www/a/b");
       expect(r li== 0);
 
-      r = shv_serve_file(res, params, "../spec/www/a/b/");
+      r = fshv_serve_file(res, params, "../spec/www/a/b/");
       expect(r li== 0);
     }
 
     it "returns the size of the file and sets headers when it's a regular file"
     {
-      ssize_t r = shv_serve_file(res, params, "../spec/www/a/b/index.html");
+      ssize_t r = fshv_serve_file(res, params, "../spec/www/a/b/index.html");
 
       expect(r li== 13);
 
-      expect(flu_list_get(res->headers, "shv_content_length") === ""
+      expect(flu_list_get(res->headers, "fshv_content_length") === ""
         "13");
-      expect(flu_list_get(res->headers, "shv_file") === ""
+      expect(flu_list_get(res->headers, "fshv_file") === ""
         "../spec/www/a/b/index.html");
       expect(flu_list_get(res->headers, "content-type") === ""
         "text/html");
     }
   }
 
-  describe "shv_dir_handler()"
+  describe "fshv_dir_handler()"
   {
     before each
     {
       struct ev_io *eio = calloc(1, sizeof(ev_io));
-      shv_con *con = calloc(1, sizeof(shv_con));
+      fshv_con *con = calloc(1, sizeof(fshv_con));
       eio->data = con;
     }
     after each
@@ -248,29 +248,29 @@ context "handlers"
         free(con->routes[i]);
       }
       //free(con->routes); // not malloc'ed
-      shv_request_free(con->req);
-      shv_response_free(con->res);
+      fshv_request_free(con->req);
+      fshv_response_free(con->res);
       free(con);
       free(eio);
     }
 
     it "serves files with a wildcard path"
     {
-      con->routes = (shv_route *[]){
-        shv_rp("/x/y/**", shv_dir_handler, "root", "../spec/www", NULL),
+      con->routes = (fshv_route *[]){
+        fshv_rp("/x/y/**", fshv_dir_handler, "root", "../spec/www", NULL),
         NULL // do not forget it
       };
 
-      con->req = shv_parse_request_head(
+      con->req = fshv_parse_request_head(
         "GET /x/y/a/b/index.html HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      shv_handle(NULL, eio);
+      fshv_handle(NULL, eio);
 
       expect(flu_list_get(con->res->headers, "X-Accel-Redirect") === ""
         "../spec/www/a/b/index.html");
-      expect(flu_list_get(con->res->headers, "shv_content_length") === ""
+      expect(flu_list_get(con->res->headers, "fshv_content_length") === ""
         "13");
       expect(flu_list_get(con->res->headers, "content-type") === ""
         "text/html");
@@ -278,21 +278,21 @@ context "handlers"
 
     it "serves files without a wildcard path"
     {
-      con->routes = (shv_route *[]){
-        shv_rp("/a/b/index.html", shv_dir_handler, "root", "../spec/www", NULL),
+      con->routes = (fshv_route *[]){
+        fshv_rp("/a/b/index.html", fshv_dir_handler, "root", "../spec/www", NULL),
         NULL // do not forget it
       };
 
-      con->req = shv_parse_request_head(
+      con->req = fshv_parse_request_head(
         "GET /a/b/index.html HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      shv_handle(NULL, eio);
+      fshv_handle(NULL, eio);
 
       expect(flu_list_get(con->res->headers, "X-Accel-Redirect") === ""
         "../spec/www/a/b/index.html");
-      expect(flu_list_get(con->res->headers, "shv_content_length") === ""
+      expect(flu_list_get(con->res->headers, "fshv_content_length") === ""
         "13");
       expect(flu_list_get(con->res->headers, "content-type") === ""
         "text/html");
@@ -300,23 +300,23 @@ context "handlers"
 
     it "serves files without a wildcard path (GET)"
     {
-      con->routes = (shv_route *[]){
-        shv_rp("GET /a/b/index.html",
-          shv_dir_handler,
+      con->routes = (fshv_route *[]){
+        fshv_rp("GET /a/b/index.html",
+          fshv_dir_handler,
             "root", "../spec/www", NULL),
         NULL // do not forget it
       };
 
-      con->req = shv_parse_request_head(
+      con->req = fshv_parse_request_head(
         "GET /a/b/index.html HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      shv_handle(NULL, eio);
+      fshv_handle(NULL, eio);
 
       expect(flu_list_get(con->res->headers, "X-Accel-Redirect") === ""
         "../spec/www/a/b/index.html");
-      expect(flu_list_get(con->res->headers, "shv_content_length") === ""
+      expect(flu_list_get(con->res->headers, "fshv_content_length") === ""
         "13");
       expect(flu_list_get(con->res->headers, "content-type") === ""
         "text/html");
@@ -324,23 +324,23 @@ context "handlers"
 
     it "serves files without a wilcard path but with a start param"
     {
-      con->routes = (shv_route *[]){
-        shv_rp("/x/y/a/b/index.html",
-          shv_dir_handler,
+      con->routes = (fshv_route *[]){
+        fshv_rp("/x/y/a/b/index.html",
+          fshv_dir_handler,
             "root", "../spec/www", "s", "/x/y", NULL),
         NULL // do not forget it
       };
 
-      con->req = shv_parse_request_head(
+      con->req = fshv_parse_request_head(
         "GET /x/y/a/b/index.html HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n");
 
-      shv_handle(NULL, eio);
+      fshv_handle(NULL, eio);
 
       expect(flu_list_get(con->res->headers, "X-Accel-Redirect") === ""
         "../spec/www/a/b/index.html");
-      expect(flu_list_get(con->res->headers, "shv_content_length") === ""
+      expect(flu_list_get(con->res->headers, "fshv_content_length") === ""
         "13");
       expect(flu_list_get(con->res->headers, "content-type") === ""
         "text/html");
