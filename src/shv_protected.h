@@ -105,6 +105,7 @@ typedef struct {
   char *user;
   char *id;
   long long mtimeus; // microseconds
+  short used;
 } fshv_session;
 
 char *fshv_session_to_s(fshv_session *s);

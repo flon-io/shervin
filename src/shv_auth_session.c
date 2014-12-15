@@ -58,6 +58,7 @@ static fshv_session *fshv_session_malloc(
   r->user = user;
   r->id = id;
   r->mtimeus = mtimeus;
+  r->used = 0;
 
   return r;
 }
@@ -68,8 +69,8 @@ char *fshv_session_to_s(fshv_session *s)
 
   char *ts = flu_sstamp(s->mtimeus / 1000000, 1, 's');
   char *r = flu_sprintf(
-    "(fshv_session '%s', '%s', '%s', %lli (%s))",
-    s->user, s->id, s->sid, s->mtimeus, ts);
+    "(fshv_session '%s', '%s', '%s', %lli (%s), u%i)",
+    s->user, s->id, s->sid, s->mtimeus, ts, s->used);
   free(ts);
 
   return r;
@@ -159,6 +160,7 @@ static fshv_session *lookup_session(
     fshv_session *s = fn->item;
 
     if (expus > 0 && req->startus > s->mtimeus + expus) break;
+    if (s->used) continue;
 
     if (strcmp(s->sid, sid) == 0) { r = s; break; }
 
@@ -167,7 +169,7 @@ static fshv_session *lookup_session(
 
   if (expus == 0)
   {
-    if (r) r->user = NULL;
+    if (r) r->used = 1;
 
     return NULL;
   }
@@ -189,7 +191,7 @@ static fshv_session *lookup_session(
 
       flu_list_unshift(session_store, s);
 
-      r->user = NULL; // don't reuse this sid
+      r->used = 1;
 
       r = s;
     }
@@ -295,7 +297,7 @@ int fshv_session_auth_filter(
 
   free(sid);
 
-  if (s == NULL || s->user == NULL) goto _over;
+  if (s == NULL) goto _over;
 
   r = 0; // success
 
