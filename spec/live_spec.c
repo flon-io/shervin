@@ -132,13 +132,37 @@ context "live"
 
       expect(res->status_code i== 200);
 
-      flu_putf(flu_list_to_sm(res->headers));
+      //flu_putf(flu_list_to_sm(res->headers));
       char *s = flu_list_get(res->headers, "set-cookie");
       expect(s != NULL);
       expect(s ^== "flon.io.shervin=");
       expect(s >== ";Expires=");
       expect(s >== ";HttpOnly");
       expect(strstr(s, ";Secure") == NULL);
+    }
+
+    it "supports a login/play/logout webflow"
+    {
+      res = fcla_get("http://127.0.0.1:4001/secret");
+
+      flu_putf(fcla_response_to_s(res));
+      expect(res->status_code i== 401);
+
+      fcla_response_free(res);
+      res = fcla_post(
+        "http://127.0.0.1:4001/login", NULL, "u=toto;p=toto");
+
+      expect(res->status_code i== 200);
+
+      flu_putf(flu_list_to_sm(res->headers));
+      char *cookie = rdz_strdup(flu_list_get(res->headers, "set-cookie"));
+      *strchr(cookie, ';') = 0;
+
+      fcla_response_free(res);
+      res = fcla_get_d(
+        "http://127.0.0.1:4001/secret", "cookie", cookie, NULL);
+
+      flu_putf(fcla_response_to_s(res));
     }
   }
 }

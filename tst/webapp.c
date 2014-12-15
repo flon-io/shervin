@@ -96,6 +96,15 @@ static int login_handler(
   return 1;
 }
 
+static int secret_handler(
+  fshv_request *req, fshv_response *res, flu_dict *params)
+{
+  res->status_code = 200;
+  flu_list_add(res->body, strdup("there are no secrets."));
+
+  return 1;
+}
+
 int main()
 {
   fgaj_conf_get()->logger = fgaj_grey_logger;
@@ -114,11 +123,13 @@ int main()
     // authentified zone
 
     fshv_rp(
-      "POST /login", login_handler, NULL), // gate
-    //fshv_r(
-    //  fshv_any_guard,
-    //  fshv_session_auth_filter,
-    //  "func", flon_auth_enticate, "realm", "flon", NULL),
+      "POST /login", login_handler, NULL),
+    fshv_r(
+      1,
+      fshv_session_auth_filter,
+      NULL),
+
+    fshv_rp("/secret", secret_handler, NULL),
 
     NULL
   };
