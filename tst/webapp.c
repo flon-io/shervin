@@ -88,7 +88,9 @@ static int login_handler(
 
   if (strncmp(u, p, ue - u) != 0) return 1;
 
-  fshv_start_session(req, res, params);
+  u = strndup(u + 1, ue - u - 1);
+  fshv_start_session(req, res, params, u);
+  free(u);
 
   res->status_code = 200;
   return 1;
@@ -112,7 +114,7 @@ int main()
     // authentified zone
 
     fshv_rp(
-      "POST /login", login_handler, NULL),
+      "POST /login", login_handler, NULL), // gate
     //fshv_r(
     //  fshv_any_guard,
     //  fshv_session_auth_filter,

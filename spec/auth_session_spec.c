@@ -61,7 +61,8 @@ context "session auth:"
       expect(ses->id === "toto:1234:4567");
 
       char *s = flu_list_get(res->headers, "set-cookie");
-      expect(s ^== ses->sid);
+      expect(s ^== "shervin.test=");
+      expect(s >== ses->sid);
       expect(s >== ";Expires=");
       expect(s >== ";HttpOnly");
       expect(strstr(s, ";Secure") == NULL);
@@ -87,7 +88,8 @@ context "session auth:"
       expect(ses->id === "toto:1234:4567");
 
       char *s = flu_list_get(res->headers, "set-cookie");
-      expect(s ^== ses->sid);
+      expect(s ^== "shervin.test=");
+      expect(s >== ses->sid);
       expect(s >== ";Expires=");
       expect(s >== ";HttpOnly");
       expect(strstr(s, ";Secure") == NULL);

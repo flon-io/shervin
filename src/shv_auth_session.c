@@ -29,6 +29,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 #include "flutil.h"
 #include "flutim.h"
@@ -187,15 +189,25 @@ static fshv_session *lookup_session(
   return NULL;
 }
 
-static void set_session_cookie(
-  fshv_request *req, fshv_response *res, fshv_session *ses, long expiry)
+static char *get_cookie_name(flu_dict *params)
 {
-  //flu_putf(flu_sstamp(ses->mtimeus / 1000000 , 1, 'g'));
+  char *r = flu_list_get(params, "name");
+  if (r == NULL) r = flu_list_get(params, "n");
+  if (r == NULL) r = "flon.io.shervin";
+
+  return r;
+}
+
+static void set_session_cookie(
+  fshv_request *req, fshv_response *res, flu_dict *params,
+  fshv_session *ses, long expiry)
+{
+  char *cn = get_cookie_name(params);
   char *ts = flu_sstamp((ses->mtimeus + expiry) / 1000000 , 1, 'g');
 
   flu_sbuffer *b = flu_sbuffer_malloc();
 
-  flu_sbputs(b, ses->sid);
+  flu_sbputs(b, cn); flu_sbputc(b, '='); flu_sbputs(b, ses->sid);
   flu_sbputs(b, ";Expires="); flu_sbputs(b, ts);
   flu_sbputs(b, ";HttpOnly");
   if (fshv_request_is_https(req)) flu_sbputs(b, ";Secure");
@@ -220,7 +232,7 @@ void fshv_start_session(
 
   fshv_session *ses = fshv_session_add(user, id, sid, req->startus);
 
-  set_session_cookie(req, res, ses, SHV_SA_EXPIRY);
+  set_session_cookie(req, res, params, ses, SHV_SA_EXPIRY);
 }
 
 int fshv_session_auth_filter(
@@ -228,12 +240,10 @@ int fshv_session_auth_filter(
 {
   int r = 1; // handled (do not got to the next route)
 
-  char *cname = flu_list_get(params, "name");
-  if (cname == NULL) cname = flu_list_get(params, "n");
-  if (cname == NULL) cname = "flon.io.shervin";
-
   char *cookies = flu_list_get(req->headers, "cookie");
   if (cookies == NULL) return r;
+
+  char *cname = get_cookie_name(params);
 
   char *sid = NULL;
   for (char *cs = cookies; cs; cs = strchr(cs, ';'))
@@ -262,7 +272,7 @@ int fshv_session_auth_filter(
 
   flu_list_set(req->routing_d, "_user", strdup(s->user));
 
-  set_session_cookie(req, res, s, SHV_SA_EXPIRY);
+  set_session_cookie(req, res, params, s, SHV_SA_EXPIRY);
 
   return r;
 }
