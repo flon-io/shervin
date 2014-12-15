@@ -143,26 +143,59 @@ context "live"
 
     it "supports a login/play/logout webflow"
     {
-      res = fcla_get("http://127.0.0.1:4001/secret");
+      // unauthorized
 
-      flu_putf(fcla_response_to_s(res));
+      res = fcla_get(
+        "http://127.0.0.1:4001/secret");
+
+      //flu_putf(fcla_response_to_s(res));
       expect(res->status_code i== 401);
+
+      // login
 
       fcla_response_free(res);
       res = fcla_post(
         "http://127.0.0.1:4001/login", NULL, "u=toto;p=toto");
 
+      //flu_putf(fcla_response_to_s(res));
       expect(res->status_code i== 200);
 
-      flu_putf(flu_list_to_sm(res->headers));
-      char *cookie = rdz_strdup(flu_list_get(res->headers, "set-cookie"));
-      *strchr(cookie, ';') = 0;
+      char *cookie0 = rdz_strdup(flu_list_get(res->headers, "set-cookie"));
+      *strchr(cookie0, ';') = 0;
+
+      // authorized
 
       fcla_response_free(res);
       res = fcla_get_d(
-        "http://127.0.0.1:4001/secret", "cookie", cookie, NULL);
+        "http://127.0.0.1:4001/secret", "cookie", cookie0, NULL);
+
+      //flu_putf(fcla_response_to_s(res));
+      expect(res->status_code i== 200);
+
+      char *cookie1 = rdz_strdup(flu_list_get(res->headers, "set-cookie"));
+      *strchr(cookie1, ';') = 0;
+
+      expect(cookie1 !== cookie0);
+
+      expect(res->body === "there are no secrets.");
+
+      // logout
+
+      fcla_response_free(res);
+      res = fcla_post_d(
+        "http://127.0.0.1:4001/login", "", "cookie", cookie1, NULL);
 
       flu_putf(fcla_response_to_s(res));
+      expect(res->status_code i== 200);
+
+      // unauthorized
+
+      fcla_response_free(res);
+      res = fcla_get_d(
+        "http://127.0.0.1:4001/secret", "cookie", cookie1, NULL);
+
+      flu_putf(fcla_response_to_s(res));
+      expect(res->status_code i== 401);
     }
   }
 }

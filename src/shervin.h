@@ -112,6 +112,8 @@ int fshv_session_auth_filter(
 
 void fshv_start_session(
   fshv_request *req, fshv_response *res, flu_dict *params, const char *user);
+void fshv_stop_session(
+  fshv_request *req, fshv_response *res, flu_dict *params, const char *sid);
 
 
 // serving

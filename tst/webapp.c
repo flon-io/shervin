@@ -83,6 +83,17 @@ static int login_handler(
 
   // user=x;pass=y
   char *u = strchr(req->body, '=');
+
+  if (u == NULL)
+  {
+    char *sid = strdup(flu_list_getd(req->headers, "cookie", ""));
+    sid = strchr(sid, '=') + 1;
+    fshv_stop_session(req, res, params, sid);
+
+    res->status_code = 200;
+    return 1;
+  }
+
   char *ue = strchr(u, ';');
   char *p = strchr(ue, '=');
 
@@ -125,7 +136,7 @@ int main()
     fshv_rp(
       "POST /login", login_handler, NULL),
     fshv_r(
-      1,
+      fshv_any_guard,
       fshv_session_auth_filter,
       NULL),
 

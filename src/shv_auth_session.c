@@ -90,6 +90,21 @@ flu_list *fshv_session_store()
   return session_store;
 }
 
+char *fshv_session_store_to_s()
+{
+  flu_sbuffer *b = flu_sbuffer_malloc();
+
+  flu_sbputc(b, '{');
+  for (flu_node *fn = session_store->first; fn; fn = fn->next)
+  {
+    flu_sbputs(b, "\n  * ");
+    char *s = fshv_session_to_s(fn->item); flu_sbputs(b, s); free(s);
+  }
+  flu_sbputs(b, "\n}");
+
+  return flu_sbuffer_to_string(b);
+}
+
 fshv_session *fshv_session_add(
   const char *user, const char *id, const char *sid, long long nowus)
 {
@@ -143,11 +158,18 @@ static fshv_session *lookup_session(
   {
     fshv_session *s = fn->item;
 
-    if (req->startus > s->mtimeus + expus) break;
+    if (expus > 0 && req->startus > s->mtimeus + expus) break;
 
     if (strcmp(s->sid, sid) == 0) { r = s; break; }
 
     last = fn; ++count;
+  }
+
+  if (expus == 0)
+  {
+    if (r) r->user = NULL;
+
+    return NULL;
   }
 
   if (r)
@@ -166,6 +188,8 @@ static fshv_session *lookup_session(
         fshv_session_malloc(strdup(r->id), strdup(r->user), sid, req->startus);
 
       flu_list_unshift(session_store, s);
+
+      r->user = NULL; // don't reuse this sid
 
       r = s;
     }
@@ -235,13 +259,20 @@ void fshv_start_session(
   set_session_cookie(req, res, params, ses, SHV_SA_EXPIRY);
 }
 
+void fshv_stop_session(
+  fshv_request *req, fshv_response *res, flu_dict *params, const char *sid)
+{
+  lookup_session(req, params, sid, 0);
+    // 0 forces to forget the session
+}
+
 int fshv_session_auth_filter(
   fshv_request *req, fshv_response *res, flu_dict *params)
 {
   int r = 1; // handled (do not got to the next route)
 
   char *cookies = flu_list_get(req->headers, "cookie");
-  if (cookies == NULL) return r;
+  if (cookies == NULL) goto _over;
 
   char *cname = get_cookie_name(params);
 
@@ -264,15 +295,17 @@ int fshv_session_auth_filter(
 
   free(sid);
 
-  if (s == NULL) return r;
-
-  //flu_putf(fshv_session_to_s(s));
+  if (s == NULL || s->user == NULL) goto _over;
 
   r = 0; // success
 
   flu_list_set(req->routing_d, "_user", strdup(s->user));
 
   set_session_cookie(req, res, params, s, SHV_SA_EXPIRY);
+
+_over:
+
+  if (r == 1) res->status_code = 401;
 
   return r;
 }
