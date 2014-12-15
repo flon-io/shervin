@@ -58,6 +58,7 @@ context "session auth:"
       expect(shv_session_store()->size == 1);
 
       shv_session *ses = shv_session_store()->first->item;
+      expect(ses->id === "toto:1234:4567");
 
       char *s = flu_list_get(res->headers, "set-cookie");
       expect(s ^== ses->sid);
@@ -83,6 +84,7 @@ context "session auth:"
       expect(shv_session_store()->size == 1);
 
       shv_session *ses = shv_session_store()->first->item;
+      expect(ses->id === "toto:1234:4567");
 
       char *s = flu_list_get(res->headers, "set-cookie");
       expect(s ^== ses->sid);
@@ -107,6 +109,7 @@ context "session auth:"
       expect(flu_list_get(req->routing_d, "_user") === "toto");
 
       expect(shv_session_store()->size == 1);
+      expect(ses->id === "toto:1234:4567");
 
       char *s = flu_list_get(res->headers, "set-cookie");
       expect(s $== ";Secure");
@@ -126,26 +129,6 @@ context "session auth:"
 
       expect(flu_list_get(res->headers, "set-cookie") == NULL);
     }
-//    it "authentifies (miss)"
-//    {
-//      req = shv_parse_request_head(
-//        "GET /x HTTP/1.1\r\n"
-//        "Host: http://www.example.com\r\n"
-//        "Authorization: Basic nadanadanada\r\n"
-//        "\r\n");
-//
-//      params = flu_d("a", specauth, NULL);
-//
-//      int r = shv_basic_auth_filter(req, res, params);
-//
-//      expect(r i== 1); // stop routing
-//
-//      expect(res->status_code i== 401);
-//      expect(flu_list_get(req->routing_d, "_user") == NULL);
-//
-//      expect(flu_list_get(res->headers, "WWW-Authenticate") === ""
-//        "Basic realm=\"shervin\"");
-//    }
   }
 }
 
