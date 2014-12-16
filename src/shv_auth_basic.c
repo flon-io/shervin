@@ -74,7 +74,7 @@ int fshv_basic_auth_filter(
   if (a(user, pass, params) == 0) goto _over;
 
   authentified = 1;
-  flu_list_set(req->routing_d, "_user", strdup(user));
+  fshv_set_user(req, "basic", user);
 
 _over:
 

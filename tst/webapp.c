@@ -110,7 +110,8 @@ static int login_handler(
 static int secret_handler(
   fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
-  if (res->status_code == 401) return 1;
+  //if (res->status_code == 401) return 1;
+  if (fshv_get_user(req, "session") == NULL) return 1;
 
   res->status_code = 200;
   flu_list_add(res->body, strdup("there are no secrets."));

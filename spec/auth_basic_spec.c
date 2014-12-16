@@ -45,7 +45,7 @@ context "basic auth:"
       int r = fshv_basic_auth_filter(req, res, 0, params);
 
       expect(r i== 0); // continue routing
-      expect(flu_list_get(req->routing_d, "_user") === "toto");
+      expect(flu_list_get(req->routing_d, "_basic_user") === "toto");
     }
 
     it "authentifies (miss)"
@@ -64,7 +64,7 @@ context "basic auth:"
       expect(r i== 0); // handled -> 0
 
       expect(res->status_code i== 401);
-      expect(flu_list_get(req->routing_d, "_user") == NULL);
+      expect(flu_list_get(req->routing_d, "_basic_user") == NULL);
 
       expect(flu_list_get(res->headers, "WWW-Authenticate") === ""
         "Basic realm=\"shervin\"");
@@ -86,7 +86,7 @@ context "basic auth:"
       expect(r i== 0); // handled -> 0
 
       expect(res->status_code i== 401);
-      expect(flu_list_get(req->routing_d, "_user") == NULL);
+      expect(flu_list_get(req->routing_d, "_basic_user") == NULL);
 
       expect(flu_list_get(res->headers, "WWW-Authenticate") === ""
         "Basic realm=\"wonderland\"");

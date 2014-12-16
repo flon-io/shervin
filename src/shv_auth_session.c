@@ -301,7 +301,7 @@ int fshv_session_auth_filter(
 
   authentified = 1;
 
-  flu_list_set(req->routing_d, "_user", strdup(s->user));
+  fshv_set_user(req, "session", s->user);
 
   set_session_cookie(req, res, params, s, SHV_SA_EXPIRY);
 

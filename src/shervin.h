@@ -114,6 +114,9 @@ int fshv_dir_handler(
 typedef int fshv_authenticate(
   const char *user, const char *path, flu_dict *params);
 
+void fshv_set_user(fshv_request *req, const char *auth, const char *user);
+char *fshv_get_user(fshv_request *req, const char *auth);
+
 int fshv_basic_auth_filter(
   fshv_request *req, fshv_response *res, int mode, flu_dict *params);
 

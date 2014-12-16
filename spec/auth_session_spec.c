@@ -53,7 +53,7 @@ context "session auth:"
       int r = fshv_session_auth_filter(req, res, 0, params);
 
       expect(r i== 0); // continue routing
-      expect(flu_list_get(req->routing_d, "_user") === "toto");
+      expect(flu_list_get(req->routing_d, "_session_user") === "toto");
 
       expect(fshv_session_store()->size == 1);
 
@@ -80,7 +80,7 @@ context "session auth:"
       int r = fshv_session_auth_filter(req, res, 0, params);
 
       expect(r i== 0); // continue routing
-      expect(flu_list_get(req->routing_d, "_user") === "toto");
+      expect(flu_list_get(req->routing_d, "_session_user") === "toto");
 
       expect(fshv_session_store()->size == 1);
 
@@ -108,7 +108,7 @@ context "session auth:"
       int r = fshv_session_auth_filter(req, res, 0, params);
 
       expect(r i== 0); // continue routing
-      expect(flu_list_get(req->routing_d, "_user") === "toto");
+      expect(flu_list_get(req->routing_d, "_session_user") === "toto");
 
       expect(fshv_session_store()->size == 1);
 
