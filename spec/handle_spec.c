@@ -11,15 +11,19 @@
 
 context "handle"
 {
-  int gyes(fshv_request *req, fshv_response *res, flu_dict *params) { return 1; }
-  int gno(fshv_request *req, fshv_response *res, flu_dict *params) { return 0; }
-
-  int gfil(fshv_request *req, fshv_response *res, flu_dict *params)
+  int gyes(
+    fshv_request *req, fshv_response *res, int mode, flu_dict *params)
   {
-    return -1; // force handlers to behave like filters
+    return 1;
+  }
+  int gno(
+    fshv_request *req, fshv_response *res, int mode, flu_dict *params)
+  {
+    return 0;
   }
 
-  int han(fshv_request *req, fshv_response *res, flu_dict *params)
+  int han(
+    fshv_request *req, fshv_response *res, int mode, flu_dict *params)
   {
     if (flu_list_get(params, "sta"))
     {
@@ -33,10 +37,13 @@ context "handle"
         res->headers, "x-handled", rdz_strdup(flu_list_get(params, "han")));
     }
 
+    if (mode & FSHV_F_NULL_GUARD) return mode & FSHV_F_HANDLED;
+
     return 1; // yes, it's over
   }
 
-  int fil(fshv_request *req, fshv_response *res, flu_dict *params)
+  int fil(
+    fshv_request *req, fshv_response *res, int mode, flu_dict *params)
   {
     flu_list_set(
       res->headers, "x-filtered", rdz_strdup(flu_list_get(params, "fil")));
@@ -66,6 +73,25 @@ context "handle"
 
   describe "fshv_handle()"
   {
+    it "triggers handler when there is no guard"
+    {
+      con->routes = (fshv_route *[]){
+        fshv_r(NULL, han, "sta", "a", NULL),
+        fshv_r(NULL, han, "han", "b", NULL),
+        NULL // do not forget it
+      };
+
+      con->req = fshv_parse_request_head(
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      fshv_handle(NULL, eio);
+
+      //ensure(flu_list_get(con->res->headers, "x-stamp-a") === "seen");
+      ensure(flu_list_get(con->res->headers, "x-handled") === "b");
+    }
+
     it "triggers handler when guard says 1"
     {
       con->routes = (fshv_route *[]){
@@ -84,25 +110,23 @@ context "handle"
       ensure(flu_list_get(con->res->headers, "x-handled") === "b");
     }
 
-    it "triggers next handler when guard says 1"
-    {
-      con->routes = (fshv_route *[]){
-        fshv_r(gno, NULL, NULL),
-        fshv_r(NULL, han, "han", "a", NULL),
-        fshv_r(gyes, NULL, NULL),
-        fshv_r(NULL, han, "han", "b", NULL),
-        NULL // do not forget it
-      };
-
-      con->req = fshv_parse_request_head(
-        "GET /x HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
-        "\r\n");
-
-      fshv_handle(NULL, eio);
-
-      ensure(flu_list_get(con->res->headers, "x-handled") === "b");
-    }
+//    it "triggers next handler when guard says 1"
+//    {
+//      con->routes = (fshv_route *[]){
+//        fshv_r(gno, han, "han", "a", NULL),
+//        fshv_r(gyes, han, "han", "b", NULL),
+//        NULL // do not forget it
+//      };
+//
+//      con->req = fshv_parse_request_head(
+//        "GET /x HTTP/1.1\r\n"
+//        "Host: http://www.example.com\r\n"
+//        "\r\n");
+//
+//      fshv_handle(NULL, eio);
+//
+//      ensure(flu_list_get(con->res->headers, "x-handled") === "b");
+//    }
 
     it "triggers handlers until one says 1"
     {
@@ -126,7 +150,7 @@ context "handle"
     it "triggers pre-filters"
     {
       con->routes = (fshv_route *[]){
-        fshv_r(fshv_filter_guard, han, "sta", "true", "han", "a", NULL),
+        fshv_r(NULL, han, "sta", "true", "han", "a", NULL),
         fshv_r(gyes, han, "han", "b", NULL),
         NULL // do not forget it
       };
@@ -138,6 +162,7 @@ context "handle"
 
       fshv_handle(NULL, eio);
 
+      //flu_putf(flu_list_to_sm(con->res->headers));
       ensure(flu_list_get(con->res->headers, "x-handled") === "b");
       ensure(flu_list_get(con->res->headers, "x-stamp-a") === "seen");
     }
@@ -146,7 +171,7 @@ context "handle"
     {
       con->routes = (fshv_route *[]){
         fshv_r(gyes, han, "han", "a", NULL),
-        fshv_r(fshv_filter_guard, han, "sta", "true", "han", "b", NULL),
+        fshv_r(NULL, han, "sta", "true", "han", "b", NULL),
         NULL // do not forget it
       };
 
@@ -161,61 +186,38 @@ context "handle"
       ensure(flu_list_get(con->res->headers, "x-stamp-b") === "seen");
     }
 
-    it "triggers filters in row"
-    {
-      con->routes = (fshv_route *[]){
-        //
-        fshv_r(fshv_filter_guard, NULL, NULL),
-        fshv_r(NULL, han, "sta", "true", "han", "w", NULL), //
-        fshv_r(NULL, han, "sta", "true", "han", "x", NULL), // <-- sees
-        //
-        fshv_r(gno, han, "han", "a", NULL),
-        fshv_r(gyes, han, "han", "b", NULL), // <-- handles
-        //
-        fshv_r(fshv_filter_guard, NULL, NULL),
-        fshv_r(NULL, han, "sta", "true", "han", "y", NULL), //
-        fshv_r(NULL, han, "sta", "true", "han", "z", NULL), // <-- sees
-        //
-        fshv_r(gyes, han, "han", "c", NULL), // doesn't handle
-        NULL // do not forget it
-      };
-
-      con->req = fshv_parse_request_head(
-        "GET /x HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
-        "\r\n");
-
-      fshv_handle(NULL, eio);
-
-      ensure(flu_list_get(con->res->headers, "x-handled") === "b");
-      ensure(flu_list_get(con->res->headers, "x-stamp-w") === "seen");
-      ensure(flu_list_get(con->res->headers, "x-stamp-x") === "seen");
-      ensure(flu_list_get(con->res->headers, "x-stamp-y") === "seen");
-      ensure(flu_list_get(con->res->headers, "x-stamp-z") === "seen");
-    }
-
-    it "treats handlers like filters when guard says -1"
-    {
-      con->routes = (fshv_route *[]){
-        fshv_r(gfil, han, "sta", "true", "han", "a", NULL),
-        fshv_r(NULL, han, "sta", "true", "han", "b", NULL),
-        fshv_r(gyes, han, "han", "c", NULL),
-        fshv_r(gfil, han, "sta", "true", "han", "d", NULL), // no
-        NULL // do not forget it
-      };
-
-      con->req = fshv_parse_request_head(
-        "GET /x HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
-        "\r\n");
-
-      fshv_handle(NULL, eio);
-
-      ensure(flu_list_get(con->res->headers, "x-stamp-a") === "seen");
-      ensure(flu_list_get(con->res->headers, "x-stamp-b") === "seen");
-      ensure(flu_list_get(con->res->headers, "x-stamp-d") == NULL);
-      ensure(flu_list_get(con->res->headers, "x-handled") === "c");
-    }
+//    it "triggers filters in row"
+//    {
+//      con->routes = (fshv_route *[]){
+//        //
+//        fshv_r(fshv_filter_guard, NULL, NULL),
+//        fshv_r(NULL, han, "sta", "true", "han", "w", NULL), //
+//        fshv_r(NULL, han, "sta", "true", "han", "x", NULL), // <-- sees
+//        //
+//        fshv_r(gno, han, "han", "a", NULL),
+//        fshv_r(gyes, han, "han", "b", NULL), // <-- handles
+//        //
+//        fshv_r(fshv_filter_guard, NULL, NULL),
+//        fshv_r(NULL, han, "sta", "true", "han", "y", NULL), //
+//        fshv_r(NULL, han, "sta", "true", "han", "z", NULL), // <-- sees
+//        //
+//        fshv_r(gyes, han, "han", "c", NULL), // doesn't handle
+//        NULL // do not forget it
+//      };
+//
+//      con->req = fshv_parse_request_head(
+//        "GET /x HTTP/1.1\r\n"
+//        "Host: http://www.example.com\r\n"
+//        "\r\n");
+//
+//      fshv_handle(NULL, eio);
+//
+//      ensure(flu_list_get(con->res->headers, "x-handled") === "b");
+//      ensure(flu_list_get(con->res->headers, "x-stamp-w") === "seen");
+//      ensure(flu_list_get(con->res->headers, "x-stamp-x") === "seen");
+//      ensure(flu_list_get(con->res->headers, "x-stamp-y") === "seen");
+//      ensure(flu_list_get(con->res->headers, "x-stamp-z") === "seen");
+//    }
 
     it "accepts fshv_rp(path, handler, ...) (get)"
     {

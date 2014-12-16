@@ -42,7 +42,7 @@ context "basic auth:"
       //params = flu_d("func", specauth, NULL);
       params = flu_d("a", specauth, NULL);
 
-      int r = fshv_basic_auth_filter(req, res, params);
+      int r = fshv_basic_auth_filter(req, res, 0, params);
 
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_user") === "toto");
@@ -59,9 +59,9 @@ context "basic auth:"
       //params = flu_d("func", specauth, NULL);
       params = flu_d("a", specauth, NULL);
 
-      int r = fshv_basic_auth_filter(req, res, params);
+      int r = fshv_basic_auth_filter(req, res, 0, params);
 
-      expect(r i== 1); // stop routing
+      expect(r i== 0); // handled -> 0
 
       expect(res->status_code i== 401);
       expect(flu_list_get(req->routing_d, "_user") == NULL);
@@ -81,9 +81,9 @@ context "basic auth:"
       //params = flu_d("func", specauth, "realm", "wonderland", NULL);
       params = flu_d("a", specauth, "realm", "wonderland", NULL);
 
-      int r = fshv_basic_auth_filter(req, res, params);
+      int r = fshv_basic_auth_filter(req, res, 0, params);
 
-      expect(r i== 1); // stop routing
+      expect(r i== 0); // handled -> 0
 
       expect(res->status_code i== 401);
       expect(flu_list_get(req->routing_d, "_user") == NULL);

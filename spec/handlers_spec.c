@@ -36,7 +36,7 @@ context "handlers"
       flu_list_set(req->routing_d, "**", rdz_strdup("a/b/hello.txt"));
 
       params = flu_d("root", "../spec/www", NULL);
-      int r = fshv_dir_handler(req, res, params);
+      int r = fshv_dir_handler(req, res, 0, params);
 
       expect(r i== 1);
 
@@ -58,7 +58,7 @@ context "handlers"
       flu_list_set(req->routing_d, "**", rdz_strdup("a/b/nada.txt"));
 
       params = flu_d("root", "../spec/www", NULL);
-      int r = fshv_dir_handler(req, res, params);
+      int r = fshv_dir_handler(req, res, 0, params);
 
       expect(r i== 0);
     }
@@ -73,7 +73,7 @@ context "handlers"
       flu_list_set(req->routing_d, "**", rdz_strdup("a"));
 
       params = flu_d("root", "../spec/www", NULL);
-      int r = fshv_dir_handler(req, res, params);
+      int r = fshv_dir_handler(req, res, 0, params);
 
       expect(r i== 0);
     }
@@ -88,7 +88,7 @@ context "handlers"
       flu_list_set(req->routing_d, "**", rdz_strdup("../www/a/b/hello.txt"));
 
       params = flu_d("root", "../spec/www", NULL);
-      int r = fshv_dir_handler(req, res, params);
+      int r = fshv_dir_handler(req, res, 0, params);
 
       expect(r i== 0);
     }
@@ -103,7 +103,7 @@ context "handlers"
       flu_list_set(req->routing_d, "**", rdz_strdup("a/b/hello.txt"));
 
       params = flu_d("r", "../spec/www", "h", "X-Sendfile", NULL);
-      int r = fshv_dir_handler(req, res, params);
+      int r = fshv_dir_handler(req, res, 0, params);
 
       expect(r i== 1);
 
@@ -127,7 +127,7 @@ context "handlers"
       flu_list_set(req->routing_d, "**", rdz_strdup("a/b"));
 
       params = flu_d("root", "../spec/www", NULL);
-      int r = fshv_dir_handler(req, res, params);
+      int r = fshv_dir_handler(req, res, 0, params);
 
       expect(r i== 1);
 
@@ -149,7 +149,7 @@ context "handlers"
       flu_list_set(req->routing_d, "**", rdz_strdup("a/"));
 
       params = flu_d("root", "../spec/www", "index", "index.txt", NULL);
-      int r = fshv_dir_handler(req, res, params);
+      int r = fshv_dir_handler(req, res, 0, params);
 
       expect(r i== 1);
 
@@ -171,7 +171,7 @@ context "handlers"
       flu_list_set(req->routing_d, "**", rdz_strdup("a/b/nada.nad"));
 
       params = flu_d("root", "../spec/www", NULL);
-      int r = fshv_dir_handler(req, res, params);
+      int r = fshv_dir_handler(req, res, 0, params);
 
       expect(r i== 1);
 

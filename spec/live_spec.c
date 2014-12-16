@@ -197,6 +197,15 @@ context "live"
       //flu_putf(fcla_response_to_s(res));
       expect(res->status_code i== 401);
 
+      // 404
+
+      fcla_response_free(res);
+      res = fcla_get_d(
+        "http://127.0.0.1:4001/nada", "cookie", cookie1, NULL);
+
+      //flu_putf(fcla_response_to_s(res));
+      expect(res->status_code i== 404);
+
       free(cookie0); free(cookie1);
     }
   }

@@ -269,9 +269,9 @@ void fshv_stop_session(
 }
 
 int fshv_session_auth_filter(
-  fshv_request *req, fshv_response *res, flu_dict *params)
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
-  int r = 1; // handled (do not got to the next route)
+  int authentified = 0;
 
   char *cookies = flu_list_get(req->headers, "cookie");
   if (cookies == NULL) goto _over;
@@ -299,7 +299,7 @@ int fshv_session_auth_filter(
 
   if (s == NULL) goto _over;
 
-  r = 0; // success
+  authentified = 1;
 
   flu_list_set(req->routing_d, "_user", strdup(s->user));
 
@@ -307,8 +307,8 @@ int fshv_session_auth_filter(
 
 _over:
 
-  if (r == 1) res->status_code = 401;
+  if ( ! authentified) res->status_code = 401;
 
-  return r;
+  return 0;
 }
 

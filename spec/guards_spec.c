@@ -31,7 +31,7 @@ context "guards"
         "Host: www.example.com\r\n"
         "\r\n");
 
-      int r = fshv_any_guard(req, NULL, NULL);
+      int r = fshv_any_guard(req, NULL, 0, NULL);
       ensure(r == 1);
       ensure(req->routing_d->size == 0);
     }
@@ -47,7 +47,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/x", NULL);
-      int r = fshv_path_guard(req, NULL, params);
+      int r = fshv_path_guard(req, NULL, 0, params);
 
       ensure(r == 1);
       ensure(req->routing_d->size == 0);
@@ -61,7 +61,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/book/:name", NULL);
-      int r = fshv_path_guard(req, NULL, params);
+      int r = fshv_path_guard(req, NULL, 0, params);
 
       ensure(r == 1);
       ensure(req->routing_d->size == 1);
@@ -76,7 +76,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/book/:name", NULL);
-      int r = fshv_path_guard(req, NULL, params);
+      int r = fshv_path_guard(req, NULL, 0, params);
 
       ensure(r == 1);
       ensure(req->routing_d->size == 1);
@@ -91,7 +91,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/x/y", NULL);
-      int r = fshv_path_guard(req, NULL, params);
+      int r = fshv_path_guard(req, NULL, 0, params);
 
       ensure(r == 0);
     }
@@ -104,7 +104,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/x", NULL);
-      int r = fshv_path_guard(req, NULL, params);
+      int r = fshv_path_guard(req, NULL, 0, params);
 
       ensure(r == 0);
     }
@@ -117,7 +117,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/", NULL);
-      int r = fshv_path_guard(req, NULL, params);
+      int r = fshv_path_guard(req, NULL, 0, params);
 
       ensure(r == 0);
     }
@@ -130,7 +130,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "POST /x", NULL);
-      int r = fshv_path_guard(req, NULL, params);
+      int r = fshv_path_guard(req, NULL, 0, params);
 
       ensure(r == 0);
     }
@@ -143,7 +143,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "POST /x", NULL);
-      int r = fshv_path_guard(req, NULL, params);
+      int r = fshv_path_guard(req, NULL, 0, params);
 
       ensure(r == 1);
     }
@@ -156,7 +156,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "GET /x/y/**", NULL);
-      int r = fshv_path_guard(req, NULL, params);
+      int r = fshv_path_guard(req, NULL, 0, params);
 
       ensure(r == 1);
       ensure(req->routing_d->size == 1);
@@ -171,7 +171,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "GET /x/y/**", NULL);
-      int r = fshv_path_guard(req, NULL, params);
+      int r = fshv_path_guard(req, NULL, 0, params);
 
       ensure(r == 1);
       ensure(req->routing_d->size == 1);
@@ -186,7 +186,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "GET /x/y/**", NULL);
-      int r = fshv_path_guard(req, NULL, params);
+      int r = fshv_path_guard(req, NULL, 0, params);
 
       ensure(r == 0);
       ensure(req->routing_d->size == 0);
@@ -200,7 +200,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/x", NULL);
-      int r = fshv_path_guard(req, NULL, params);
+      int r = fshv_path_guard(req, NULL, 0, params);
 
       ensure(r == 1);
       ensure(req->routing_d->size == 0);
@@ -214,7 +214,7 @@ context "guards"
         "\r\n");
 
       params = flu_d("path", "/y", NULL);
-      int r = fshv_path_guard(req, NULL, params);
+      int r = fshv_path_guard(req, NULL, 0, params);
 
       ensure(r == 0);
     }

@@ -36,7 +36,7 @@
 /* Respond with 200 and the time.
  */
 static int hello_handler(
-  fshv_request *req, fshv_response *res, flu_dict *params)
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
   res->status_code = 200;
 
@@ -50,7 +50,7 @@ static int hello_handler(
 /* Respond with a copy of the incoming request.
  */
 static int mirror_handler(
-  fshv_request *req, fshv_response *res, flu_dict *params)
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
   res->status_code = 200;
   //flu_list_set(res->headers, "content-type", "text/plain; charset=utf-8");
@@ -75,7 +75,7 @@ static int mirror_handler(
 }
 
 static int login_handler(
-  fshv_request *req, fshv_response *res, flu_dict *params)
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
   res->status_code = 401;
 
@@ -108,8 +108,10 @@ static int login_handler(
 }
 
 static int secret_handler(
-  fshv_request *req, fshv_response *res, flu_dict *params)
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
+  if (res->status_code == 401) return 1;
+
   res->status_code = 200;
   flu_list_add(res->body, strdup("there are no secrets."));
 
@@ -123,8 +125,8 @@ int main()
   fgaj_conf_get()->out = stderr;
   fgaj_conf_get()->params = "5p";
 
-  fshv_route *routes[] = {
-
+  fshv_route *routes[] =
+  {
     // public zone
 
     fshv_rp("/mirror", mirror_handler, NULL),
@@ -133,14 +135,9 @@ int main()
 
     // authentified zone
 
-    fshv_rp(
-      "POST /login", login_handler, NULL),
-    fshv_r(
-      fshv_any_guard,
-      fshv_session_auth_filter,
-      NULL),
-
-    fshv_rp("/secret", secret_handler, NULL),
+    fshv_rp("POST /login", login_handler, NULL),
+    fshv_r(fshv_any_guard, fshv_session_auth_filter, NULL),
+    fshv_rp("GET /secret", secret_handler, NULL),
 
     NULL
   };

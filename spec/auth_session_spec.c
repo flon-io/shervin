@@ -50,7 +50,7 @@ context "session auth:"
         "\r\n");
       req->startus = flu_gets('u');
 
-      int r = fshv_session_auth_filter(req, res, params);
+      int r = fshv_session_auth_filter(req, res, 0, params);
 
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_user") === "toto");
@@ -77,7 +77,7 @@ context "session auth:"
         "\r\n");
       req->startus = flu_gets('u');
 
-      int r = fshv_session_auth_filter(req, res, params);
+      int r = fshv_session_auth_filter(req, res, 0, params);
 
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_user") === "toto");
@@ -105,7 +105,7 @@ context "session auth:"
         "\r\n");
       req->startus = flu_gets('u');
 
-      int r = fshv_session_auth_filter(req, res, params);
+      int r = fshv_session_auth_filter(req, res, 0, params);
 
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_user") === "toto");
@@ -127,9 +127,9 @@ context "session auth:"
         "\r\n");
       req->startus = flu_gets('u');
 
-      int r = fshv_session_auth_filter(req, res, params);
+      int r = fshv_session_auth_filter(req, res, 0, params);
 
-      expect(r i== 1); // stop routing
+      expect(r i== 0); // handled -> 0
 
       expect(flu_list_get(res->headers, "set-cookie") == NULL);
     }
