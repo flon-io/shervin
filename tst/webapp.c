@@ -122,7 +122,7 @@ static int secret_handler(
 int main()
 {
   fgaj_conf_get()->logger = fgaj_grey_logger;
-  fgaj_conf_get()->level = 5;
+  //fgaj_conf_get()->level = 5;
   fgaj_conf_get()->out = stderr;
   fgaj_conf_get()->params = "5p";
 
