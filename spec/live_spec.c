@@ -103,6 +103,15 @@ context "live"
       expect(res->status_code i== 404);
       expect(res->body === "not found");
     }
+
+    it "doesn't override the Location set by a handler"
+    {
+      res = fcla_get("http://127.0.0.1:4001/redir");
+
+      expect(res->status_code i== 303);
+      expect(res->body === "");
+      expect(flu_list_get(res->headers, "location") === "/somewhere/else");
+    }
   }
 
   describe "shervin and auth"

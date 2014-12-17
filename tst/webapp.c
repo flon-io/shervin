@@ -47,6 +47,18 @@ static int hello_handler(
   return 1;
 }
 
+/* Redirects with 303.
+ */
+static int redir_handler(
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
+{
+  res->status_code = 303;
+  flu_list_set(res->headers, "location", strdup("/somewhere/else"));
+  flu_list_add(res->body, strdup(""));
+
+  return 1;
+}
+
 /* Respond with a copy of the incoming request.
  */
 static int mirror_handler(
@@ -132,6 +144,7 @@ int main()
 
     fshv_rp("/mirror", mirror_handler, NULL),
     fshv_rp("/hello/:name", hello_handler, NULL),
+    fshv_rp("/redir", redir_handler, NULL),
     fshv_rp("/files/**", fshv_dir_handler, "r", "../spec/www", NULL),
 
     // authentified zone

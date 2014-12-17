@@ -203,8 +203,11 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio)
   flu_list_set_last(
     con->res->headers, "content-type", strdup("text/plain; charset=utf-8"));
 
-  flu_list_set(
-    con->res->headers, "location", strdup("northpole")); // FIXME
+  if (flu_list_get(con->res->headers, "location") == NULL)
+  {
+    flu_list_set(
+      con->res->headers, "location", strdup("northpole")); // FIXME
+  }
 
   long long now = l ? ev_now(l) : flu_gets('u');
   //
