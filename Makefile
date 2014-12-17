@@ -16,7 +16,5 @@ upgrade:
 cupgrade:
 	cp -v ../bocla/src/bocla.[ch] spec/src/
 
-cs: clean spec
-
 .PHONY: spec clean upgrade cs
 
