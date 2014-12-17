@@ -59,19 +59,27 @@ context "live"
       res = fcla_get("http://127.0.0.1:4001/files/a/b/hello.txt");
 
       //printf("res: %i\n", res->status_code);
-      //if (res->headers)
-      //{
-      //  for (flu_node *n = res->headers->first; n; n = n->next)
-      //  {
-      //    printf("* %s: %s\n", n->key, (char *)n->item);
-      //  }
-      //}
+      //flu_putf(flu_list_to_sm(res->headers));
 
       expect(res->status_code i== 200);
       expect(res->body === "hello world\n");
 
       expect(flu_list_get(res->headers, "x-accel-redirect") === ""
         "../spec/www/a/b/hello.txt");
+    }
+
+    it "serves empty files"
+    {
+      res = fcla_get("http://127.0.0.1:4001/files/a/empty.txt");
+
+      //printf("res: %i\n", res->status_code);
+      //flu_putf(flu_list_to_sm(res->headers));
+
+      expect(res->status_code i== 200);
+      expect(res->body === "");
+
+      expect(flu_list_get(res->headers, "x-accel-redirect") === ""
+        "../spec/www/a/empty.txt");
     }
 
     it "doesn't actually serve the file if x-real-ip is set"
@@ -81,13 +89,7 @@ context "live"
         "X-Real-IP", "127.0.0.1", NULL);
 
       //printf("res: %i\n", res->status_code);
-      //if (res->headers)
-      //{
-      //  for (flu_node *n = res->headers->first; n; n = n->next)
-      //  {
-      //    printf("* %s: %s\n", n->key, (char *)n->item);
-      //  }
-      //}
+      //flu_putf(flu_list_to_sm(res->headers));
 
       expect(res->status_code i== 200);
       expect(res->body === "");
@@ -135,7 +137,7 @@ context "live"
       expect(s == NULL);
     }
 
-    it "starts a session upon sucessful login"
+    it "starts a session upon successful login"
     {
       res = fcla_post("http://127.0.0.1:4001/login", NULL, "u=toto;p=toto");
 

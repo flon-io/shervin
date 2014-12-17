@@ -130,7 +130,7 @@ int fshv_dir_handler(
 
   if (s < 0) { free(path); return 0; }
 
-  if (s == 0)
+  if (s == 0 && flu_list_get(res->headers, "fshv_file") == NULL)
   {
     char *i = flu_list_getd(params, "index", "index.html");
     flu_list *is = flu_split(i, ",");
@@ -148,6 +148,6 @@ int fshv_dir_handler(
 
   free(path);
 
-  return s < 1 ? 0 : 1;
+  return (s > 0 || flu_list_get(res->headers, "fshv_file") != NULL);
 }
 
