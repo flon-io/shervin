@@ -148,6 +148,10 @@ static char *generate_sid(fshv_request *req, flu_dict *params)
 static fshv_session *lookup_session(
   fshv_request *req, flu_dict *params, const char *sid, long expus)
 {
+  //printf("--- lookup_session() >%s< ---\n", sid);
+  //puts(fshv_session_store_to_s());
+  //printf("--- ls ---\n");
+
   fshv_session *r = NULL;
 
   if (session_store == NULL) session_store = flu_list_malloc();
@@ -203,6 +207,7 @@ static fshv_session *lookup_session(
 
   session_store->size = count;
   session_store->last = last;
+  //session_store->last->next = NULL; // didn't I forget that???
   if (last == NULL) session_store->first = NULL;
 
   for (flu_node *fn = last, *next = NULL; fn; fn = next)
