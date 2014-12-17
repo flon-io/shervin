@@ -158,6 +158,8 @@ int fshv_debug_handler(
   res->status_code = 200;
   //flu_list_set(res->headers, "content-type", "text/plain; charset=utf-8");
 
+  char *suri = flu_list_to_s(req->uri_d);
+
   // prepare response body
 
   flu_sbuffer *b = flu_sbuffer_malloc();
@@ -171,6 +173,7 @@ int fshv_debug_handler(
   }
   flu_sbprintf(b, "method: %s\r\n", fshv_char_to_method(req->method));
   flu_sbprintf(b, "path: %s\r\n", req->uri);
+  flu_sbprintf(b, "uri_d: %s\r\n", suri);
   flu_sbputs(b, "\r\n");
   if (req->body) flu_sbputs(b, req->body);
 
@@ -183,10 +186,9 @@ int fshv_debug_handler(
   fgaj_d(
     "|%05x| %s %s HTTP/1.1\r\n",
     us, fshv_char_to_method(req->method), req->uri);
-
-  char *s = flu_list_to_s(req->uri_d);
-  fgaj_d("|%05x| uri_d: %s", us, s);
-  free(s);
+  fgaj_d(
+    "|%05x| uri_d: %s",
+    us, suri);
 
   for (flu_node *fn = req->headers->first; fn; fn = fn->next)
   {
@@ -201,6 +203,8 @@ int fshv_debug_handler(
     fgaj_d("|%05x| body: >%s< l%lli", us, req->body, l);
 
   // done
+
+  free(suri);
 
   return 1;
 }
