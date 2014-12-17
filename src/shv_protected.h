@@ -127,5 +127,12 @@ void fshv_session_store_reset();
 fshv_request *fshv_parse_request_head_f(const char *s, ...);
 int fshv_do_route(char *path, fshv_request *req);
 
+
+//
+// misc handlers
+
+int fshv_debug_handler(
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params);
+
 #endif // FLON_SHV_PROTECTED_H
 

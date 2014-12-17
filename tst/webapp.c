@@ -59,33 +59,6 @@ static int redir_handler(
   return 1;
 }
 
-/* Respond with a copy of the incoming request.
- */
-static int mirror_handler(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
-{
-  res->status_code = 200;
-  //flu_list_set(res->headers, "content-type", "text/plain; charset=utf-8");
-
-  flu_sbuffer *b = flu_sbuffer_malloc();
-
-  flu_sbprintf(
-    b, "%s %s HTTP/1.1\r\n", fshv_char_to_method(req->method), req->uri);
-
-  for (flu_node *n = req->headers->first; n; n = n->next)
-  {
-    flu_sbprintf(b, "%s: %s\r\n", n->key, n->item);
-  }
-  flu_sbprintf(b, "method: %s\r\n", fshv_char_to_method(req->method));
-  flu_sbprintf(b, "path: %s\r\n", req->uri);
-  flu_sbputs(b, "\r\n");
-  if (req->body) flu_sbputs(b, req->body);
-
-  flu_list_add(res->body, flu_sbuffer_to_string(b));
-
-  return 1;
-}
-
 static int login_handler(
   fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
@@ -142,7 +115,7 @@ int main()
   {
     // public zone
 
-    fshv_rp("/mirror", mirror_handler, NULL),
+    fshv_rp("/mirror", fshv_debug_handler, NULL),
     fshv_rp("/hello/:name", hello_handler, NULL),
     fshv_rp("/redir", redir_handler, NULL),
     fshv_rp("/files/**", fshv_dir_handler, "r", "../spec/www", NULL),
