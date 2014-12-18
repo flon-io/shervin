@@ -40,8 +40,17 @@ context "live"
     {
       res = fcla_get("http://127.0.0.1:4001/hello/toto");
 
+      printf("res: %i\n", res->status_code);
+      flu_putf(flu_list_to_sm(res->headers));
+
       expect(res->status_code i== 200);
       expect(res->body === "hello toto\n");
+
+      char *s = flu_list_get(res->headers, "x-flon-shervin");
+      expect(s != NULL);
+      expect(strstr(s, " c-") == NULL);
+      expect(strstr(s, ";r-") == NULL);
+      expect(s >== "ms;rq0");
     }
 
     it "serves back the body it received in /mirror"

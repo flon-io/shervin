@@ -209,15 +209,16 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio)
       con->res->headers, "location", strdup("northpole")); // FIXME
   }
 
-  long long now = l ? ev_now(l) : flu_gets('u');
+  //long long nowus = l ? ev_now(l) * 1000000 : flu_gets('u');
+  long long nowus = flu_gets('u');
   //
   flu_list_set(
     con->res->headers,
     "x-flon-shervin",
     flu_sprintf(
       "c%.3fms;r%.3fms;rq%i",
-      (now - con->startus) / 1000.0,
-      (now - con->req->startus) / 1000.0,
+      (nowus - con->startus) / 1000.0,
+      (nowus - con->req->startus) / 1000.0,
       con->rqount));
 
   if (
@@ -285,7 +286,7 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio)
 
   // done
 
-  now = flu_gets('u');
+  nowus = flu_gets('u');
   //
   fgaj_i(
     "i%p r%i %s %s %s %i l%s c%.3fms r%.3fms",
@@ -295,8 +296,8 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio)
     con->req->uri,
     con->res->status_code,
     flu_list_get(con->res->headers, "content-length"),
-    (now - con->startus) / 1000.0,
-    (now - con->req->startus) / 1000.0);
+    (nowus - con->startus) / 1000.0,
+    (nowus - con->req->startus) / 1000.0);
 
   fshv_con_reset(con);
 }
