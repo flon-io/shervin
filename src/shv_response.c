@@ -286,12 +286,22 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio)
 
   // done
 
+  char asrc = 'i'; char *addr = flu_list_get(con->req->headers, "x-real-ip");
+  if (addr == NULL)
+  {
+    asrc = 'f'; addr = flu_list_get(con->req->headers, "x-forwarded-for");
+  }
+  if (addr == NULL)
+  {
+    asrc = 'a'; addr = inet_ntoa(con->client->sin_addr);
+  }
+
   nowus = flu_gets('u');
-  //
+
   fgaj_i(
-    "i%p r%i %s %s %s %i l%s c%.3fms r%.3fms",
+    "i%p r%i %c%s %s %s %i l%s c%.3fms r%.3fms",
     eio, con->rqount,
-    inet_ntoa(con->client->sin_addr),
+    asrc, addr,
     fshv_char_to_method(con->req->method),
     con->req->uri,
     con->res->status_code,
