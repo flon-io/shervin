@@ -123,8 +123,13 @@ int fshv_basic_auth_filter(
 int fshv_session_auth_filter(
   fshv_request *req, fshv_response *res, int mode, flu_dict *params);
 
+/* Used by login endpoints to start a session.
+ */
 void fshv_start_session(
   fshv_request *req, fshv_response *res, flu_dict *params, const char *user);
+
+/* Used by logout endpoints to leave a session.
+ */
 void fshv_stop_session(
   fshv_request *req, fshv_response *res, flu_dict *params, const char *sid);
 
