@@ -119,6 +119,18 @@ static void set_session_cookie(
   free(ts);
 }
 
+static fshv_session_push *push_func(flu_dict *params)
+{
+  if (params == NULL) return fshv_session_memstore_push;
+
+  fshv_session_push *r = NULL;
+
+  r = flu_list_get(params, "store"); if (r) return r;
+  r = flu_list_get(params, "s"); if (r) return r;
+
+  return fshv_session_memstore_push;
+}
+
 void fshv_start_session(
   fshv_request *req, fshv_response *res, flu_dict *params, const char *user)
 {
@@ -133,7 +145,7 @@ void fshv_start_session(
   char *sid = generate_sid(req, params);
   long long tus = req ? req->startus : flu_gets('u');
 
-  fshv_session *ses = fshv_session_push(sid, user, id, tus);
+  fshv_session *ses = push_func(params)(sid, user, id, tus);
 
   set_session_cookie(req, res, params, ses, SHV_SA_EXPIRY);
 }
@@ -141,7 +153,7 @@ void fshv_start_session(
 void fshv_stop_session(
   fshv_request *req, fshv_response *res, flu_dict *params, const char *sid)
 {
-  fshv_session_push(sid, NULL, NULL, -1);
+  push_func(params)(sid, NULL, NULL, -1);
 }
 
 int fshv_session_auth_filter(
@@ -169,7 +181,7 @@ int fshv_session_auth_filter(
     break;
   }
 
-  fshv_session *s = fshv_session_push(sid, NULL, NULL, SHV_SA_EXPIRY);
+  fshv_session *s = push_func(params)(sid, NULL, NULL, SHV_SA_EXPIRY);
 
   free(sid);
 

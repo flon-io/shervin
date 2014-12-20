@@ -42,7 +42,7 @@
  * * pushing with all NULL and -1: resets the store
  *   returns NULL
  */
-fshv_session *fshv_session_push(
+fshv_session *fshv_session_memstore_push(
   const char *sid, const char *user, const char *id, long long tus);
 
 /* For specs only.

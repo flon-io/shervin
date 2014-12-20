@@ -162,7 +162,7 @@ static fshv_session *start_session(
   return new;
 }
 
-fshv_session *fshv_session_push(
+fshv_session *fshv_session_memstore_push(
   const char *sid, const char *user, const char *id, long long tus)
 {
   if (store == NULL) store = flu_list_malloc();

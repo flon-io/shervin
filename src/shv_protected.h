@@ -112,6 +112,9 @@ char *fshv_session_to_s(fshv_session *s);
 
 void fshv_session_free(fshv_session *s);
 
+typedef fshv_session *fshv_session_push(
+  const char *sid, const char *user, const char *id, long long tus);
+
 
 //
 // spec tools

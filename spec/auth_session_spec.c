@@ -31,8 +31,9 @@ context "session auth:"
         "n", "shervin.test",
         NULL);
 
-      fshv_session_push("abcdef123", "toto", "toto:1234:4567", flu_gets('u'));
-        // start session
+      fshv_session_memstore_push(
+        "abcdef123", "toto", "toto:1234:4567", flu_gets('u'));
+          // start session
     }
     after each
     {
@@ -40,8 +41,9 @@ context "session auth:"
       flu_list_free(params);
       fshv_response_free(res);
 
-      fshv_session_push(NULL, NULL, NULL, -1);
-        // reset store
+      fshv_session_memstore_push(
+        NULL, NULL, NULL, -1);
+          // reset store
     }
 
     int sa_specauth(const char *user, const char *pass, flu_dict *params)
