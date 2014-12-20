@@ -37,6 +37,7 @@
 #include "flu64.h"
 #include "shervin.h"
 #include "shv_protected.h"
+#include "shv_auth_session_memstore.h"
 
 
 //
@@ -45,23 +46,7 @@
 #define SHV_SA_RANDSIZE 48
 #define SHV_SA_EXPIRY (long)24 * 3600 * 1000 * 1000
 
-flu_list *session_store;
 char *spid;
-
-static fshv_session *fshv_session_malloc(
-  char *user, char *id, char *sid, long long mtimeus)
-{
-  fshv_session *r = calloc(1, sizeof(fshv_session));
-  if (r == NULL) return NULL;
-
-  r->sid = sid;
-  r->user = user;
-  r->id = id;
-  r->mtimeus = mtimeus;
-  r->used = 0;
-
-  return r;
-}
 
 char *fshv_session_to_s(fshv_session *s)
 {
@@ -76,7 +61,7 @@ char *fshv_session_to_s(fshv_session *s)
   return r;
 }
 
-static void fshv_session_free(fshv_session *s)
+void fshv_session_free(fshv_session *s)
 {
   if (s == NULL) return;
 
@@ -84,45 +69,6 @@ static void fshv_session_free(fshv_session *s)
   free(s->user);
   free(s->id);
   free(s);
-}
-
-flu_list *fshv_session_store()
-{
-  return session_store;
-}
-
-char *fshv_session_store_to_s()
-{
-  flu_sbuffer *b = flu_sbuffer_malloc();
-
-  flu_sbputc(b, '{');
-  for (flu_node *fn = session_store->first; fn; fn = fn->next)
-  {
-    flu_sbputs(b, "\n  * ");
-    char *s = fshv_session_to_s(fn->item); flu_sbputs(b, s); free(s);
-  }
-  flu_sbputs(b, "\n}");
-
-  return flu_sbuffer_to_string(b);
-}
-
-fshv_session *fshv_session_add(
-  const char *user, const char *id, const char *sid, long long nowus)
-{
-  if (session_store == NULL) session_store = flu_list_malloc();
-
-  fshv_session *ses =
-    fshv_session_malloc(strdup(user), strdup(id), strdup(sid), nowus);
-
-  flu_list_unshift(session_store, ses);
-
-  return ses;
-}
-
-void fshv_session_store_reset()
-{
-  flu_list_and_items_free(session_store, (void (*)(void *))fshv_session_free);
-  session_store = NULL;
 }
 
 static char *generate_sid(fshv_request *req, flu_dict *params)
@@ -143,81 +89,6 @@ static char *generate_sid(fshv_request *req, flu_dict *params)
   return flu64_encode_for_url(
     rand,
     SHV_SA_RANDSIZE - (req->startus / 1000000) % 10);
-}
-
-static fshv_session *lookup_session(
-  fshv_request *req, flu_dict *params, const char *sid, long expus)
-{
-  //printf("--- lookup_session() >%s< ---\n", sid);
-  //puts(fshv_session_store_to_s());
-  //printf("--- ls ---\n");
-
-  fshv_session *r = NULL;
-
-  if (session_store == NULL) session_store = flu_list_malloc();
-
-  size_t count = 0;
-  flu_node *last = NULL;
-
-  for (flu_node *fn = session_store->first; fn; fn = fn->next)
-  {
-    fshv_session *s = fn->item;
-
-    if (expus > 0 && req->startus > s->mtimeus + expus) break;
-    if (s->used) continue;
-
-    if (strcmp(s->sid, sid) == 0) { r = s; break; }
-
-    last = fn; ++count;
-  }
-
-  if (expus == 0)
-  {
-    if (r) r->used = 1;
-
-    return NULL;
-  }
-
-  if (r)
-  {
-    char *sid = generate_sid(req, params);
-    if (sid == NULL) sid = strdup(r->sid);
-
-    if (session_store->first->item == r)
-    {
-      free(r->sid); r->sid = sid;
-      r->mtimeus = req->startus;
-    }
-    else
-    {
-      fshv_session *s =
-        fshv_session_malloc(strdup(r->id), strdup(r->user), sid, req->startus);
-
-      flu_list_unshift(session_store, s);
-
-      r->used = 1;
-
-      r = s;
-    }
-
-    return r;
-  }
-
-  // TODO enventually let clean up before returning found session
-
-  session_store->size = count;
-  session_store->last = last;
-  //session_store->last->next = NULL; // didn't I forget that???
-  if (last == NULL) session_store->first = NULL;
-
-  for (flu_node *fn = last, *next = NULL; fn; fn = next)
-  {
-    next = fn->next;
-    fshv_session_free(fn->item);
-    flu_node_free(fn);
-  }
-
-  return NULL;
 }
 
 static char *get_cookie_name(flu_dict *params)
@@ -260,8 +131,9 @@ void fshv_start_session(
   char *id = flu_sbuffer_to_string(b);
 
   char *sid = generate_sid(req, params);
+  long long tus = req ? req->startus : flu_gets('u');
 
-  fshv_session *ses = fshv_session_add(user, id, sid, req->startus);
+  fshv_session *ses = fshv_session_push(sid, user, id, tus);
 
   set_session_cookie(req, res, params, ses, SHV_SA_EXPIRY);
 }
@@ -269,8 +141,7 @@ void fshv_start_session(
 void fshv_stop_session(
   fshv_request *req, fshv_response *res, flu_dict *params, const char *sid)
 {
-  lookup_session(req, params, sid, 0);
-    // 0 forces to forget the session
+  fshv_session_push(sid, NULL, NULL, -1);
 }
 
 int fshv_session_auth_filter(
@@ -298,7 +169,7 @@ int fshv_session_auth_filter(
     break;
   }
 
-  fshv_session *s = lookup_session(req, params, sid, SHV_SA_EXPIRY);
+  fshv_session *s = fshv_session_push(sid, NULL, NULL, SHV_SA_EXPIRY);
 
   free(sid);
 

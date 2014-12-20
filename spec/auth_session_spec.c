@@ -8,39 +8,47 @@
 #include "flutim.h"
 #include "shervin.h"
 #include "shv_protected.h" // direct access to fshv_request methods
+#include "shv_auth_session_memstore.h"
 
 
 context "session auth:"
 {
-  before each
+  describe "fshv_session_push()"
   {
-    fshv_request *req = NULL;
-    flu_dict *params = NULL;
-    fshv_response *res = fshv_response_malloc(200);
-
-    params = flu_d(
-      "a", sa_specauth,
-      "n", "shervin.test",
-      NULL);
-
-    fshv_session_add("toto", "toto:1234:4567", "abcdef123", flu_gets('u'));
-  }
-  after each
-  {
-    fshv_request_free(req);
-    flu_list_free(params);
-    fshv_response_free(res);
-
-    fshv_session_store_reset();
-  }
-
-  int sa_specauth(const char *user, const char *pass, flu_dict *params)
-  {
-    return (strcmp(user, pass) == 0);
+    it "flips burgers"
   }
 
   describe "fshv_session_auth_filter()"
   {
+    before each
+    {
+      fshv_request *req = NULL;
+      flu_dict *params = NULL;
+      fshv_response *res = fshv_response_malloc(200);
+
+      params = flu_d(
+        "a", sa_specauth,
+        "n", "shervin.test",
+        NULL);
+
+      fshv_session_push("abcdef123", "toto", "toto:1234:4567", flu_gets('u'));
+        // start session
+    }
+    after each
+    {
+      fshv_request_free(req);
+      flu_list_free(params);
+      fshv_response_free(res);
+
+      fshv_session_push(NULL, NULL, NULL, -1);
+        // reset store
+    }
+
+    int sa_specauth(const char *user, const char *pass, flu_dict *params)
+    {
+      return (strcmp(user, pass) == 0);
+    }
+
     it "authentifies (hit)"
     {
       req = fshv_parse_request_head(
@@ -55,9 +63,9 @@ context "session auth:"
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_session_user") === "toto");
 
-      expect(fshv_session_store()->size == 1);
+      expect(fshv_session_memstore()->size == 1);
 
-      fshv_session *ses = fshv_session_store()->first->item;
+      fshv_session *ses = fshv_session_memstore()->first->item;
       expect(ses->id === "toto:1234:4567");
 
       char *s = flu_list_get(res->headers, "set-cookie");
@@ -82,9 +90,9 @@ context "session auth:"
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_session_user") === "toto");
 
-      expect(fshv_session_store()->size == 1);
+      expect(fshv_session_memstore()->size == 1);
 
-      fshv_session *ses = fshv_session_store()->first->item;
+      fshv_session *ses = fshv_session_memstore()->first->item;
       expect(ses->id === "toto:1234:4567");
 
       char *s = flu_list_get(res->headers, "set-cookie");
@@ -110,9 +118,9 @@ context "session auth:"
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_session_user") === "toto");
 
-      expect(fshv_session_store()->size == 1);
+      expect(fshv_session_memstore()->size == 1);
 
-      fshv_session *ses = fshv_session_store()->first->item;
+      fshv_session *ses = fshv_session_memstore()->first->item;
       expect(ses->id === "toto:1234:4567");
 
       char *s = flu_list_get(res->headers, "set-cookie");
