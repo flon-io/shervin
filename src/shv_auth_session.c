@@ -159,7 +159,7 @@ void fshv_stop_session(
 int fshv_session_auth_filter(
   fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
-  int authentified = 0;
+  fshv_session *s = NULL;
 
   char *cookies = flu_list_get(req->headers, "cookie");
   if (cookies == NULL) goto _over;
@@ -181,21 +181,26 @@ int fshv_session_auth_filter(
     break;
   }
 
-  fshv_session *s = push_func(params)(sid, NULL, NULL, SHV_SA_EXPIRY);
+  fshv_session_push *push = push_func(params);
+
+  s = push(sid, NULL, NULL, SHV_SA_EXPIRY);
 
   free(sid);
 
   if (s == NULL) goto _over;
 
-  authentified = 1;
+  fshv_session *s1 =
+    push(generate_sid(req, params), s->user, s->id, req->startus);
 
-  fshv_set_user(req, "session", s->user);
+  if (s1 == NULL) goto _over;
 
-  set_session_cookie(req, res, params, s, SHV_SA_EXPIRY);
+  fshv_set_user(req, "session", s1->user);
+
+  set_session_cookie(req, res, params, s1, SHV_SA_EXPIRY);
 
 _over:
 
-  if ( ! authentified) res->status_code = 401;
+  if (s == NULL) res->status_code = 401;
 
   return 0;
 }

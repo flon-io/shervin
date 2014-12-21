@@ -23,7 +23,7 @@ context "session auth:"
   // * pushing with all NULL and -1: resets the store
   //   returns NULL
 
-  describe "fshv_session_push()"
+  describe "fshv_session_memstore_push()"
   {
     before each
     {
@@ -34,20 +34,39 @@ context "session auth:"
     it "starts a session"
     {
       fshv_session *s = fshv_session_memstore_push(
-        "deadbeef", "toto", "toto:1234", flu_gets('u'));
+        "deadbeef", "toto", "toto:1234", flu_gets('u')); // start
 
       expect(s->used i== 0);
       expect(fshv_session_memstore()->size == 1);
 
       fshv_session *s1 = fshv_session_memstore_push(
-        "deadbeef", NULL, NULL, 60 * 1000 * 1000);
+        "deadbeef", NULL, NULL, 60 * 1000 * 1000); // query
 
       expect(s1 != NULL);
       expect(s1->sid === "deadbeef");
     }
 
     it "refreshes a session"
-    it "queries"
+    {
+      fshv_session_memstore_push(
+        "deadbeef", "toto", "toto:1234", flu_gets('u')); // start
+
+      fshv_session *s = fshv_session_memstore_push(
+        "c0bebeef", "toto", "toto:1234", flu_gets('u')); // renew
+
+      expect(s->used i== 0);
+      expect(fshv_session_memstore()->size == 2);
+
+      fshv_session *s1 = fshv_session_memstore()->first->item;
+      fshv_session *s0 = fshv_session_memstore()->first->next->item;
+
+      expect(s1->used i== 0);
+      expect(s0->used i== 1);
+    }
+
+    it "queries (miss)"
+    it "queries (hit)"
+
     it "queries and expires"
     it "stops a session"
   }
