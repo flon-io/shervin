@@ -64,8 +64,36 @@ context "session auth:"
       expect(s0->used i== 1);
     }
 
+    it "queries (miss, store empty)"
+    {
+      fshv_session *s = fshv_session_memstore_push(
+        "boeufcharolais", NULL, NULL, 60 * 1000 * 1000); // query
+
+      expect(s == NULL);
+    }
+
     it "queries (miss)"
+    {
+      fshv_session_memstore_push(
+        "deadbeef", "toto", "toto:1234", flu_gets('u')); // start
+
+      fshv_session *s = fshv_session_memstore_push(
+        "boeufcharolais", NULL, NULL, 60 * 1000 * 1000); // query
+
+      expect(s == NULL);
+    }
+
     it "queries (hit)"
+    {
+      fshv_session_memstore_push(
+        "delaplatabeef", "toto", "toto:1234", flu_gets('u')); // start
+
+      fshv_session *s = fshv_session_memstore_push(
+        "delaplatabeef", NULL, NULL, 60 * 1000 * 1000); // query
+
+      expect(s != NULL);
+      expect(s->id === "toto:1234");
+    }
 
     it "queries and expires"
     it "stops a session"
