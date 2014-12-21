@@ -55,89 +55,47 @@ static fshv_session *reset_store()
   return NULL;
 }
 
-//static fshv_session *lookup_session(
-//  fshv_request *req, flu_dict *params, const char *sid, long expus)
-//{
-//  //printf("--- lookup_session() >%s< ---\n", sid);
-//  //puts(fshv_session_store_to_s());
-//  //printf("--- ls ---\n");
-//
-//  fshv_session *r = NULL;
-//
-//  if (session_store == NULL) session_store = flu_list_malloc();
-//
-//  size_t count = 0;
-//  flu_node *last = NULL;
-//
-//  for (flu_node *fn = session_store->first; fn; fn = fn->next)
-//  {
-//    fshv_session *s = fn->item;
-//
-//    if (expus > 0 && req->startus > s->mtimeus + expus) break;
-//    if (s->used) continue;
-//
-//    if (strcmp(s->sid, sid) == 0) { r = s; break; }
-//
-//    last = fn; ++count;
-//  }
-//
-//  if (expus == 0)
-//  {
-//    if (r) r->used = 1;
-//
-//    return NULL;
-//  }
-//
-//  if (r)
-//  {
-//    char *sid = generate_sid(req, params);
-//    if (sid == NULL) sid = strdup(r->sid);
-//
-//    if (session_store->first->item == r)
-//    {
-//      free(r->sid); r->sid = sid;
-//      r->mtimeus = req->startus;
-//    }
-//    else
-//    {
-//      fshv_session *s =
-//        fshv_session_malloc(strdup(r->id), strdup(r->user), sid, req->startus);
-//
-//      flu_list_unshift(session_store, s);
-//
-//      r->used = 1;
-//
-//      r = s;
-//    }
-//
-//    return r;
-//  }
-//
-//  // TODO enventually let clean up before returning found session
-//
-//  session_store->size = count;
-//  session_store->last = last;
-//  //session_store->last->next = NULL; // didn't I forget that???
-//  if (last == NULL) session_store->first = NULL;
-//
-//  for (flu_node *fn = last, *next = NULL; fn; fn = next)
-//  {
-//    next = fn->next;
-//    fshv_session_free(fn->item);
-//    flu_node_free(fn);
-//  }
-//
-//  return NULL;
-//}
-
-static fshv_session *query_session(const char *sid, long long expiry)
+static fshv_session *query_session(const char *sid, long long nowus)
 {
+  short hit_expired = 0;
+  size_t count = 0;
+  flu_node *last = NULL;
+
   for (flu_node *fn = store->first; fn; fn = fn->next)
   {
     fshv_session *s = fn->item;
+
+    if (s->expus <= nowus) { hit_expired = 1; break; }
+    ++count; last = fn;
+
     if (strcmp(s->sid, sid) != 0) continue;
+
     if (s->used == 1) return NULL;
     return s;
+  }
+
+  if ( ! hit_expired) return NULL;
+
+  // hit the expiry limit... clean
+
+  flu_node *next = last ? last->next : store->first;
+
+  // truncate store
+
+  store->size = count;
+  if (last) last->next = NULL;
+  store->last = last;
+  if (count == 0) store->first = NULL;
+
+  // free expired sessions
+
+  flu_node *nxt = NULL;
+
+  for (flu_node *fn = next; fn; fn = nxt)
+  {
+    nxt = fn->next;
+    fshv_session_free(fn->item);
+    flu_node_free(fn);
   }
 
   return NULL;
@@ -175,7 +133,7 @@ fshv_session *fshv_session_memstore_push(
 {
   if (store == NULL) store = flu_list_malloc();
 
-  if (tus == -1 && sid) return stop_session(sid);
+  if (tus == -1 && sid != NULL) return stop_session(sid);
   if (tus == -1) return reset_store();
   if (user == NULL) return query_session(sid, tus);
   if (id) return start_session(sid, user, id, tus);
