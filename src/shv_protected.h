@@ -104,7 +104,7 @@ typedef struct {
   char *sid;
   char *user;
   char *id;
-  long long mtimeus; // microseconds
+  long long expus; // microseconds, expiration point
   short used;
 } fshv_session;
 
@@ -112,10 +112,10 @@ char *fshv_session_to_s(fshv_session *s);
 
 void fshv_session_free(fshv_session *s);
 
-/*
- * * pushing will all the parameters set and nowus: start or refreshes a session
+/* * pushing will all the parameters set and expiry time: start
+ *   or refreshes a session
  *   returns the new session in case of success, NULL else
- * * pushing with only the sid set and > 0: queries and expires
+ * * pushing with only the sid set and now: queries and expires
  *   returns a session in case of success, NULL else
  * * pushing with only the sid set and -1: stops the session
  *   returns NULL

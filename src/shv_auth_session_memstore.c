@@ -154,7 +154,7 @@ static fshv_session *query_by_id(const char *id)
 }
 
 static fshv_session *start_session(
-  const char *sid, const char *user, const char *id, long long startus)
+  const char *sid, const char *user, const char *id, long long expus)
 {
   fshv_session *old = query_by_id(id);
   if (old) old->used = 1;
@@ -163,7 +163,7 @@ static fshv_session *start_session(
   new->user = strdup(user);
   new->id = strdup(id);
   new->sid = strdup(sid);
-  new->mtimeus = startus;
+  new->expus = expus;
 
   flu_list_unshift(store, new);
 

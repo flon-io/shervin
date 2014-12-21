@@ -52,10 +52,10 @@ char *fshv_session_to_s(fshv_session *s)
 {
   if (s == NULL) return strdup("(fshv_session null)");
 
-  char *ts = flu_sstamp(s->mtimeus / 1000000, 1, 's');
+  char *ts = flu_sstamp(s->expus / 1000000, 1, 's');
   char *r = flu_sprintf(
     "(fshv_session '%s', '%s', '%s', %lli (%s), u%i)",
-    s->user, s->id, s->sid, s->mtimeus, ts, s->used);
+    s->user, s->id, s->sid, s->expus, ts, s->used);
   free(ts);
 
   return r;
@@ -101,11 +101,10 @@ static char *get_cookie_name(flu_dict *params)
 }
 
 static void set_session_cookie(
-  fshv_request *req, fshv_response *res, flu_dict *params,
-  fshv_session *ses, long expiry)
+  fshv_request *req, fshv_response *res, flu_dict *params, fshv_session *ses)
 {
   char *cn = get_cookie_name(params);
-  char *ts = flu_sstamp((ses->mtimeus + expiry) / 1000000 , 1, 'g');
+  char *ts = flu_sstamp((ses->expus) / 1000000 , 1, 'g');
 
   flu_sbuffer *b = flu_sbuffer_malloc();
 
@@ -143,11 +142,11 @@ void fshv_start_session(
   char *id = flu_sbuffer_to_string(b);
 
   char *sid = generate_sid(req, params);
-  long long tus = req ? req->startus : flu_gets('u');
+  long long expus = (req ? req->startus : flu_gets('u')) + SHV_SA_EXPIRY;
 
-  fshv_session *ses = push_func(params)(sid, user, id, tus);
+  fshv_session *ses = push_func(params)(sid, user, id, expus);
 
-  set_session_cookie(req, res, params, ses, SHV_SA_EXPIRY);
+  set_session_cookie(req, res, params, ses);
 }
 
 void fshv_stop_session(
@@ -183,20 +182,25 @@ int fshv_session_auth_filter(
 
   fshv_session_push *push = push_func(params);
 
-  s = push(sid, NULL, NULL, SHV_SA_EXPIRY);
+  s = push(sid, NULL, NULL, req->startus);
+    // query
 
   free(sid);
 
   if (s == NULL) goto _over;
 
-  fshv_session *s1 =
-    push(generate_sid(req, params), s->user, s->id, req->startus);
+  sid = generate_sid(req, params);
+
+  fshv_session *s1 = push(sid, s->user, s->id, req->startus + SHV_SA_EXPIRY);
+    // refresh
+
+  free(sid);
 
   if (s1 == NULL) goto _over;
 
   fshv_set_user(req, "session", s1->user);
 
-  set_session_cookie(req, res, params, s1, SHV_SA_EXPIRY);
+  set_session_cookie(req, res, params, s1);
 
 _over:
 
