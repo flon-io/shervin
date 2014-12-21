@@ -13,9 +13,43 @@
 
 context "session auth:"
 {
+  // * pushing will all the parameters set and nowus: start
+  //   or refreshes a session
+  //   returns the new session in case of success, NULL else
+  // * pushing with only the sid set and > 0: queries and expires
+  //   returns a session in case of success, NULL else
+  // * pushing with only the sid set and -1: stops the session
+  //   returns NULL
+  // * pushing with all NULL and -1: resets the store
+  //   returns NULL
+
   describe "fshv_session_push()"
   {
-    it "flips burgers"
+    before each
+    {
+      fshv_session_memstore_push(NULL, NULL, NULL, -1);
+        // reset store
+    }
+
+    it "starts a session"
+    {
+      fshv_session *s = fshv_session_memstore_push(
+        "deadbeef", "toto", "toto:1234", flu_gets('u'));
+
+      expect(s->used i== 0);
+      expect(fshv_session_memstore()->size == 1);
+
+      fshv_session *s1 = fshv_session_memstore_push(
+        "deadbeef", NULL, NULL, 60 * 1000 * 1000);
+
+      expect(s1 != NULL);
+      expect(s1->sid === "deadbeef");
+    }
+
+    it "refreshes a session"
+    it "queries"
+    it "queries and expires"
+    it "stops a session"
   }
 
   describe "fshv_session_auth_filter()"
@@ -31,6 +65,9 @@ context "session auth:"
         "n", "shervin.test",
         NULL);
 
+      fshv_session_memstore_push(NULL, NULL, NULL, -1);
+        // reset store
+
       fshv_session_memstore_push(
         "abcdef123", "toto", "toto:1234:4567", flu_gets('u'));
           // start session
@@ -40,10 +77,6 @@ context "session auth:"
       fshv_request_free(req);
       flu_list_free(params);
       fshv_response_free(res);
-
-      fshv_session_memstore_push(
-        NULL, NULL, NULL, -1);
-          // reset store
     }
 
     int sa_specauth(const char *user, const char *pass, flu_dict *params)

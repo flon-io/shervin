@@ -132,6 +132,14 @@ static fshv_session *reset_store()
 
 static fshv_session *query_session(const char *sid, long long expiry)
 {
+  for (flu_node *fn = store->first; fn; fn = fn->next)
+  {
+    fshv_session *s = fn->item;
+    if (strcmp(s->sid, sid) != 0) continue;
+    if (s->used == 1) return NULL;
+    return s;
+  }
+
   return NULL;
 }
 

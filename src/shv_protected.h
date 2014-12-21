@@ -112,6 +112,16 @@ char *fshv_session_to_s(fshv_session *s);
 
 void fshv_session_free(fshv_session *s);
 
+/*
+ * * pushing will all the parameters set and nowus: start or refreshes a session
+ *   returns the new session in case of success, NULL else
+ * * pushing with only the sid set and > 0: queries and expires
+ *   returns a session in case of success, NULL else
+ * * pushing with only the sid set and -1: stops the session
+ *   returns NULL
+ * * pushing with all NULL and -1: resets the store
+ *   returns NULL
+ */
 typedef fshv_session *fshv_session_push(
   const char *sid, const char *user, const char *id, long long tus);
 
