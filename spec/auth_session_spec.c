@@ -72,6 +72,19 @@ context "session auth:"
       expect(s == NULL);
     }
 
+    it "queries (miss, session used)"
+    {
+      fshv_session *s = fshv_session_memstore_push(
+        "deadbeef", "toto", "toto:1234", flu_gets('u')); // start
+
+      s->used = 1; // memstore...
+
+      s = fshv_session_memstore_push(
+        "deadbeef", NULL, NULL, 60 * 1000 * 1000); // query
+
+      expect(s == NULL);
+    }
+
     it "queries (miss)"
     {
       fshv_session_memstore_push(
@@ -95,8 +108,24 @@ context "session auth:"
       expect(s->id === "toto:1234");
     }
 
-    it "queries and expires"
+    it "queries and expires (miss)"
+    it "queries and expires (hit)"
+
     it "stops a session"
+    {
+      fshv_session_memstore_push(
+        "waterbuffalo", "toto", "toto:1234", flu_gets('u')); // start
+
+      fshv_session *s = fshv_session_memstore_push(
+        "waterbuffalo", NULL, NULL, -1); // start
+
+      expect(s == NULL);
+      expect(fshv_session_memstore()->size == 1);
+
+      s = fshv_session_memstore()->first->item;
+
+      expect(s->used i== 1);
+    }
   }
 
   describe "fshv_session_auth_filter()"
