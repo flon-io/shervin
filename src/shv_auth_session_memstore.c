@@ -57,7 +57,6 @@ static fshv_session *reset_store()
 
 static fshv_session *query_session(const char *sid, long long nowus)
 {
-  short hit_expired = 0;
   size_t count = 0;
   flu_node *last = NULL;
 
@@ -65,7 +64,7 @@ static fshv_session *query_session(const char *sid, long long nowus)
   {
     fshv_session *s = fn->item;
 
-    if (s->expus <= nowus) { hit_expired = 1; break; }
+    if (s->expus <= nowus) break;
     ++count; last = fn;
 
     if (strcmp(s->sid, sid) != 0) continue;
@@ -74,7 +73,7 @@ static fshv_session *query_session(const char *sid, long long nowus)
     return s;
   }
 
-  if ( ! hit_expired) return NULL;
+  if (last == store->last) return NULL;
 
   // hit the expiry limit... clean
 
