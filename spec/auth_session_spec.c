@@ -192,8 +192,13 @@ context "session auth:"
         // reset store
 
       fshv_session_memstore_push(
-        "abcdef123", "toto", "toto:1234:4567", flu_gets('u'));
+        "abcdef123",
+        "toto",
+        "toto:1234:4567",
+        flu_gets('u') + (long long)10 * 60 * 60 * 1000 * 1000);
           // start session
+
+        // expiry time, arbitrary
     }
     after each
     {
@@ -221,7 +226,7 @@ context "session auth:"
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_session_user") === "toto");
 
-      expect(fshv_session_memstore()->size == 1);
+      expect(fshv_session_memstore()->size i== 2);
 
       fshv_session *ses = fshv_session_memstore()->first->item;
       expect(ses->id === "toto:1234:4567");
@@ -248,7 +253,7 @@ context "session auth:"
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_session_user") === "toto");
 
-      expect(fshv_session_memstore()->size == 1);
+      expect(fshv_session_memstore()->size i== 2);
 
       fshv_session *ses = fshv_session_memstore()->first->item;
       expect(ses->id === "toto:1234:4567");
@@ -276,7 +281,7 @@ context "session auth:"
       expect(r i== 0); // continue routing
       expect(flu_list_get(req->routing_d, "_session_user") === "toto");
 
-      expect(fshv_session_memstore()->size == 1);
+      expect(fshv_session_memstore()->size i== 2);
 
       fshv_session *ses = fshv_session_memstore()->first->item;
       expect(ses->id === "toto:1234:4567");
