@@ -67,7 +67,7 @@ context "session auth:"
       expect(s0->used i== 1);
     }
 
-    it "queries (miss, store empty)"
+    it "queries and misses (store empty)"
     {
       fshv_session *s = fshv_session_memstore_push(
         "boeufcharolais", NULL, NULL, flu_gets('u')); // query
@@ -77,7 +77,7 @@ context "session auth:"
       expect(fshv_session_memstore()->size == 0);
     }
 
-    it "queries (miss, session used)"
+    it "queries and misses (session used)"
     {
       fshv_session *s = fshv_session_memstore_push(
         "deadbeef", "toto", "toto:1234", flu_gets('u') + e); // start
@@ -92,7 +92,7 @@ context "session auth:"
       expect(fshv_session_memstore()->size == 1);
     }
 
-    it "queries (miss)"
+    it "queries and misses"
     {
       fshv_session_memstore_push(
         "deadbeef", "toto", "toto:1234", flu_gets('u') + e); // start
@@ -105,7 +105,7 @@ context "session auth:"
       expect(fshv_session_memstore()->size == 1);
     }
 
-    it "queries (hit)"
+    it "queries and hits"
     {
       fshv_session_memstore_push(
         "delaplatabeef", "toto", "toto:1234", flu_gets('u') + e); // start
@@ -119,7 +119,7 @@ context "session auth:"
       expect(fshv_session_memstore()->size == 1);
     }
 
-    it "queries and expires (miss)"
+    it "queries, misses and expires (1 record)"
     {
       fshv_session_memstore_push(
         "beef0", "alice", "alice:1234", flu_gets('u') - 1); // start
@@ -135,7 +135,28 @@ context "session auth:"
         // the query purged the store
     }
 
-    it "queries and expires (hit)"
+    it "queries, misses and expires (1+ records)"
+    {
+      fshv_session_memstore_push(
+        "beef0", "alice", "alice:1234", flu_gets('u') - 3); // start
+      fshv_session_memstore_push(
+        "beef1", "alice", "alice:1234", flu_gets('u') - 2); // start
+
+      expect(fshv_session_memstore()->size == 2);
+
+      expect(
+        ((fshv_session *)fshv_session_memstore()->last->item)->used i== 1);
+      expect(
+        ((fshv_session *)fshv_session_memstore()->first->item)->used i== 0);
+
+      fshv_session *s = fshv_session_memstore_push(
+        "beef1", NULL, NULL, flu_gets('u')); // query
+
+      expect(s == NULL);
+
+      expect(fshv_session_memstore()->size == 0);
+        // the query purged the store
+    }
 
     it "stops a session"
     {
