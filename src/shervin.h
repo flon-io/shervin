@@ -112,7 +112,7 @@ int fshv_dir_handler(
 // filters
 
 typedef int fshv_authenticate(
-  const char *user, const char *pass, flu_dict *params);
+  const char *user, const char *pass, fshv_request *req, flu_dict *params);
 
 void fshv_set_user(fshv_request *req, const char *auth, const char *user);
 char *fshv_get_user(fshv_request *req, const char *auth);
