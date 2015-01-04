@@ -1,6 +1,6 @@
 
 //
-// Copyright (c) 2013-2014, John Mettraux, jmettraux+flon@gmail.com
+// Copyright (c) 2013-2015, John Mettraux, jmettraux+flon@gmail.com
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -1522,3 +1522,8 @@ static fabr_parser *fabr_decompose_rex_group(const char *s, ssize_t n)
   return p;
 }
 
+//commit 2e6b6c066af4c429f9cada525b26dfc93b3e98ae
+//Author: John Mettraux <jmettraux@gmail.com>
+//Date:   Mon Jan 5 06:38:33 2015 +0900
+//
+//    2015
