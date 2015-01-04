@@ -36,7 +36,8 @@
 #include "shv_protected.h"
 
 
-static int no_auth(const char *user, const char *path, flu_dict *params)
+static int no_auth(
+  const char *user, const char *pass, fshv_request *req, flu_dict *params)
 {
   return 0;
 }
