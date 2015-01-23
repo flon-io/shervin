@@ -77,6 +77,23 @@ context "live"
         "../spec/www/a/b/hello.txt");
     }
 
+    it "serves medium-sized files"
+    {
+      res = fcla_get("http://127.0.0.1:4001/files/a/b/handlebars.js");
+
+      //printf("res: %i\n", res->status_code);
+      //flu_putf(flu_list_to_sm(res->headers));
+
+      expect(res->status_code i== 200);
+      expect(res->body ^== "/*!\n");
+      expect(strlen(res->body) zu== 53520);
+
+      expect(flu_list_get(res->headers, "content-length") === ""
+        "53520");
+      expect(flu_list_get(res->headers, "x-accel-redirect") === ""
+        "../spec/www/a/b/handlebars.js");
+    }
+
     it "serves empty files"
     {
       res = fcla_get("http://127.0.0.1:4001/files/a/empty.txt");
