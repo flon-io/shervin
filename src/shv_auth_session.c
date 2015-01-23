@@ -147,6 +147,9 @@ void fshv_start_session(
   fshv_session *ses = push_func(params)(sid, user, id, expus);
 
   set_session_cookie(req, res, params, ses);
+
+  free(id);
+  free(sid);
 }
 
 void fshv_stop_session(

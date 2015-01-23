@@ -71,9 +71,9 @@ static int login_handler(
 
   if (u == NULL)
   {
-    char *sid = strdup(flu_list_getd(req->headers, "cookie", ""));
-    sid = strchr(sid, '=') + 1;
-    fshv_stop_session(req, res, params, sid);
+    char *csid = strdup(flu_list_getd(req->headers, "cookie", ""));
+    fshv_stop_session(req, res, params, strchr(csid, '=') + 1);
+    free(csid);
 
     res->status_code = 200;
     return 1;
