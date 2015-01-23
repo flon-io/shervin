@@ -163,7 +163,7 @@ static int pipe_file(char *path, FILE *dst)
   FILE *src = fopen(path, "r");
   if (src == NULL) return 1;
 
-  char buffer[FSHV_BUFFER_SIZE + 1];
+  char buffer[FSHV_BUFFER_SIZE];
 
   while (1)
   {

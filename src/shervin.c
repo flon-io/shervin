@@ -69,7 +69,7 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   fshv_con *con = (fshv_con *)eio->data;
 
-  char buffer[FSHV_BUFFER_SIZE + 1];
+  char buffer[FSHV_BUFFER_SIZE];
 
   ssize_t r = recv(eio->fd, buffer, FSHV_BUFFER_SIZE, 0);
 
