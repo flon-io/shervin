@@ -57,7 +57,8 @@ static void fshv_close(struct ev_loop *l, struct ev_io *eio)
 
 static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
-  if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
+  if (revents & EV_ERROR) { fgaj_r("invalid event"); return; }
+  if ( ! (revents & EV_READ)) { fgaj_r("not a read"); ev_io_stop(l, eio); return; }
 
   if (fcntl(eio->fd, F_SETFL, fcntl(eio->fd, F_GETFL) | O_NONBLOCK) == -1)
   {
@@ -201,7 +202,8 @@ void fshv_handle(struct ev_loop *l, struct ev_io *eio)
 
 static void fshv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
-  if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
+  if (revents & EV_ERROR) { fgaj_r("invalid event"); return; }
+  if ( ! (revents & EV_READ)) { fgaj_r("not a read"); ev_io_stop(l, eio); return; }
 
   socklen_t cal = sizeof(struct sockaddr_in);
   struct sockaddr_in *ca = calloc(1, cal); // client address
