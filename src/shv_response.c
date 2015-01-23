@@ -164,15 +164,14 @@ static int pipe_file(char *path, FILE *dst)
   if (src == NULL) return 1;
 
   char buffer[FSHV_BUFFER_SIZE + 1];
-  size_t rl, wl;
 
   while (1)
   {
-    rl = fread(buffer, sizeof(char), FSHV_BUFFER_SIZE, src);
-    if (rl > 0)
+    size_t rl = fread(buffer, sizeof(char), FSHV_BUFFER_SIZE, src);
+
+    if (rl > 0) for (size_t off = 0; off < rl; )
     {
-      wl = fwrite(buffer, sizeof(char), rl, dst);
-      if (wl < rl) fgaj_w("wrote %zu of %zu chars :-(", wl, rl);
+      off += fwrite((char *)buffer + off, sizeof(char), rl - off, dst);
     }
 
     if (rl < FSHV_BUFFER_SIZE)
