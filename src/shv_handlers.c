@@ -72,20 +72,17 @@ ssize_t fshv_serve_file(
 
   res->status_code = 200;
 
+  flu_list_set(
+    res->headers, "fshv_content_length", flu_sprintf("%zu", sta.st_size));
+  flu_list_set(
+    res->headers, "content-type", fshv_determine_content_type(pa));
+  flu_list_set(
+    res->headers, "fshv_file", strdup(pa));
+
   char *h = flu_list_get(params, "header");
   if (h == NULL) h = flu_list_get(params, "h");
   if (h == NULL) h = "X-Accel-Redirect";
-
-  flu_list_set(
-    res->headers, "fshv_content_length", flu_sprintf("%zu", sta.st_size));
-
-  flu_list_set(
-    res->headers, "content-type", fshv_determine_content_type(pa));
-
-  flu_list_set(
-    res->headers, "fshv_file", strdup(pa));
-  flu_list_set(
-    res->headers, h, pa);
+  flu_list_set(res->headers, h, pa);
 
   return sta.st_size;
 }

@@ -35,7 +35,7 @@ vspec: s webapp
 	#valgrind --leak-check=full --show-reachable=yes -v ./s
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./s
 
-Vspec: s webapp
+svspec: s webapp
 	VALSERV=1 time ./s
 
 dspec: s webapp
