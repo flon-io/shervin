@@ -42,6 +42,7 @@ dspec: s webapp
 	gdb ./s
 
 clean:
+	$(MAKE) -C ../tst clean
 	rm -f *.o
 	rm -f *.so
 	rm -f *.[ch]
