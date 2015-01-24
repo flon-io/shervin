@@ -197,8 +197,9 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   fshv_con *con = (fshv_con *)eio->data;
 
-  // TODO: write hout
-  // TODO: write bout if hout nil or houtl zero
+  fgaj_d(
+    "i%p con %p hout %p bout %p",
+    eio, con, con ? con->hout : NULL, con ? con->bout : NULL);
 
   if (con->hout)
   {
@@ -234,10 +235,10 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
       for (size_t off = 0; off < r; )
       {
         ssize_t w = write(eio->fd, (char *)buf + off, r - off);
-        fgaj_w("bout wrote %d / %d / %d", w, off, r);
+        fgaj_d("bout wrote %d / %d / %d", w, off, r);
         if (w < 0)
         {
-          if (errno != 0 && errno != EAGAIN)
+          if (errno != 0 && errno != EAGAIN && errno != EWOULDBLOCK)
             fgaj_r("write error while sending file");
           if (fseek(con->bout, off - r, SEEK_CUR) != 0)
             fgaj_r("fseek failed SEEK_CUR %d", off - r);
@@ -275,7 +276,7 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     (nowus - con->startus) / 1000.0,
     (nowus - con->req->startus) / 1000.0);
 
-  //ev_io_stop(l, eio);
+  ev_io_stop(l, eio); fgaj_d("ev_io_stop() for i%p (w)", eio);
   fshv_con_reset(con);
 }
 
@@ -403,11 +404,12 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio)
 
   // respond
 
-  struct ev_io *reio = calloc(1, sizeof(struct ev_io));
-  reio->data = con;
+  struct ev_io *weio = calloc(1, sizeof(struct ev_io));
+  weio->data = con;
 
-  //ev_io_stop(l, eio);
-  ev_io_init(reio, fshv_respond_cb, eio->fd, EV_WRITE);
-  ev_io_start(l, reio);
+  ev_io_stop(l, eio); fgaj_d("ev_io_stop() for i%p (r)", eio);
+
+  ev_io_init(weio, fshv_respond_cb, eio->fd, EV_WRITE);
+  ev_io_start(l, weio);
 }
 

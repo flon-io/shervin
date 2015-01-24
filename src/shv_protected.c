@@ -32,6 +32,7 @@
 #include <netinet/in.h>
 
 #include "flutim.h"
+#include "gajeta.h"
 #include "shv_protected.h"
 
 
@@ -85,6 +86,8 @@ fshv_con *fshv_con_malloc(struct sockaddr_in *client, fshv_route **routes)
 
 void fshv_con_reset(fshv_con *c)
 {
+  fgaj_d("con %p", c);
+
   flu_sbuffer_free(c->head);
   c->head = NULL;
   c->hend = 0;
@@ -102,6 +105,8 @@ void fshv_con_reset(fshv_con *c)
 
 void fshv_con_free(fshv_con *c)
 {
+  fgaj_d("con %p", c);
+
   if (c == NULL) return;
 
   fshv_con_reset(c);

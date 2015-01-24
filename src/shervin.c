@@ -47,11 +47,12 @@
 
 static void fshv_close(struct ev_loop *l, struct ev_io *eio)
 {
+  fgaj_d("i%p con %p", eio, eio->data);
+
   fshv_con_free((fshv_con *)eio->data);
 
   ev_io_stop(l, eio);
   close(eio->fd);
-  //fgaj_d(reason, eio);
   free(eio);
 }
 
@@ -72,16 +73,18 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   char buffer[FSHV_BUFFER_SIZE];
 
-  ssize_t r = recv(eio->fd, buffer, FSHV_BUFFER_SIZE, 0);
+  ssize_t r = read(eio->fd, buffer, FSHV_BUFFER_SIZE);
 
-  fgaj_d("read: %li (i%p fd %i)", r, eio, eio->fd);
+  fgaj_d("read: %li (i%p fd %i con %p)", r, eio, eio->fd, con);
 
-  if (r < 0 && errno == EAGAIN) return;
-
-  else if (r <= 0) {
-    if (r < 0) fgaj_r("read error (i%p fd %i)", eio, eio->fd);
-    fshv_close(l, eio);
-    return;
+  if (r == 0)
+  {
+    fgaj_d("read eof"); fshv_close(l, eio); return;
+  }
+  if (r < 0)
+  {
+    if (errno == EAGAIN || errno == EWOULDBLOCK) return;
+    fgaj_r("read error"); fshv_close(l, eio); return;
   }
 
   buffer[r] = '\0';
@@ -132,15 +135,15 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     free(head);
 
     fgaj_i(
-      "i%p r%i %s %s %s",
-      eio, con->rqount,
+      "i%p c%p r%i %s %s %s",
+      eio, con, con->rqount,
       inet_ntoa(con->client->sin_addr),
       fshv_char_to_method(con->req->method),
       con->req->uri);
 
     if (con->req->status_code != 200)
     {
-      fgaj_d("c%p r%i couldn't parse request head", eio, con->rqount);
+      fgaj_d("i%p r%i couldn't parse request head", eio, con->rqount);
 
       con->res = fshv_response_malloc(con->req->status_code);
       fshv_respond(l, eio);
