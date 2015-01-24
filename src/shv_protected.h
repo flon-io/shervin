@@ -75,6 +75,12 @@ typedef struct {
   ssize_t rqount;
   fshv_request *req;
   fshv_response *res;
+
+  char *hout;
+  size_t houtlen;
+  size_t houtoff;
+
+  FILE *bout;
 } fshv_con;
 
 fshv_con *fshv_con_malloc(struct sockaddr_in *client, fshv_route **routes);

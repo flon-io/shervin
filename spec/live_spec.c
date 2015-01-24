@@ -40,8 +40,8 @@ context "live"
     {
       res = fcla_get("http://127.0.0.1:4001/hello/toto");
 
-      printf("res: %i\n", res->status_code);
-      flu_putf(flu_list_to_sm(res->headers));
+      //printf("res: %i\n", res->status_code);
+      //flu_putf(flu_list_to_sm(res->headers));
 
       expect(res->status_code i== 200);
       expect(res->body === "hello toto\n");
