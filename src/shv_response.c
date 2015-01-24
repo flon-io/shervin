@@ -276,8 +276,8 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     (nowus - con->startus) / 1000.0,
     (nowus - con->req->startus) / 1000.0);
 
-  ev_io_stop(l, eio); fgaj_d("ev_io_stop() for i%p (w)", eio);
-  fshv_con_reset(con);
+  ev_io_stop(l, eio); fgaj_d("ev_io_stop() for i%p (w) con %p", eio, con);
+  //fshv_con_reset(con);
 }
 
 static int prepare_response(fshv_con *con)
@@ -407,7 +407,7 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio)
   struct ev_io *weio = calloc(1, sizeof(struct ev_io));
   weio->data = con;
 
-  ev_io_stop(l, eio); fgaj_d("ev_io_stop() for i%p (r)", eio);
+  ev_io_stop(l, eio); fgaj_d("ev_io_stop() for i%p (r) con %p", eio, con);
 
   ev_io_init(weio, fshv_respond_cb, eio->fd, EV_WRITE);
   ev_io_start(l, weio);

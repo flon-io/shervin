@@ -73,21 +73,8 @@ char *fshv_char_to_method(char c)
 //
 // connection
 
-fshv_con *fshv_con_malloc(struct sockaddr_in *client, fshv_route **routes)
+static void con_reset(fshv_con *c)
 {
-  fshv_con *c = calloc(1, sizeof(fshv_con));
-  c->client = client;
-  //c->startus = flu_gets('u');
-  c->routes = routes;
-  fshv_con_reset(c);
-  c->rqount = -1;
-  return c;
-}
-
-void fshv_con_reset(fshv_con *c)
-{
-  fgaj_d("con %p", c);
-
   flu_sbuffer_free(c->head);
   c->head = NULL;
   c->hend = 0;
@@ -103,13 +90,31 @@ void fshv_con_reset(fshv_con *c)
   c->res = NULL;
 }
 
+fshv_con *fshv_con_malloc(struct sockaddr_in *client, fshv_route **routes)
+{
+  fshv_con *c = calloc(1, sizeof(fshv_con));
+  c->client = client;
+  //c->startus = flu_gets('u');
+  c->routes = routes;
+  con_reset(c);
+  c->rqount = -1;
+  return c;
+}
+
+void fshv_con_reset(fshv_con *c)
+{
+  fgaj_d("con %p", c);
+
+  con_reset(c);
+}
+
 void fshv_con_free(fshv_con *c)
 {
   fgaj_d("con %p", c);
 
   if (c == NULL) return;
 
-  fshv_con_reset(c);
+  con_reset(c);
   free(c->client);
   free(c);
 }
