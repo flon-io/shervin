@@ -158,38 +158,6 @@ static void fshv_set_content_length(fshv_con *con)
   flu_list_set(con->res->headers, "content-length", s);
 }
 
-//static int pipe_file(char *path, FILE *dst)
-//{
-//  int r = 0;
-//
-//  FILE *src = fopen(path, "r");
-//  if (src == NULL) return 1;
-//
-//  char buffer[FSHV_BUFFER_SIZE];
-//
-//  while (1)
-//  {
-//    size_t rl = fread(buffer, sizeof(char), FSHV_BUFFER_SIZE, src);
-//
-//    if (rl > 0) for (size_t off = 0; off < rl; )
-//    {
-//      off += fwrite((char *)buffer + off, sizeof(char), rl - off, dst);
-//    }
-//
-//    if (rl < FSHV_BUFFER_SIZE)
-//    {
-//      if (feof(src)) break;
-//
-//      fgaj_w("read only %zu of %zu chars, but not eof", rl, FSHV_BUFFER_SIZE);
-//      r = 1; break;
-//    }
-//  }
-//
-//  fclose(src);
-//
-//  return r;
-//}
-
 static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
   if (revents & EV_ERROR) { fgaj_r("invalid event"); return; }
@@ -205,12 +173,14 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   {
     while (1)
     {
+      errno = 0;
+
       size_t l = con->houtlen - con->houtoff;
       if (l == 0) break;
       if (l > FSHV_BUFFER_SIZE) l = FSHV_BUFFER_SIZE;
       ssize_t w = write(eio->fd, con->hout + con->houtoff, l);
 
-      fgaj_d("hout wrote %d / %zu / %zu chars", w, l, con->houtlen);
+      fgaj_dr("hout wrote %d / %zu / %zu chars", w, l, con->houtlen);
 
       if (w < -1) { fgaj_r("failed to write header"); return; }
 
@@ -229,13 +199,16 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
     while (1)
     {
+      errno = 0;
       size_t r = fread(buf, sizeof(char), FSHV_BUFFER_SIZE, con->bout);
       if (r == 0) break;
 
       for (size_t off = 0; off < r; )
       {
+        fgaj_dr("pre-write");
+        errno = 0;
         ssize_t w = write(eio->fd, (char *)buf + off, r - off);
-        fgaj_d("bout wrote %d / %d / %d", w, off, r);
+        fgaj_dr("bout wrote %d / %d / %d", w, off, r);
         if (w < 0)
         {
           if (errno != 0 && errno != EAGAIN && errno != EWOULDBLOCK)
@@ -277,7 +250,7 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     (nowus - con->req->startus) / 1000.0);
 
   ev_io_stop(l, eio); fgaj_d("ev_io_stop() for i%p (w) con %p", eio, con);
-  //fshv_con_reset(con);
+  fshv_con_reset(con);
 }
 
 static int prepare_response(fshv_con *con)

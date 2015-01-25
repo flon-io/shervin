@@ -58,6 +58,8 @@ static void fshv_close(struct ev_loop *l, struct ev_io *eio)
 
 static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
+  fgaj_dr("i%p con %p", eio, eio->data);
+
   if (revents & EV_ERROR) { fgaj_r("invalid event"); return; }
   if ( ! (revents & EV_READ)) { fgaj_r("not a read"); ev_io_stop(l, eio); return; }
 
@@ -68,18 +70,21 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     return;
   }
   //fgaj_t("eio->fd flags: %i", fcntl(eio->fd, F_GETFL));
+  fgaj_dr("set handle socket nonblock");
 
   fshv_con *con = (fshv_con *)eio->data;
 
   char buffer[FSHV_BUFFER_SIZE];
 
+  errno = 0;
   ssize_t r = read(eio->fd, buffer, FSHV_BUFFER_SIZE);
 
-  fgaj_d("read: %li (i%p fd %i con %p)", r, eio, eio->fd, con);
+  fgaj_dr("read: %li (i%p fd %i con %p)", r, eio, eio->fd, con);
 
   if (r == 0)
   {
     fgaj_d("read eof"); fshv_close(l, eio); return;
+    //fgaj_dr("read 0"); return;
   }
   if (r < 0)
   {
@@ -89,7 +94,7 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   buffer[r] = '\0';
 
-  fgaj_t("i%p r%i in >>>\n%s<<< %i\n", eio, con->rqount, buffer, r);
+  fgaj_t("i%p rq%i in >>>\n%s<<< %i\n", eio, con->rqount, buffer, r);
 
   ssize_t i = -1;
   if (con->hend < 4) for (i = 0; i < r; ++i)
@@ -102,7 +107,7 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     ) ++con->hend; else con->hend = 0;
   }
 
-  fgaj_t("i%p r%i i%i, con->hend %i", eio, con->rqount, i, con->hend);
+  fgaj_t("i%p rq%i i%i, con->hend %i", eio, con->rqount, i, con->hend);
 
   if (i < 0)
   {
@@ -205,6 +210,8 @@ void fshv_handle(struct ev_loop *l, struct ev_io *eio)
 
 static void fshv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
+  fgaj_d("i%p", eio);
+
   if (revents & EV_ERROR) { fgaj_r("invalid event"); return; }
   if ( ! (revents & EV_READ)) { fgaj_r("not a read"); ev_io_stop(l, eio); return; }
 
@@ -223,6 +230,8 @@ static void fshv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   con->startus = 1000 * 1000 * ev_now(l);
   ceio->data = con;
 
+  fgaj_d("i%p -> i%p con %p", eio, ceio, con);
+
   ev_io_init(ceio, fshv_handle_cb, csd, EV_READ);
   ev_io_start(l, ceio);
 }
@@ -234,17 +243,23 @@ void fshv_serve(int port, fshv_route **routes)
   struct ev_io *eio = calloc(1, sizeof(struct ev_io));
   struct ev_loop *l = ev_default_loop(0);
 
+  fgaj_dr("preparing");
+
   int sd = socket(PF_INET, SOCK_STREAM, 0);
   if (sd < 0) { fgaj_r("socket error"); exit(1); }
+  fgaj_dr("prepared socket"); errno = 0;
 
   int v = 1; r = setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &v, sizeof(v));
   if (r != 0) { fgaj_r("couldn't set SO_REUSEADDR"); exit(1); }
+  fgaj_dr("set SO_REUSEADDR"); errno = 0;
 
   r = fcntl(sd, F_GETFL);
   if (r == -1) { fgaj_r("couldn't read main socket flags"); exit(1); }
+  fgaj_dr("read socket flags"); errno = 0;
 
   r = fcntl(sd, F_SETFL, r | O_NONBLOCK);
   if (r != 0) { fgaj_r("couldn't set main socket to O_NONBLOCK"); exit(1); }
+  fgaj_dr("set socket to O_NONBLOCK"); errno = 0;
 
   struct sockaddr_in a;
   memset(&a, 0, sizeof(struct sockaddr_in));
@@ -254,9 +269,11 @@ void fshv_serve(int port, fshv_route **routes)
 
   r = bind(sd, (struct sockaddr *)&a, sizeof(struct sockaddr_in));
   if (r != 0) { fgaj_r("bind error"); exit(2); }
+  fgaj_dr("bound");
 
   r = listen(sd, 2);
   if (r < 0) { fgaj_r("listen error"); exit(3); }
+  fgaj_dr("listening");
 
   ev_io_init(eio, fshv_accept_cb, sd, EV_READ);
   eio->data = routes;
