@@ -248,7 +248,7 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     (nowus - con->startus) / 1000.0,
     (nowus - con->req->startus) / 1000.0);
 
-  ev_io_stop(l, eio); fgaj_sd(eio, "ev_io_stop() (w)");
+  ev_io_stop(l, eio); fgaj_sd(eio, "ev_io_stop() (w)"); free(eio);
   fshv_con_reset(con);
 }
 

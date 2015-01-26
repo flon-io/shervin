@@ -65,9 +65,7 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   if (fcntl(eio->fd, F_SETFL, fcntl(eio->fd, F_GETFL) | O_NONBLOCK) == -1)
   {
-    fgaj_str(eio, "couldn't set nonblock");
-    fshv_close(l, eio);
-    return;
+    fgaj_str(eio, "couldn't set nonblock"); fshv_close(l, eio); return;
   }
   //fgaj_t("eio->fd flags: %i", fcntl(eio->fd, F_GETFL));
   fgaj_sdr(eio, "socket nonblock set");
@@ -83,8 +81,7 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   if (r == 0)
   {
-    fgaj_sdr(eio, "read eof"); fshv_close(l, eio); return;
-    //fgaj_dr("read 0"); return;
+    fgaj_sdr(eio, "read eof, closing."); fshv_close(l, eio); return;
   }
   if (r < 0)
   {
