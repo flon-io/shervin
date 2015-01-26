@@ -1,6 +1,6 @@
 
 //
-// Copyright (c) 2013-2014, John Mettraux, jmettraux+flon@gmail.com
+// Copyright (c) 2013-2015, John Mettraux, jmettraux+flon@gmail.com
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -98,6 +98,11 @@ struct timespec *flu_tdiff(struct timespec *t1, struct timespec *t0);
 /* Use to print the output of flu_tdiff().
  */
 char *flu_ts_to_s(struct timespec *ts, char format);
+
+/* Like flu_ts_to_s() but potentially outputs w(eeks), h(ours) and (m)inutes,
+ * not just s(econds) and subseconds.
+ */
+char *flu_ts_to_hs(struct timespec *ts, char format);
 
 /* Given a string like "10h55s" returns a timespec instance.
  * Returns NULL when it fails to parse.
