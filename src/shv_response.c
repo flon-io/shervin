@@ -165,9 +165,9 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   fshv_con *con = (fshv_con *)eio->data;
 
-  fgaj_d(
-    "i%p con %p hout %p bout %p",
-    eio, con, con ? con->hout : NULL, con ? con->bout : NULL);
+  fgaj_sd(
+    eio,
+    "hout %p bout %p", con ? con->hout : NULL, con ? con->bout : NULL);
 
   if (con->hout)
   {
@@ -180,9 +180,10 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
       if (l > FSHV_BUFFER_SIZE) l = FSHV_BUFFER_SIZE;
       ssize_t w = write(eio->fd, con->hout + con->houtoff, l);
 
-      fgaj_dr("hout wrote %d / %zu / %zu chars", w, l, con->houtlen);
+      fgaj_sdr(eio, "hout wrote %d / %zu / %zu chars", w, l, con->houtlen);
 
-      if (w < -1) { fgaj_r("failed to write header"); return; }
+      if (w < 0) { fgaj_sr(eio, "failed to write header"); return; }
+        // TODO: should I give up here???
 
       con->houtoff += w;
 
@@ -205,16 +206,16 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
       for (size_t off = 0; off < r; )
       {
-        fgaj_dr("pre-write");
+        //fgaj_sdr(eio, "pre-write");
         errno = 0;
         ssize_t w = write(eio->fd, (char *)buf + off, r - off);
-        fgaj_dr("bout wrote %d / %d / %d", w, off, r);
+        fgaj_sdr(eio, "bout wrote %d / %d / %d", w, off, r);
         if (w < 0)
         {
           if (errno != 0 && errno != EAGAIN && errno != EWOULDBLOCK)
-            fgaj_r("write error while sending file");
+            fgaj_sr(eio, "write error while sending file");
           if (fseek(con->bout, off - r, SEEK_CUR) != 0)
-            fgaj_r("fseek failed SEEK_CUR %d", off - r);
+            fgaj_sr(eio, "fseek failed SEEK_CUR %d", off - r);
           return;
         }
         off += w;
@@ -238,18 +239,16 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   long long nowus = flu_gets('u');
 
-  fgaj_i(
-    "i%p r%i %c%s %s %s %i l%s c%.3fms r%.3fms",
-    eio, con->rqount,
+  fgaj_si(
+    eio,
+    "%c%s %i l%s c%.3fms r%.3fms done.",
     asrc, addr,
-    fshv_char_to_method(con->req->method),
-    con->req->uri,
     con->res->status_code,
     flu_list_get(con->res->headers, "content-length"),
     (nowus - con->startus) / 1000.0,
     (nowus - con->req->startus) / 1000.0);
 
-  ev_io_stop(l, eio); fgaj_d("ev_io_stop() for i%p (w) con %p", eio, con);
+  ev_io_stop(l, eio); fgaj_sd(eio, "ev_io_stop() (w)");
   fshv_con_reset(con);
 }
 
@@ -380,7 +379,7 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio)
   struct ev_io *weio = calloc(1, sizeof(struct ev_io));
   weio->data = con;
 
-  ev_io_stop(l, eio); fgaj_d("ev_io_stop() for i%p (r) con %p", eio, con);
+  ev_io_stop(l, eio); fgaj_sd(eio, "ev_io_stop() (r)");
 
   ev_io_init(weio, fshv_respond_cb, eio->fd, EV_WRITE);
   ev_io_start(l, weio);
