@@ -379,7 +379,8 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio)
   struct ev_io *weio = calloc(1, sizeof(struct ev_io));
   weio->data = con;
 
-  ev_io_stop(l, eio); fgaj_sd(eio, "ev_io_stop() (r)");
+  //ev_io_stop(l, eio); fgaj_sd(eio, "ev_io_stop() (r)");
+    // NO, because this eio may be re-used :-)
 
   ev_io_init(weio, fshv_respond_cb, eio->fd, EV_WRITE);
   ev_io_start(l, weio);
