@@ -54,6 +54,7 @@ static char *fshv_determine_content_type(const char *path)
   else if (strcmp(suffix, ".css") == 0) r = "text/css";
   else if (strcmp(suffix, ".scss") == 0) r = "text/css"; // ?
   else if (strcmp(suffix, ".html") == 0) r = "text/html";
+  else if (strcmp(suffix, ".pdf") == 0) r = "application/pdf";
   else r = "text/plain";
 
   return strdup(r);
