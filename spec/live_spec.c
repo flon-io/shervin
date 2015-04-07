@@ -142,7 +142,12 @@ context "live"
     }
   }
 
-  describe "shervin and auth"
+  describe "shervin and basic auth"
+  {
+    it "flips burgers"
+  }
+
+  describe "shervin and session auth"
   {
     before each
     {
