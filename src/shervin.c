@@ -192,7 +192,8 @@ void fshv_handle(struct ev_loop *l, struct ev_io *eio)
 
     if (route->guard == NULL) flags |= FSHV_F_NULL_GUARD;
 
-    handled = route->handler(con->req, con->res, flags, route->params);
+    int h = route->handler(con->req, con->res, flags, route->params);
+    if (handled == 0) handled = h;
   }
 
   if (handled == 0) con->res->status_code = 404;

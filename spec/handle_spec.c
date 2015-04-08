@@ -25,6 +25,8 @@ context "handle"
   int han(
     fshv_request *req, fshv_response *res, int mode, flu_dict *params)
   {
+    res->status_code = 200;
+
     if (flu_list_get(params, "sta"))
     {
       char *k = flu_sprintf("x-stamp-%s", flu_list_get(params, "han"));
@@ -36,6 +38,8 @@ context "handle"
       flu_list_set(
         res->headers, "x-handled", rdz_strdup(flu_list_get(params, "han")));
     }
+
+    if (flu_list_get(params, "h0")) return 0;
 
     if (mode & FSHV_F_NULL_GUARD) return mode & FSHV_F_HANDLED;
 
@@ -182,6 +186,27 @@ context "handle"
 
       fshv_handle(NULL, eio);
 
+      ensure(flu_list_get(con->res->headers, "x-handled") === "a");
+      ensure(flu_list_get(con->res->headers, "x-stamp-b") === "seen");
+    }
+
+    it "triggers post-filters but doesn't reset handled to 0"
+    {
+      con->routes = (fshv_route *[]){
+        fshv_r(gyes, han, "han", "a", NULL),
+        fshv_r(NULL, han, "sta", "true", "han", "b", "h0", "h0", NULL),
+        fshv_r(gyes, han, "han", "b", NULL),
+        NULL // do not forget it
+      };
+
+      con->req = fshv_parse_request_head(
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n");
+
+      fshv_handle(NULL, eio);
+
+      ensure(con->res->status_code i== 200);
       ensure(flu_list_get(con->res->headers, "x-handled") === "a");
       ensure(flu_list_get(con->res->headers, "x-stamp-b") === "seen");
     }
