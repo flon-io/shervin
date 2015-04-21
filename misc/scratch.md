@@ -26,6 +26,7 @@ int main()
 }
 ```
 
+
 ## building block
 
 ```c
@@ -40,6 +41,7 @@ typedef struct {
 
 fshv_r(fshv_handler *guard, fshv_handler *handler, flu_dict *params);
 ```
+
 
 ## functions
 
@@ -64,4 +66,58 @@ int root_handler
 
 root_handler(req, res, params);
 ```
+
+
+## guards and handlers
+
+```c
+int fshv_guard(fshv_request *req, fshv_response *res, flu_dict *params);
+  // a guard says yes or no
+  // it also adds entries to params (for consumption by handlers downstream)
+
+void fshv_handler(fshv_request *req, fshv_response *res, flu_dict *params);
+  // a handler usually populates the response
+```
+
+What if we only have `_handler`? Guards could look like:
+```c
+int fshv_match(
+  char *path, fshv_request *req, fshv_response *res, flu_dict *params);
+
+// ...
+
+  if (fshv_match("GET /doc", req, res, params)) return fshv_dir_handler(...);
+```
+
+There could be a complete zoo of guard functions and homogeneous handler functions.
+
+
+## beef up the request
+
+Like Rack's `env`?
+
+Saves some typing.
+
+```c
+typedef struct {
+  fshv_request *req;
+  fshv_response *res;
+  flu_dict *params;
+} fshv_env;
+
+int fshv_match(char *path, fshv_env *env);
+
+// ...
+
+  if (fshv_match("GET /doc", env)) return fshv_dir_handler(env);
+```
+
+## action plan
+
+* build fshv_env
+* build the new guards
+* build the new handlers
+* drop the routes, use a root handler
+* integrate
+* drop the old stuff
 
