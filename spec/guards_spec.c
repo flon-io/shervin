@@ -18,8 +18,8 @@ context "guards"
   }
   after each
   {
-    if (req != NULL) fshv_request_free(req);
-    if (params != NULL) flu_list_free(params);
+    fshv_request_free(req);
+    flu_list_free(params);
   }
 
   describe "fshv_any_guard()"

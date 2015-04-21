@@ -17,7 +17,7 @@ context "uri"
   }
   after each
   {
-    if (d != NULL) flu_list_free_all(d);
+    flu_list_free_all(d);
   }
 
   describe "fshv_parse_uri()"
