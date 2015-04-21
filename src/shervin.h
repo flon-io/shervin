@@ -141,5 +141,22 @@ void fshv_serve(int port, fshv_route **routes);
 
 // TODO: fshv_stop_serve?
 
+
+// ... new order ...
+
+typedef struct {
+  fshv_request *req;
+  fshv_response *res;
+  flu_dict *params;
+} fshv_env;
+
+//typedef void fshv_n_handler(fshv_env *env);
+
+//void fshv_serve(int port, fshv_n_handler *root_handler);
+  // interfaces?
+
+int fshv_match_route(fshv_env *env, char *route);
+#define fshv_mr(env, route) fshv_match_route(env, route);
+
 #endif // FLON_SHERVIN_H
 
