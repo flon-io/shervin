@@ -147,7 +147,7 @@ void fshv_serve(int port, fshv_route **routes);
 typedef struct {
   fshv_request *req;
   fshv_response *res;
-  flu_dict *params;
+  flu_dict *dict;
 } fshv_env;
 
 //typedef void fshv_n_handler(fshv_env *env);

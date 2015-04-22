@@ -57,6 +57,15 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio);
 
 
 //
+// env
+
+fshv_env *fshv_prepare_env(char *head);
+
+void fshv_env_reset(fshv_env *e);
+void fshv_env_free(fshv_env *e);
+
+
+//
 // connection
 
 typedef struct {
@@ -73,8 +82,10 @@ typedef struct {
   size_t blen;
 
   ssize_t rqount;
+  //
   fshv_request *req;
   fshv_response *res;
+    // TODO use fshv_env
 
   char *hout;
   size_t houtlen;
