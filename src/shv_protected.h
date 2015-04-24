@@ -47,12 +47,20 @@ char *fshv_char_to_method(char c);
 
 fshv_request *fshv_parse_request_head(char *s);
 
-void fshv_request_free(fshv_request *r);
-ssize_t fshv_request_content_length(fshv_request *r);
+//ssize_t fshv_request_content_length(fshv_request *r);
+//int fshv_request_is_https(fshv_request *r);
 
 //void fshv_handle(struct ev_loop *l, struct ev_io *eio);
 
-int fshv_request_is_https(fshv_request *r);
+void fshv_request_free(fshv_request *r);
+
+
+//
+// env
+
+fshv_env *fshv_env_prepare(char *request_head);
+
+void fshv_env_free(fshv_env *e);
 
 
 //
@@ -68,6 +76,7 @@ char *fshv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...);
 
 #define fshv_abs(ssl, uri_d) fshv_absolute_uri(ssl, uri_d, NULL)
 #define fshv_rel(ssl, uri_d, ...) fshv_absolute_uri(ssl, uri_d, __VA_ARGS__)
+
 
 #endif // FLON_SHV_PROTECTED_H
 
