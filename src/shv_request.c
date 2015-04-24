@@ -107,10 +107,10 @@ fshv_request *fshv_parse_request_head(char *s)
 
   //puts(fabr_tree_to_string_with_leaves(s, r));
 
+  if (r->result != 1) { fabr_tree_free(r); return NULL; }
+
   fshv_request *req = calloc(1, sizeof(fshv_request));
   //req->startus = flu_gets('u');
-
-  if (r->result != 1) { fabr_tree_free(r); return req; }
 
   fabr_tree *t = NULL;
 
