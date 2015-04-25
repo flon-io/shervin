@@ -25,65 +25,27 @@
 
 // https://github.com/flon-io/shervin
 
-#ifndef FLON_SHV_PROTECTED_H
-#define FLON_SHV_PROTECTED_H
+#define _POSIX_C_SOURCE 200809L
 
-//#include <netinet/in.h>
-//#include <ev.h>
+//#include <stdlib.h>
 
-#include "flutil.h"
-#include "shervin.h"
+//#include "flutil.h"
+#include "shv_protected.h"
 
 
-//
-// misc
+fshv_env *fshv_env_prepare(char *request_head)
+{
+  return NULL;
+}
 
-char fshv_method_to_char(char *s);
-char *fshv_char_to_method(char c);
+void fshv_env_free(fshv_env *e)
+{
+  if (e == NULL) return;
 
-
-//
-// request
-
-fshv_request *fshv_parse_request_head(char *s);
-fshv_request *fshv_parse_request_head_f(const char *s, ...);
-
-ssize_t fshv_request_content_length(fshv_request *r);
-//int fshv_request_is_https(fshv_request *r);
-
-//void fshv_handle(struct ev_loop *l, struct ev_io *eio);
-
-void fshv_request_free(fshv_request *r);
-
-
-//
-// response
-
-void fshv_response_free(fshv_response *r);
-
-
-//
-// env
-
-fshv_env *fshv_env_prepare(char *request_head);
-
-void fshv_env_free(fshv_env *e);
-
-
-//
-// uri
-
-flu_dict *fshv_parse_uri(char *uri);
-flu_dict *fshv_parse_host_and_path(char *host, char *path);
-
-/* Renders the uri_d as an absolute URI. When ssl is set to 1, the
- * scheme will be "https://".
- */
-char *fshv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...);
-
-#define fshv_abs(ssl, uri_d) fshv_absolute_uri(ssl, uri_d, NULL)
-#define fshv_rel(ssl, uri_d, ...) fshv_absolute_uri(ssl, uri_d, __VA_ARGS__)
-
-
-#endif // FLON_SHV_PROTECTED_H
+  //e->conf = NULL;
+  fshv_request_free(e->req);
+  fshv_response_free(e->res);
+  flu_list_free_all(e->bag);
+  free(e);
+}
 
