@@ -91,6 +91,29 @@ int fshv_match(
 
 There could be a complete zoo of guard functions and homogeneous handler functions.
 
+### sub match
+
+```c
+  if (fshv_match(env, "GET /doc/**")) return x(env);
+  if (fshv_match(env, "/doc/**")) return x(env);
+    // vs
+  if (fshv_match(env, "doc/:id")) return x(env);
+    //
+    // absolute vs relative,
+    // the first matches the whole URI,
+    // the second matches what's left (**)
+
+  // allows for
+
+  void subhandler(fshv_env *env)
+  {
+    if (fshv_match(env, "books/:id")) return y(env);
+    // ...
+  }
+  // ...
+  if (fshv_match(env, "GET /doc/**")) return subhandler(env);
+```
+
 
 ## beef up the request
 
