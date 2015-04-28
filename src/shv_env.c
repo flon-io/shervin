@@ -27,15 +27,19 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-//#include <stdlib.h>
+#include <stdlib.h>
 
-//#include "flutil.h"
+#include "flutil.h"
 #include "shv_protected.h"
 
 
 fshv_env *fshv_env_prepare(char *request_head)
 {
-  return NULL;
+  fshv_env *r = calloc(1, sizeof(fshv_env));
+
+  r->req = fshv_parse_request_head(request_head);
+
+  return r;
 }
 
 void fshv_env_free(fshv_env *e)

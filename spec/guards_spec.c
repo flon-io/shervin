@@ -35,6 +35,16 @@ context "guards"
     }
 
     it "matches an absolute route"
+    {
+      env = fshv_env_prepare(
+        "GET /x?a=b#f HTTP/1.1\r\n"
+        "Host: www.example.com\r\n"
+        "\r\n");
+
+      int r = fshv_match(env, "GET /x");
+
+      ensure(r == 1);
+    }
   }
 }
 
