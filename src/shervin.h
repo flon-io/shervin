@@ -66,9 +66,13 @@ typedef struct {
   flu_dict *bag; // req-res scoped databag
 } fshv_env;
 
-// handler
+// [root] handler
 
-typedef int fshv_handler(fshv_env *env, flu_dict *params);
+typedef int fshv_handler(fshv_env *env);
+
+// handlers
+
+int fshv_dir_handler(fshv_env *env, char *root);
 
 // guards
 
