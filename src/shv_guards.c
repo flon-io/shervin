@@ -54,6 +54,10 @@ int fshv_match(fshv_env *e, char *path)
 
   while (1)
   {
+    //printf("***\n");
+    //printf("path  >%s<\n", path);
+    //printf("rpath >%s<\n", rpath);
+
     char *slash = strchr(path, '/');
     char *rslash = strchr(rpath, '/');
 
@@ -63,6 +67,7 @@ int fshv_match(fshv_env *e, char *path)
     if (*path == ':')
     {
       char *k = strndup(path + 1, slash - path - 1);
+      //printf("k >%s<\n", k);
       flu_list_set(e->bag, k, strndup(rpath, rslash - rpath));
       free(k);
     }

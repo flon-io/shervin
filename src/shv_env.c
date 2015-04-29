@@ -37,6 +37,7 @@ fshv_env *fshv_env_prepare(char *request_head)
 {
   fshv_env *r = calloc(1, sizeof(fshv_env));
 
+  r->bag = flu_list_malloc();
   r->req = fshv_parse_request_head(request_head);
 
   return r;

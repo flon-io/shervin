@@ -34,6 +34,19 @@ context "guards"
       ensure(r == 0);
     }
 
+    it "leaves the bag intact when it doesn't match"
+    {
+      env = fshv_env_prepare(
+        "GET /book/moominvalley/chapter HTTP/1.1\r\n"
+        "Host: www.example.com\r\n"
+        "\r\n");
+
+      int r = fshv_match(env, "GET /book/:title/chapter/:id");
+
+      ensure(r == 0);
+      ensure(env->bag->size zu== 0);
+    }
+
     it "matches an absolute route"
     {
       env = fshv_env_prepare(
