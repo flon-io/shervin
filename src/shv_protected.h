@@ -41,6 +41,9 @@
 char fshv_method_to_char(char *s);
 char *fshv_char_to_method(char c);
 
+ssize_t fshv_serve_file(
+  fshv_response *res, char *header, const char *path, ...);
+
 
 //
 // request

@@ -29,7 +29,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-//#include <netinet/in.h>
+#include <sys/stat.h>
 
 #include "flutim.h"
 #include "gajeta.h"
@@ -63,5 +63,53 @@ char *fshv_char_to_method(char c)
   if (c == 'o') return "OPTIONS";
   if (c == 'c') return "CONNECT";
   return "???";
+}
+
+static char *fshv_determine_content_type(const char *path)
+{
+  // TODO: utf-8? "text/html; charset=UTF-8"
+  // TODO: manage that with a conf file
+
+  char *suffix = strrchr(path, '.');
+  char *r = NULL;
+
+  if (suffix == NULL) r = "text/plain";
+  else if (strcmp(suffix, ".txt") == 0) r = "text/plain";
+  else if (strcmp(suffix, ".js") == 0) r = "application/javascript";
+  else if (strcmp(suffix, ".json") == 0) r = "application/json";
+  else if (strcmp(suffix, ".css") == 0) r = "text/css";
+  else if (strcmp(suffix, ".scss") == 0) r = "text/css"; // ?
+  else if (strcmp(suffix, ".html") == 0) r = "text/html";
+  else if (strcmp(suffix, ".pdf") == 0) r = "application/pdf";
+  else r = "text/plain";
+
+  return strdup(r);
+}
+
+ssize_t fshv_serve_file(
+  fshv_response *res, char *header, const char *path, ...)
+{
+  if (header == NULL) header = "X-Accel-Redirect";
+
+  va_list ap; va_start(ap, path);
+  char *pa = flu_vpath(path, ap);
+  va_end(ap);
+
+  struct stat sta;
+  if (stat(pa, &sta) != 0) { free(pa); return -1; }
+  if (S_ISDIR(sta.st_mode)) { free(pa); return 0; }
+
+  res->status_code = 200;
+
+  flu_list_set(
+    res->headers, "fshv_content_length", flu_sprintf("%zu", sta.st_size));
+  flu_list_set(
+    res->headers, "content-type", fshv_determine_content_type(pa));
+  flu_list_set(
+    res->headers, "fshv_file", strdup(pa));
+
+  flu_list_set(res->headers, header, pa);
+
+  return sta.st_size;
 }
 
