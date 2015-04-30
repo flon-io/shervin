@@ -51,6 +51,7 @@ int fshv_match(fshv_env *e, char *path)
   }
 
   int success = 1;
+  flu_list *bag = flu_list_malloc();
 
   while (1)
   {
@@ -68,12 +69,12 @@ int fshv_match(fshv_env *e, char *path)
     {
       char *k = strndup(path + 1, slash - path - 1);
       //printf("k >%s<\n", k);
-      flu_list_set(e->bag, k, strndup(rpath, rslash - rpath));
+      flu_list_set(bag, k, strndup(rpath, rslash - rpath));
       free(k);
     }
     else if (strcmp(path, "**") == 0)
     {
-      flu_list_set(e->bag, "**", strdup(rpath)); break;
+      flu_list_set(bag, "**", strdup(rpath)); break;
     }
     else
     {
@@ -87,7 +88,7 @@ int fshv_match(fshv_env *e, char *path)
 
     if (*rslash == 0 && strcmp(slash, "/**") == 0)
     {
-      flu_list_set(e->bag, "**", strdup("")); break;
+      flu_list_set(bag, "**", strdup("")); break;
     }
     if (*slash == 0 || *rslash == 0)
     {
@@ -96,6 +97,20 @@ int fshv_match(fshv_env *e, char *path)
 
     path = slash + 1;
     rpath = rslash + 1;
+  }
+
+  if (success)
+  {
+    for (flu_node *n = bag->first; n; n = n->next)
+    {
+      flu_list_set(e->bag, n->key, n->item);
+    }
+
+    flu_list_free(bag);
+  }
+  else
+  {
+    flu_list_free_all(bag);
   }
 
   return success;
