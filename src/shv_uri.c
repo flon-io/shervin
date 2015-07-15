@@ -35,60 +35,61 @@
 #include "shv_protected.h"
 
 
-fabr_parser *uri_parser = NULL;
+//  fabr_parser *scheme =
+//    fabr_n_rex("scheme", "https?");
+//  fabr_parser *host =
+//    fabr_n_rex("host", "[^:/]+");
+//  fabr_parser *port =
+//    fabr_seq(fabr_string(":"), fabr_n_rex("port", "[1-9][0-9]+"), NULL);
+//
+//  fabr_parser *path =
+//    fabr_n_rex("path", "[^\\?#]+");
+//  fabr_parser *quentry =
+//    fabr_n_seq("quentry",
+//      fabr_n_rex("key", "[^=&#]+"),
+//      fabr_seq(fabr_string("="), fabr_n_rex("val", "[^&#]+"), fabr_r("?")),
+//      NULL);
+//  fabr_parser *query =
+//    fabr_n_seq("query",
+//      quentry,
+//      fabr_seq(fabr_string("&"), quentry, fabr_r("*")),
+//      NULL);
+//  fabr_parser *fragment =
+//    fabr_n_rex("fragment", ".+");
+//
+//  fabr_parser *shp =
+//    fabr_seq(
+//      scheme,
+//      fabr_string("://"),
+//      host,
+//      port, fabr_q("?"),
+//      NULL);
+//
+//  uri_parser =
+//    fabr_seq(
+//      shp, fabr_q("?"),
+//      path,
+//      fabr_seq(fabr_string("?"), query, fabr_r("?")),
+//      fabr_seq(fabr_string("#"), fragment, fabr_r("?")),
+//      NULL);
 
-
-static void fshv_init_uri_parser()
+static fabr_tree *_uri(fabr_input *i)
 {
-  fabr_parser *scheme =
-    fabr_n_rex("scheme", "https?");
-  fabr_parser *host =
-    fabr_n_rex("host", "[^:/]+");
-  fabr_parser *port =
-    fabr_seq(fabr_string(":"), fabr_n_rex("port", "[1-9][0-9]+"), NULL);
-
-  fabr_parser *path =
-    fabr_n_rex("path", "[^\\?#]+");
-  fabr_parser *quentry =
-    fabr_n_seq("quentry",
-      fabr_n_rex("key", "[^=&#]+"),
-      fabr_seq(fabr_string("="), fabr_n_rex("val", "[^&#]+"), fabr_r("?")),
-      NULL);
-  fabr_parser *query =
-    fabr_n_seq("query",
-      quentry,
-      fabr_seq(fabr_string("&"), quentry, fabr_r("*")),
-      NULL);
-  fabr_parser *fragment =
-    fabr_n_rex("fragment", ".+");
-
-  fabr_parser *shp =
-    fabr_seq(
-      scheme,
-      fabr_string("://"),
-      host,
-      port, fabr_q("?"),
-      NULL);
-
-  uri_parser =
-    fabr_seq(
-      shp, fabr_q("?"),
-      path,
-      fabr_seq(fabr_string("?"), query, fabr_r("?")),
-      fabr_seq(fabr_string("#"), fragment, fabr_r("?")),
-      NULL);
+  return NULL;
 }
 
 flu_dict *fshv_parse_uri(char *uri)
 {
-  if (uri_parser == NULL) fshv_init_uri_parser();
+  printf("fshv_parse_uri() >[1;33m%s[0;0m<\n", uri);
 
-  fabr_tree *r = fabr_parse(uri, 0, uri_parser);
-  //fabr_tree *r = fabr_parse_f(uri, 0, uri_parser, ABR_F_ALL);
+  //fabr_tree *tt = fabr_parse_uri(uri, _uri, FABR_F_ALL);
+  //printf("fshv_parse_uri():\n"); fabr_puts_tree(tt, uri, 1);
+  //fabr_tree_free(tt);
+
+  fabr_tree *r = fabr_parse_all(uri, _uri);
+  //printf("fshv_parse_uri() (pruned):\n"); fabr_puts(t, input, 3);
+
   fabr_tree *t = NULL;
-
-  //printf("uri >%s<\n", uri);
-  //puts(fabr_tree_to_string(r, uri, 1));
 
   flu_dict *d = flu_list_malloc();
 

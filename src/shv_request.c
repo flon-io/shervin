@@ -37,75 +37,72 @@
 #include "shv_protected.h"
 
 
-fabr_parser *request_parser = NULL;
+//  fabr_parser *sp = fabr_string(" ");
+//  fabr_parser *crlf = fabr_string("\r\n");
+//
+//  fabr_parser *lws = fabr_rex("(\r\n)?[ \t]+");
+//
+//  //fabr_parser *text =
+//  //  fabr_alt(fabr_rex("[^\x01-\x1F\x7F]"), lws, fabr_r("+"));
+//  fabr_parser *text =
+//    fabr_rex("[^\x01-\x1F\x7F]+");
+//
+//  fabr_parser *token =
+//    fabr_rex("[^\x01-\x1F\x7F()<>@,;:\\\\\"/[\\]?={} \t]+");
+//
+//  fabr_parser *method =
+//    fabr_n_alt(
+//      "method",
+//      fabr_rex("GET|POST|PUT|DELETE|HEAD|OPTIONS|TRACE|CONNECT|LINK|UNLINK"),
+//      fabr_name("extension_method", token),
+//      NULL);
+//  fabr_parser *request_uri =
+//    fabr_n_rex("request_uri", "[^ \t\r\n]{1,2048}"); // arbitrary limit
+//  fabr_parser *http_version =
+//    fabr_n_rex("http_version", "HTTP/[0-9]+\\.[0-9]+");
+//
+//  fabr_parser *request_line =
+//    fabr_seq(method, sp, request_uri, sp, http_version, crlf, NULL);
+//
+//  fabr_parser *field_content =
+//    text;
+//
+//  fabr_parser *field_name =
+//    fabr_name("field_name", token);
+//  fabr_parser *field_value =
+//    fabr_n_rep("field_value", fabr_alt(field_content, lws, NULL), 0, -1);
+//
+//  fabr_parser *message_header =
+//    fabr_n_seq("message_header", field_name, fabr_string(":"), field_value, NULL);
+//
+//  //fabr_parser *message_body =
+//  //  fabr_n_regex("message_body", "^.+"); // well, the rest
+//
+//  request_parser =
+//    fabr_seq(
+//      request_line,
+//      fabr_seq(message_header, crlf, NULL), fabr_q("*"),
+//      crlf,
+//      //fabr_rep(message_body, 0, 1),
+//      NULL);
+//  // do not include the message_body
 
-
-static void fshv_init_parser()
+static fabr_tree *_request_head(fabr_input *i)
 {
-  fabr_parser *sp = fabr_string(" ");
-  fabr_parser *crlf = fabr_string("\r\n");
-
-  fabr_parser *lws = fabr_rex("(\r\n)?[ \t]+");
-
-  //fabr_parser *text =
-  //  fabr_alt(fabr_rex("[^\x01-\x1F\x7F]"), lws, fabr_r("+"));
-  fabr_parser *text =
-    fabr_rex("[^\x01-\x1F\x7F]+");
-
-  fabr_parser *token =
-    fabr_rex("[^\x01-\x1F\x7F()<>@,;:\\\\\"/[\\]?={} \t]+");
-
-  fabr_parser *method =
-    fabr_n_alt(
-      "method",
-      fabr_rex("GET|POST|PUT|DELETE|HEAD|OPTIONS|TRACE|CONNECT|LINK|UNLINK"),
-      fabr_name("extension_method", token),
-      NULL);
-  fabr_parser *request_uri =
-    fabr_n_rex("request_uri", "[^ \t\r\n]{1,2048}"); // arbitrary limit
-  fabr_parser *http_version =
-    fabr_n_rex("http_version", "HTTP/[0-9]+\\.[0-9]+");
-
-  fabr_parser *request_line =
-    fabr_seq(method, sp, request_uri, sp, http_version, crlf, NULL);
-
-  fabr_parser *field_content =
-    text;
-
-  fabr_parser *field_name =
-    fabr_name("field_name", token);
-  fabr_parser *field_value =
-    fabr_n_rep("field_value", fabr_alt(field_content, lws, NULL), 0, -1);
-
-  fabr_parser *message_header =
-    fabr_n_seq("message_header", field_name, fabr_string(":"), field_value, NULL);
-
-  //fabr_parser *message_body =
-  //  fabr_n_regex("message_body", "^.+"); // well, the rest
-
-  request_parser =
-    fabr_seq(
-      request_line,
-      fabr_seq(message_header, crlf, NULL), fabr_q("*"),
-      crlf,
-      //fabr_rep(message_body, 0, 1),
-      NULL);
-  // do not include the message_body
-
-  //puts(fabr_parser_to_string(request_parser));
+  return NULL;
 }
+
 
 fshv_request *fshv_parse_request_head(char *s)
 {
-  //
-  // parse
+  printf("fshv_parse_request_head() >[1;33m%s[0;0m<\n", s);
 
-  if (request_parser == NULL) fshv_init_parser();
+  //fabr_tree *tt = fabr_parse_f(s, _request_head, FABR_F_ALL);
+  //printf("fshv_parse_request_head():\n"); fabr_puts_tree(tt, s, 1);
+  //fabr_tree_free(tt);
 
-  fabr_tree *r = fabr_parse(s, 0, request_parser);
-  //fabr_tree *r = fabr_parse_f(s, 0, request_parser, ABR_F_ALL);
-
-  //puts(fabr_tree_to_string_with_leaves(s, r));
+  fabr_tree *r = fabr_parse_all(s, _request_head);
+  //printf("fshv_parse_request_head() (pruned):\n"); fabr_puts(t, input, 3);
 
   if (r->result != 1) { fabr_tree_free(r); return NULL; }
 
@@ -166,8 +163,7 @@ fshv_request *fshv_parse_request_head(char *s)
       flu_list_get(req->headers, "host"),
       req->uri);
 
-  //
-  // over
+  // over.
 
   fabr_tree_free(r);
 
