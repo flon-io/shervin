@@ -45,11 +45,14 @@ static fabr_tree *_colon(fabr_input *i) { return fabr_str(NULL, i, ":"); }
 static fabr_tree *_qkey(fabr_input *i)
 { return fabr_rex("qkey", i, "[^ \t=&#]+"); }
 
-static fabr_tree *_qval(fabr_input *i)
+static fabr_tree *_val(fabr_input *i)
 { return fabr_rex("qval", i, "[^ \t&#]+"); }
 
+static fabr_tree *_qval(fabr_input *i)
+{ return fabr_seq(NULL, i, _equal, _val, NULL); }
+
 static fabr_tree *_qentry(fabr_input *i)
-{ return fabr_seq("qentry", i, _qkey, _equal, _qval, NULL); }
+{ return fabr_seq("qentry", i, _qkey, _qval, fabr_qmark, NULL); }
 
 static fabr_tree *_query(fabr_input *i)
 { return fabr_eseq(NULL, i, _qmark, _qentry, _amp, NULL); }
@@ -67,7 +70,7 @@ static fabr_tree *_scheme(fabr_input *i)
 { return fabr_rex("scheme", i, "https?"); }
 
 static fabr_tree *_host(fabr_input *i)
-{ return fabr_str("host", i, "[^:/]+"); }
+{ return fabr_rex("host", i, "[^:/]+"); }
 
 static fabr_tree *_ort(fabr_input *i)
 { return fabr_rex("port", i, "[1-9][0-9]*"); }
@@ -89,12 +92,12 @@ flu_dict *fshv_parse_uri(char *uri)
 {
   printf("fshv_parse_uri() >[1;33m%s[0;0m<\n", uri);
 
-  //fabr_tree *tt = fabr_parse_uri(uri, _uri, FABR_F_ALL);
+  //fabr_tree *tt = fabr_parse_f(uri, _uri, FABR_F_ALL);
   //printf("fshv_parse_uri():\n"); fabr_puts_tree(tt, uri, 1);
   //fabr_tree_free(tt);
 
   fabr_tree *r = fabr_parse_all(uri, _uri);
-  printf("fshv_parse_uri() (pruned):\n"); fabr_puts(r, uri, 3);
+  //printf("fshv_parse_uri() (pruned):\n"); fabr_puts(r, uri, 3);
 
   fabr_tree *t = NULL;
 
@@ -114,14 +117,14 @@ flu_dict *fshv_parse_uri(char *uri)
   t = fabr_tree_lookup(r, "query");
   if (t) flu_list_set(d, "_query", fabr_tree_string(uri, t));
 
-  flu_list *l = fabr_tree_list_named(r, "quentry");
+  flu_list *l = fabr_tree_list_named(r, "qentry");
   for (flu_node *n = l->first; n != NULL; n = n->next)
   {
-    t = fabr_tree_lookup((fabr_tree *)n->item, "key");
+    t = fabr_tree_lookup((fabr_tree *)n->item, "qkey");
     char *k = fabr_tree_string(uri, t);
 
     char *v = NULL; char *vv = NULL;
-    t = fabr_tree_lookup((fabr_tree *)n->item, "val");
+    t = fabr_tree_lookup((fabr_tree *)n->item, "qval");
     if (t) { v = fabr_tree_string(uri, t); vv = flu_urldecode(v, -1); }
     else { vv = strdup(""); }
 
