@@ -35,48 +35,55 @@
 #include "shv_protected.h"
 
 
-//  fabr_parser *scheme =
-//    fabr_n_rex("scheme", "https?");
-//  fabr_parser *host =
-//    fabr_n_rex("host", "[^:/]+");
-//  fabr_parser *port =
-//    fabr_seq(fabr_string(":"), fabr_n_rex("port", "[1-9][0-9]+"), NULL);
-//
-//  fabr_parser *path =
-//    fabr_n_rex("path", "[^\\?#]+");
-//  fabr_parser *quentry =
-//    fabr_n_seq("quentry",
-//      fabr_n_rex("key", "[^=&#]+"),
-//      fabr_seq(fabr_string("="), fabr_n_rex("val", "[^&#]+"), fabr_r("?")),
-//      NULL);
-//  fabr_parser *query =
-//    fabr_n_seq("query",
-//      quentry,
-//      fabr_seq(fabr_string("&"), quentry, fabr_r("*")),
-//      NULL);
-//  fabr_parser *fragment =
-//    fabr_n_rex("fragment", ".+");
-//
-//  fabr_parser *shp =
-//    fabr_seq(
-//      scheme,
-//      fabr_string("://"),
-//      host,
-//      port, fabr_q("?"),
-//      NULL);
-//
-//  uri_parser =
-//    fabr_seq(
-//      shp, fabr_q("?"),
-//      path,
-//      fabr_seq(fabr_string("?"), query, fabr_r("?")),
-//      fabr_seq(fabr_string("#"), fragment, fabr_r("?")),
-//      NULL);
+static fabr_tree *_amp(fabr_input *i) { return fabr_str(NULL, i, "&"); }
+static fabr_tree *_qmark(fabr_input *i) { return fabr_str(NULL, i, "?"); }
+static fabr_tree *_equal(fabr_input *i) { return fabr_str(NULL, i, "="); }
+static fabr_tree *_sharp(fabr_input *i) { return fabr_rex(NULL, i, "#"); }
+static fabr_tree *_colslasla(fabr_input *i) { return fabr_str(NULL, i, "://"); }
+static fabr_tree *_colon(fabr_input *i) { return fabr_str(NULL, i, ":"); }
+
+static fabr_tree *_qkey(fabr_input *i)
+{ return fabr_rex("qkey", i, "[^ \t=&#]+"); }
+
+static fabr_tree *_qval(fabr_input *i)
+{ return fabr_rex("qval", i, "[^ \t&#]+"); }
+
+static fabr_tree *_qentry(fabr_input *i)
+{ return fabr_seq("qentry", i, _qkey, _equal, _qval, NULL); }
+
+static fabr_tree *_query(fabr_input *i)
+{ return fabr_eseq(NULL, i, _qmark, _qentry, _amp, NULL); }
+
+static fabr_tree *_ragment(fabr_input *i)
+{ return fabr_rex("fragment", i, ".+"); }
+
+static fabr_tree *_fragment(fabr_input *i)
+{ return fabr_seq(NULL, i, _sharp, _ragment, NULL); }
+
+static fabr_tree *_path(fabr_input *i)
+{ return fabr_rex("path", i, "[^\\?#]+"); }
+
+static fabr_tree *_scheme(fabr_input *i)
+{ return fabr_rex("scheme", i, "https?"); }
+
+static fabr_tree *_host(fabr_input *i)
+{ return fabr_str("host", i, "[^:/]+"); }
+
+static fabr_tree *_ort(fabr_input *i)
+{ return fabr_rex("port", i, "[1-9][0-9]*"); }
+
+static fabr_tree *_port(fabr_input *i)
+{ return fabr_seq(NULL, i, _colon, _ort, NULL); }
+
+static fabr_tree *_shp(fabr_input *i)
+{ return fabr_seq(NULL, i,
+    _scheme, _colslasla, _host, _port, fabr_qmark,
+    NULL); }
 
 static fabr_tree *_uri(fabr_input *i)
-{
-  return NULL;
-}
+{ return fabr_seq(NULL, i,
+    _shp, fabr_qmark, _path, _query, fabr_qmark, _fragment, fabr_qmark,
+    NULL); }
 
 flu_dict *fshv_parse_uri(char *uri)
 {
@@ -87,7 +94,7 @@ flu_dict *fshv_parse_uri(char *uri)
   //fabr_tree_free(tt);
 
   fabr_tree *r = fabr_parse_all(uri, _uri);
-  //printf("fshv_parse_uri() (pruned):\n"); fabr_puts(t, input, 3);
+  printf("fshv_parse_uri() (pruned):\n"); fabr_puts(r, uri, 3);
 
   fabr_tree *t = NULL;
 
