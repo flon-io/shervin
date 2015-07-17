@@ -36,10 +36,11 @@ context "uri"
       d = fshv_parse_uri("/a?b=c&d=e");
 
       ensure(d != NULL);
-      ensure(d->size zu== 3);
+      ensure(d->size zu== 4);
       ensure(flu_list_get(d, "_path") === "/a");
       ensure(flu_list_get(d, "b") === "c");
       ensure(flu_list_get(d, "d") === "e");
+      ensure(flu_list_get(d, "_query") === "?b=c&d=e");
     }
 
     it "returns the fragment"
@@ -70,7 +71,7 @@ context "uri"
       d = fshv_parse_uri("/a?x=x%20y%20z");
 
       ensure(d != NULL);
-      ensure(d->size zu== 2);
+      ensure(d->size zu== 3);
       ensure(flu_list_get(d, "_path") === "/a");
       ensure(flu_list_get(d, "x") === "x y z");
     }
@@ -80,7 +81,7 @@ context "uri"
       d = fshv_parse_uri("/a?x");
 
       ensure(d != NULL);
-      ensure(d->size zu== 2);
+      ensure(d->size zu== 3);
       ensure(flu_list_get(d, "_path") === "/a");
       ensure(flu_list_get(d, "x") === "");
     }
@@ -93,7 +94,7 @@ context "uri"
       d = fshv_parse_host_and_path("http://example.com", "/a?x=x%20y%20z");
 
       ensure(d != NULL);
-      ensure(d->size zu== 4);
+      ensure(d->size zu== 5);
       ensure(flu_list_get(d, "_scheme") === "http");
       ensure(flu_list_get(d, "_host") === "example.com");
       ensure(flu_list_get(d, "_path") === "/a");

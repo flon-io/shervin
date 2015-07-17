@@ -55,7 +55,7 @@ static fabr_tree *_qentry(fabr_input *i)
 { return fabr_seq("qentry", i, _qkey, _qval, fabr_qmark, NULL); }
 
 static fabr_tree *_query(fabr_input *i)
-{ return fabr_eseq(NULL, i, _qmark, _qentry, _amp, NULL); }
+{ return fabr_eseq("query", i, _qmark, _qentry, _amp, NULL); }
 
 static fabr_tree *_ragment(fabr_input *i)
 { return fabr_rex("fragment", i, ".+"); }
@@ -90,7 +90,7 @@ static fabr_tree *_uri(fabr_input *i)
 
 flu_dict *fshv_parse_uri(char *uri)
 {
-  printf("fshv_parse_uri() >[1;33m%s[0;0m<\n", uri);
+  //printf("fshv_parse_uri() >[1;33m%s[0;0m<\n", uri);
 
   //fabr_tree *tt = fabr_parse_f(uri, _uri, FABR_F_ALL);
   //printf("fshv_parse_uri():\n"); fabr_puts_tree(tt, uri, 1);
@@ -181,7 +181,7 @@ char *fshv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...)
 
   char *query = "";
   s = flu_list_get(uri_d, "_query");
-  if (s) query = flu_sprintf("?%s", s);
+  if (s) query = flu_sprintf("%s", s);
 
   char *path = strdup(flu_list_getd(uri_d, "_path", "/"));
 
