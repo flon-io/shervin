@@ -37,65 +37,65 @@
 #include "shv_protected.h"
 
 
-//  fabr_parser *sp = fabr_string(" ");
-//  fabr_parser *crlf = fabr_string("\r\n");
-//
-//  fabr_parser *lws = fabr_rex("(\r\n)?[ \t]+");
-//
-//  //fabr_parser *text =
-//  //  fabr_alt(fabr_rex("[^\x01-\x1F\x7F]"), lws, fabr_r("+"));
-//  fabr_parser *text =
-//    fabr_rex("[^\x01-\x1F\x7F]+");
-//
-//  fabr_parser *token =
-//    fabr_rex("[^\x01-\x1F\x7F()<>@,;:\\\\\"/[\\]?={} \t]+");
-//
+static fabr_tree *_sp(fabr_input *i) { return fabr_str(NULL, i, " "); }
+static fabr_tree *_col(fabr_input *i) { return fabr_str(NULL, i, ":"); }
+static fabr_tree *_crlf(fabr_input *i) { return fabr_str(NULL, i, "\r\n"); }
+
+static fabr_tree *_lws(fabr_input *i)
+{ return fabr_rex(NULL, i, "(\r\n)?[ \t]+"); }
+
+static fabr_tree *_text(fabr_input *i)
+{ return fabr_rex(NULL, i, "[^\x01-\x1F\x7F]+"); }
+
+static fabr_tree *_token(fabr_input *i)
+{ return fabr_rex(NULL, i, "[^\x01-\x1F\x7F()<>@,;:\\\\\"/[\\]?={} \t]+"); }
+
 //  fabr_parser *method =
 //    fabr_n_alt(
 //      "method",
 //      fabr_rex("GET|POST|PUT|DELETE|HEAD|OPTIONS|TRACE|CONNECT|LINK|UNLINK"),
 //      fabr_name("extension_method", token),
 //      NULL);
-//  fabr_parser *request_uri =
-//    fabr_n_rex("request_uri", "[^ \t\r\n]{1,2048}"); // arbitrary limit
-//  fabr_parser *http_version =
-//    fabr_n_rex("http_version", "HTTP/[0-9]+\\.[0-9]+");
 //
-//  fabr_parser *request_line =
-//    fabr_seq(method, sp, request_uri, sp, http_version, crlf, NULL);
-//
-//  fabr_parser *field_content =
-//    text;
-//
-//  fabr_parser *field_name =
-//    fabr_name("field_name", token);
-//  fabr_parser *field_value =
-//    fabr_n_rep("field_value", fabr_alt(field_content, lws, NULL), 0, -1);
-//
-//  fabr_parser *message_header =
-//    fabr_n_seq("message_header", field_name, fabr_string(":"), field_value, NULL);
-//
-//  //fabr_parser *message_body =
-//  //  fabr_n_regex("message_body", "^.+"); // well, the rest
-//
-//  request_parser =
-//    fabr_seq(
-//      request_line,
-//      fabr_seq(message_header, crlf, NULL), fabr_q("*"),
-//      crlf,
-//      //fabr_rep(message_body, 0, 1),
-//      NULL);
-//  // do not include the message_body
+static fabr_tree *_method(fabr_input *i)
+{ return fabr_rex("method", i, "GET|POST|PUT|DELETE|HEAD|OPTIONS"); }
+
+static fabr_tree *_request_uri(fabr_input *i)
+{ return fabr_rex("request_uri", i, "[^ \t\r\n]{1,2048}"); }
+  // arbitrary limit
+
+static fabr_tree *_http_version(fabr_input *i)
+{ return fabr_rex("http_version", i, "HTTP/[0-9]+\\.[0-9]+"); }
+
+static fabr_tree *_request_line(fabr_input *i)
+{ return fabr_seq(NULL, i,
+    _method, _sp, _request_uri, _sp, _http_version, _crlf,
+    NULL); }
+
+static fabr_tree *_fv(fabr_input *i)
+{ return fabr_alt(NULL, i, _text, _lws, NULL); }
+
+static fabr_tree *_field_value(fabr_input *i)
+{ return fabr_rep("field_value", i, _fv, 0, 0); }
+
+static fabr_tree *_field_name(fabr_input *i)
+{ return fabr_rename("field_name", i, _token); }
+
+static fabr_tree *_mh(fabr_input *i)
+{ return fabr_seq("message_header", i, _field_name, _col, _field_value, NULL); }
+
+static fabr_tree *_message_header(fabr_input *i)
+{ return fabr_seq(NULL, i, _mh, _crlf, NULL); }
 
 static fabr_tree *_request_head(fabr_input *i)
-{
-  return NULL;
-}
+{ return fabr_seq(NULL, i,
+    _request_line, _message_header, fabr_star, _crlf,
+    NULL); } // does not include the message body
 
 
 fshv_request *fshv_parse_request_head(char *s)
 {
-  printf("fshv_parse_request_head() >[1;33m%s[0;0m<\n", s);
+  //printf("fshv_parse_request_head() >[1;33m%s[0;0m<\n", s);
 
   //fabr_tree *tt = fabr_parse_f(s, _request_head, FABR_F_ALL);
   //printf("fshv_parse_request_head():\n"); fabr_puts_tree(tt, s, 1);
