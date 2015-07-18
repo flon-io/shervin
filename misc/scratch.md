@@ -144,3 +144,32 @@ int fshv_match(char *path, fshv_env *env);
 * integrate
 * drop the old stuff
 
+## more
+
+```c
+// shervin.h
+
+typedef int fshv_handler(fshv_env *env);
+
+short fshv_match(fshv_env *env, char *path);
+
+void fshv_serve(int port, fshv_handler *root_handler, flu_dict *conf);
+
+// x.c
+
+static _serve(fshv_env *env)
+{
+  if (fshv_match(env, "/doc/**")) return fshv_serve_files(env, "../static/");
+  // ...
+}
+
+int main()
+{
+  // ...
+
+  fshv_serve(80, _serve, conf);
+}
+```
+
+Returning `NULL`, returning a handler.
+
