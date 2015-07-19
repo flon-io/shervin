@@ -59,5 +59,10 @@ context "guards"
       ensure(r == 1);
     }
   }
+
+  describe "fshv_smatch()"
+  {
+    it "sub-matches"
+  }
 }
 

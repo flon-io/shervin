@@ -72,11 +72,13 @@ typedef int fshv_handler(fshv_env *env);
 
 // handlers
 
-int fshv_dir_handler(fshv_env *env, char *root);
+int fshv_serve_files(fshv_env *env, char *root);
 
 // guards
 
-int fshv_match(fshv_env *env, char *route);
+int fshv_path_match(fshv_env *env, int sub, char *path);
+#define fshv_match(env, path) fshv_path_match(env, 0, path)
+#define fshv_smatch(env, path) fshv_path_match(env, 1, path)
 
 // serve
 

@@ -34,9 +34,10 @@
 #include "shv_protected.h"
 
 
-int fshv_match(fshv_env *e, char *path)
+int fshv_path_match(fshv_env *e, int sub, char *path)
 {
   char *rpath = (char *)flu_list_get(e->req->uri_d, "_path");
+    // TODO if sub == 1
 
   //printf("path >%s<\nrpath >%s<\n", path, rpath);
 
