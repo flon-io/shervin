@@ -207,3 +207,25 @@ static void _serve(fshv_env *env)
 }
 ```
 
+What's need to be supported:
+```c
+  fshv_route *routes[] =
+  {
+    fshv_r(
+      NULL,
+      fshv_basic_auth_filter,
+      "func", flon_auth_enticate, "realm", "flon", NULL),
+
+    fshv_rp("GET /i", flon_i_handler, NULL),
+    fshv_rp("POST /i/in", flon_in_handler, NULL),
+    fshv_rp("GET /i/executions", flon_exes_handler, NULL),
+    fshv_rp("GET /i/executions/:id", flon_exe_handler, NULL),
+    fshv_rp("GET /i/executions/:id/:sub", flon_exe_sub_handler, NULL),
+    fshv_rp("GET /i/msgs/:id", flon_msg_handler, NULL),
+    fshv_rp("GET /i/metrics", flon_metrics_handler, NULL),
+    fshv_rp("GET /**", fshv_dir_handler, "r", "var/www", NULL),
+
+    NULL
+  };
+```
+
