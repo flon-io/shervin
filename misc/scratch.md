@@ -157,7 +157,7 @@ void fshv_serve(int port, fshv_handler *root_handler, flu_dict *conf);
 
 // x.c
 
-static _serve(fshv_env *env)
+static int _serve(fshv_env *env)
 {
   if (fshv_match(env, "/doc/**")) return fshv_serve_files(env, "../static/");
   // ...
@@ -171,5 +171,39 @@ int main()
 }
 ```
 
-Returning `NULL`, returning a handler.
+What usage am I trying to support?
+
+```
+typedef short fshv_handler(fsvh_env *env);
+  //
+  // 0 not handled
+  // 1 handled
+
+// well, only the root handler needs that super simple signature...
+// the other handlers accept at least env then some special info...
+
+// conventions? 0 or 1, or NULL or something?
+// NULL or a fshv_handler?
+
+// what about submatches?
+
+// use the strength of the programming language, not some clever data structure
+
+// -1 break
+//  0 continue
+//  1 success, break
+  //
+// 0 failure
+// 1 success
+```
+
+```pseudo
+static void _serve(fshv_env *env)
+{
+  if (fshv_match(env, "/static/stuff")) return _serve_static(env, "../static");
+
+  //if ( ! fshv_authentify) return fsvh_
+  if (fsvh_authentify(env, x) == FSHV_OVER) return
+}
+```
 
