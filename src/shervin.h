@@ -77,6 +77,7 @@ int fshv_serve_files(fshv_env *env, char *root);
 // guards
 
 int fshv_path_match(fshv_env *env, int sub, char *path);
+#define fshv_m(env, path) fshv_path_match(env, 0, path)
 #define fshv_match(env, path) fshv_path_match(env, 0, path)
 #define fshv_smatch(env, path) fshv_path_match(env, 1, path)
 

@@ -57,6 +57,36 @@ context "guards"
       int r = fshv_match(env, "GET /x");
 
       ensure(r == 1);
+      ensure(env->bag->size zu== 0);
+    }
+
+    it "puts the ** in the bag"
+    {
+      env = fshv_env_prepare(
+        "GET /x/y/z HTTP/1.1\r\n"
+        "Host: www.example.com\r\n"
+        "\r\n");
+
+      int r = fshv_match(env, "GET /x/**");
+
+      ensure(r == 1);
+      ensure(env->bag->size zu== 1);
+      ensure(flu_list_get(env->bag, "**") === "y/z");
+    }
+
+    it "puts :x in the bag"
+    {
+      env = fshv_env_prepare(
+        "GET /books/heart-of-darkness/3 HTTP/1.1\r\n"
+        "Host: www.example.com\r\n"
+        "\r\n");
+
+      int r = fshv_match(env, "GET /books/:name/:page");
+
+      ensure(r == 1);
+      ensure(env->bag->size zu== 2);
+      ensure(flu_list_get(env->bag, "name") === "heart-of-darkness");
+      ensure(flu_list_get(env->bag, "page") === "3");
     }
   }
 
