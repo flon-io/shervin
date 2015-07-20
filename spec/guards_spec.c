@@ -92,7 +92,34 @@ context "guards"
 
   describe "fshv_smatch()"
   {
+    it "returns 0 if there is no ** in the bag"
+    {
+      env = fshv_env_prepare(
+        "GET /x/y/z HTTP/1.1\r\n"
+        "Host: www.example.com\r\n"
+        "\r\n");
+
+      int r = fshv_smatch(env, "GET y/**");
+
+      ensure(r d== 0);
+    }
+
     it "sub-matches"
+    {
+      env = fshv_env_prepare(
+        "GET /x/y/z HTTP/1.1\r\n"
+        "Host: www.example.com\r\n"
+        "\r\n");
+
+      fshv_match(env, "GET /x/**");
+      int r = fshv_smatch(env, "GET y/**");
+
+      ensure(r d== 1);
+      ensure(env->bag->size zu== 2); // twice "**"
+      ensure(flu_list_get(env->bag, "**") === "z");
+
+      //puts(flu_list_to_s(env->bag));
+    }
   }
 }
 
