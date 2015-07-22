@@ -76,7 +76,7 @@ int fshv_serve_files(fshv_env *env, char *root)
 
   if (s == 0 && flu_list_get(env->res->headers, "fshv_file") == NULL)
   {
-    char *i = flu_list_getd(env->conf, "index", "index.html");
+    char *i = fshv_conf_get(env, "index", "index.html");
     flu_list *is = flu_split(i, ",");
 
     for (flu_node *n = is->first; n; n = n->next)

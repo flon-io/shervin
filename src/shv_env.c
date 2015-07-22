@@ -55,3 +55,18 @@ void fshv_env_free(fshv_env *e)
   free(e);
 }
 
+char *fshv_conf_get(fshv_env *e, char *key, ...)
+{
+  va_list ap; va_start(ap, key);
+  char *k = flu_svprintf(key, ap);
+  void *def = va_arg(ap, void *);
+  va_end(ap);
+
+  if (e->conf == NULL) return def;
+
+  flu_node *n = flu_list_getn(e->conf, k);
+  free(k);
+
+  return n ? n->item : def;
+}
+

@@ -105,9 +105,8 @@ ssize_t fshv_serve_file(fshv_env *env, const char *path, ...)
   flu_list_set(
     env->res->headers, "fshv_file", strdup(pa));
 
-  char *h = flu_list_getd(env->conf, "accel-header", "X-Accel-Redirect");
+  char *h = fshv_conf_get(env, "accel-header", "X-Accel-Redirect");
   flu_list_set(env->res->headers, h, pa);
-  //free(h); ?
 
   return sta.st_size;
 }
