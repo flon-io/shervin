@@ -86,11 +86,8 @@ static char *fshv_determine_content_type(const char *path)
   return strdup(r);
 }
 
-ssize_t fshv_serve_file(
-  fshv_response *res, char *header, const char *path, ...)
+ssize_t fshv_serve_file(fshv_env *env, const char *path, ...)
 {
-  if (header == NULL) header = "X-Accel-Redirect";
-
   va_list ap; va_start(ap, path);
   char *pa = flu_vpath(path, ap);
   va_end(ap);
@@ -99,16 +96,18 @@ ssize_t fshv_serve_file(
   if (stat(pa, &sta) != 0) { free(pa); return -1; }
   if (S_ISDIR(sta.st_mode)) { free(pa); return 0; }
 
-  res->status_code = 200;
+  env->res->status_code = 200;
 
   flu_list_set(
-    res->headers, "fshv_content_length", flu_sprintf("%zu", sta.st_size));
+    env->res->headers, "fshv_content_length", flu_sprintf("%zu", sta.st_size));
   flu_list_set(
-    res->headers, "content-type", fshv_determine_content_type(pa));
+    env->res->headers, "content-type", fshv_determine_content_type(pa));
   flu_list_set(
-    res->headers, "fshv_file", strdup(pa));
+    env->res->headers, "fshv_file", strdup(pa));
 
-  flu_list_set(res->headers, header, pa);
+  char *h = flu_list_getd(env->conf, "accel-header", "X-Accel-Redirect");
+  flu_list_set(env->res->headers, h, pa);
+  //free(h); ?
 
   return sta.st_size;
 }

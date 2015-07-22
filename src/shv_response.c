@@ -47,15 +47,15 @@
 //
 // fshv_response
 
-//fshv_response *fshv_response_malloc(short status_code)
-//{
-//  fshv_response *r = calloc(1, sizeof(fshv_response));
-//  r->status_code = status_code;
-//  r->headers = flu_list_malloc();
-//  r->body = flu_list_malloc();
-//
-//  return r;
-//}
+fshv_response *fshv_response_malloc()
+{
+  fshv_response *r = calloc(1, sizeof(fshv_response));
+  r->status_code = -1;
+  r->headers = flu_list_malloc();
+  r->body = flu_list_malloc();
+
+  return r;
+}
 
 void fshv_response_free(fshv_response *r)
 {

@@ -39,6 +39,7 @@ fshv_env *fshv_env_prepare(char *request_head)
 
   r->bag = flu_list_malloc();
   r->req = fshv_parse_request_head(request_head);
+  r->res = fshv_response_malloc();
 
   return r;
 }
