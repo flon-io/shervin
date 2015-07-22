@@ -62,9 +62,8 @@ char *fshv_conf_get(fshv_env *e, char *key, ...)
   void *def = va_arg(ap, void *);
   va_end(ap);
 
-  if (e->conf == NULL) return def;
+  flu_node *n = (e->conf) ? flu_list_getn(e->conf, k) : NULL;
 
-  flu_node *n = flu_list_getn(e->conf, k);
   free(k);
 
   return n ? n->item : def;
