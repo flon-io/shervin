@@ -33,13 +33,14 @@
 #include "shv_protected.h"
 
 
-fshv_env *fshv_env_prepare(char *request_head)
+fshv_env *fshv_env_prepare(char *request_head, flu_dict *conf)
 {
   fshv_env *r = calloc(1, sizeof(fshv_env));
 
   r->bag = flu_list_malloc();
   r->req = fshv_parse_request_head(request_head);
   r->res = fshv_response_malloc();
+  r->conf = conf;
 
   return r;
 }
@@ -48,7 +49,7 @@ void fshv_env_free(fshv_env *e)
 {
   if (e == NULL) return;
 
-  //e->conf = NULL;
+  e->conf = NULL; // simply unlink
   fshv_request_free(e->req);
   fshv_response_free(e->res);
   flu_list_free_all(e->bag);

@@ -27,7 +27,8 @@ context "guards"
       env = fshv_env_prepare(
         "GET /x?a=b#f HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
-        "\r\n");
+        "\r\n",
+        NULL);
 
       int r = fshv_match(env, "GET /nowhere");
 
@@ -39,7 +40,8 @@ context "guards"
       env = fshv_env_prepare(
         "GET /book/moominvalley/chapter HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
-        "\r\n");
+        "\r\n",
+        NULL);
 
       int r = fshv_match(env, "GET /book/:title/chapter/:id");
 
@@ -52,7 +54,8 @@ context "guards"
       env = fshv_env_prepare(
         "GET /x?a=b#f HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
-        "\r\n");
+        "\r\n",
+        NULL);
 
       int r = fshv_match(env, "GET /x");
 
@@ -65,7 +68,8 @@ context "guards"
       env = fshv_env_prepare(
         "GET /x/y/z HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
-        "\r\n");
+        "\r\n",
+        NULL);
 
       int r = fshv_match(env, "GET /x/**");
 
@@ -79,7 +83,8 @@ context "guards"
       env = fshv_env_prepare(
         "GET /books/heart-of-darkness/3 HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
-        "\r\n");
+        "\r\n",
+        NULL);
 
       int r = fshv_match(env, "GET /books/:name/:page");
 
@@ -97,7 +102,8 @@ context "guards"
       env = fshv_env_prepare(
         "GET /x/y/z HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
-        "\r\n");
+        "\r\n",
+        NULL);
 
       int r = fshv_smatch(env, "GET y/**");
 
@@ -109,7 +115,8 @@ context "guards"
       env = fshv_env_prepare(
         "GET /x/y/z HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
-        "\r\n");
+        "\r\n",
+        NULL);
 
       fshv_match(env, "GET /x/**");
       int r = fshv_smatch(env, "GET y/**");

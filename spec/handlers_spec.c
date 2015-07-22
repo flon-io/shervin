@@ -27,7 +27,8 @@ context "handlers"
       env = fshv_env_prepare(
         "GET /x/y/a/b/hello.txt HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
-        "\r\n");
+        "\r\n",
+        NULL);
 
       flu_list_set(env->bag, "**", rdz_strdup("a/b/hello.txt"));
 
