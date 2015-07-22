@@ -71,8 +71,6 @@ void fshv_response_free(fshv_response *r);
 fshv_env *fshv_env_prepare(char *request_head, flu_dict *conf);
 void fshv_env_free(fshv_env *e);
 
-char *fshv_conf_get(fshv_env *e, char *key, ...);
-
 
 //
 // uri
