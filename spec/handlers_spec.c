@@ -186,54 +186,6 @@ context "handlers"
     }
   }
 
-//  describe "fshv_serve_file()"
-//  {
-//    before each
-//    {
-//      fshv_request *req = NULL;
-//      flu_dict *params = NULL;
-//      fshv_response *res = fshv_response_malloc(200);
-//
-//      params = flu_list_malloc();
-//    }
-//    after each
-//    {
-//      fshv_request_free(req);
-//      flu_list_free(params);
-//      fshv_response_free(res);
-//    }
-//
-//    it "returns -1 when it doesn't find a file"
-//    {
-//      ssize_t r = fshv_serve_file(res, params, "../spec/www/a/b/nada.html");
-//
-//      expect(r li== -1);
-//    }
-//
-//    it "returns 0 when the file is a directory"
-//    {
-//      ssize_t r = fshv_serve_file(res, params, "../spec/www/a/b");
-//      expect(r li== 0);
-//
-//      r = fshv_serve_file(res, params, "../spec/www/a/b/");
-//      expect(r li== 0);
-//    }
-//
-//    it "returns the size of the file and sets headers when it's a regular file"
-//    {
-//      ssize_t r = fshv_serve_file(res, params, "../spec/www/a/b/index.html");
-//
-//      expect(r li== 13);
-//
-//      expect(flu_list_get(res->headers, "fshv_content_length") === ""
-//        "13");
-//      expect(flu_list_get(res->headers, "fshv_file") === ""
-//        "../spec/www/a/b/index.html");
-//      expect(flu_list_get(res->headers, "content-type") === ""
-//        "text/html");
-//    }
-//  }
-//
 //  describe "fshv_dir_handler()"
 //  {
 //    before each
