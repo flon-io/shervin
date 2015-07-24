@@ -48,6 +48,10 @@ context "handlers"
           "text/plain");
       }
 
+      it "goes 404 if the file is not found"
+      it "goes 404 if the file is a dir"
+      it "goes 403 when the request goes"
+
       it "returns 0 if the file is not found"
       {
         env = fshv_env_prepare(
