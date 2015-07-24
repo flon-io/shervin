@@ -96,7 +96,7 @@ int fshv_serve_files(fshv_env *env, char *root)
 }
 
 /*
-int fshv_debug_handler(
+int fshv_mirror(
   fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
   res->status_code = 200;

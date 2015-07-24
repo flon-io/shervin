@@ -300,5 +300,10 @@ context "handlers"
 //        "text/html");
 //    }
 //  }
+
+  describe "fshv_mirror()"
+  {
+    it "mirrors the incoming request"
+  }
 }
 
