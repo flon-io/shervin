@@ -24,165 +24,173 @@ context "handlers"
 
   describe "fshv_serve_files()"
   {
-    it "serves successfully"
+    context "env->bag '**'"
     {
-      env = fshv_env_prepare(
-        "GET /x/y/a/b/hello.txt HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
-        "\r\n",
-        NULL);
+      it "serves successfully"
+      {
+        env = fshv_env_prepare(
+          "GET /x/y/a/b/hello.txt HTTP/1.1\r\n"
+          "Host: http://www.example.com\r\n"
+          "\r\n",
+          NULL);
 
-      flu_list_set(env->bag, "**", rdz_strdup("a/b/hello.txt"));
+        flu_list_set(env->bag, "**", rdz_strdup("a/b/hello.txt"));
 
-      int r = fshv_serve_files(env, "../spec/www");
+        int r = fshv_serve_files(env, "../spec/www");
 
-      expect(r i== 1);
+        expect(r i== 1);
 
-      expect(flu_list_get(env->res->headers, "X-Accel-Redirect") === ""
-        "../spec/www/a/b/hello.txt");
-      expect(flu_list_get(env->res->headers, "fshv_content_length") === ""
-        "12");
-      expect(flu_list_get(env->res->headers, "content-type") === ""
-        "text/plain");
+        expect(flu_list_get(env->res->headers, "X-Accel-Redirect") === ""
+          "../spec/www/a/b/hello.txt");
+        expect(flu_list_get(env->res->headers, "fshv_content_length") === ""
+          "12");
+        expect(flu_list_get(env->res->headers, "content-type") === ""
+          "text/plain");
+      }
+
+      it "returns 0 if the file is not found"
+      {
+        env = fshv_env_prepare(
+          "GET /x/y/a/b/nada.txt HTTP/1.1\r\n"
+          "Host: http://www.example.com\r\n"
+          "\r\n",
+          NULL);
+
+        flu_list_set(env->bag, "**", rdz_strdup("a/b/nada.txt"));
+
+        int r = fshv_serve_files(env, "../spec/www");
+
+        expect(r i== 0);
+      }
+
+      it "returns 0 when the file is a dir"
+      {
+        env = fshv_env_prepare(
+          "GET /x/y/a HTTP/1.1\r\n"
+          "Host: http://www.example.com\r\n"
+          "\r\n",
+          NULL);
+
+        flu_list_set(env->bag, "**", rdz_strdup("a"));
+
+        int r = fshv_serve_files(env, "../spec/www");
+
+        expect(r i== 0);
+      }
+
+      it "returns 0 when the request goes ../"
+      {
+        env = fshv_env_prepare(
+          "GET /x/y/../www/a/b/hello.txt HTTP/1.1\r\n"
+          "Host: http://www.example.com\r\n"
+          "\r\n",
+          NULL);
+
+        flu_list_set(env->bag, "**", rdz_strdup("../www/a/b/hello.txt"));
+
+        int r = fshv_serve_files(env, "../spec/www");
+
+        expect(r i== 0);
+      }
+
+      it "accepts an alternative sendfile \"accel-header\" header via the conf"
+      {
+        conf = flu_d("accel-header", "X-Sendfile", NULL);
+
+        env = fshv_env_prepare(
+          "GET /x/y/a/b/hello.txt HTTP/1.1\r\n"
+          "Host: http://www.example.com\r\n"
+          "\r\n",
+          conf);
+
+        flu_list_set(env->bag, "**", rdz_strdup("a/b/hello.txt"));
+
+        int r = fshv_serve_files(env, "../spec/www");
+
+        expect(r i== 1);
+
+        expect(flu_list_get(env->res->headers, "X-Accel-Redirect") == NULL);
+
+        expect(flu_list_get(env->res->headers, "X-Sendfile") === ""
+          "../spec/www/a/b/hello.txt");
+        expect(flu_list_get(env->res->headers, "fshv_content_length") === ""
+          "12");
+        expect(flu_list_get(env->res->headers, "content-type") === ""
+          "text/plain");
+      }
+
+      it "serves a/b/index.html when asked for a/b"
+      {
+        env = fshv_env_prepare(
+          "GET /web/a/b HTTP/1.1\r\n"
+          "Host: http://www.example.com\r\n"
+          "\r\n",
+          NULL);
+
+        flu_list_set(env->bag, "**", rdz_strdup("a/b"));
+
+        int r = fshv_serve_files(env, "../spec/www");
+
+        expect(r i== 1);
+
+        expect(flu_list_get(env->res->headers, "X-Accel-Redirect") === ""
+          "../spec/www/a/b/index.html");
+        expect(flu_list_get(env->res->headers, "fshv_content_length") === ""
+          "13");
+        expect(flu_list_get(env->res->headers, "content-type") === ""
+          "text/html");
+      }
+
+      it "accepts alternative indexes"
+      {
+        conf = flu_d("index", "index.txt", NULL);
+
+        env = fshv_env_prepare(
+          "GET /web/a/ HTTP/1.1\r\n"
+          "Host: http://www.example.com\r\n"
+          "\r\n",
+          conf);
+
+        flu_list_set(env->bag, "**", rdz_strdup("a/"));
+
+        int r = fshv_serve_files(env, "../spec/www");
+
+        expect(r i== 1);
+
+        expect(flu_list_get(env->res->headers, "X-Accel-Redirect") === ""
+          "../spec/www/a/index.txt");
+        expect(flu_list_get(env->res->headers, "fshv_content_length") === ""
+          "21");
+        expect(flu_list_get(env->res->headers, "content-type") === ""
+          "text/plain");
+      }
+
+      it "defaults to text/plain for unknown filetypes"
+      {
+        env = fshv_env_prepare(
+          "GET /x/y/a/b/nada.nad HTTP/1.1\r\n"
+          "Host: http://www.example.com\r\n"
+          "\r\n",
+          NULL);
+
+        flu_list_set(env->bag, "**", rdz_strdup("a/b/nada.nad"));
+
+        int r = fshv_serve_files(env, "../spec/www");
+
+        expect(r i== 1);
+
+        expect(flu_list_get(env->res->headers, "X-Accel-Redirect") === ""
+          "../spec/www/a/b/nada.nad");
+        expect(flu_list_get(env->res->headers, "fshv_content_length") === ""
+          "10");
+        expect(flu_list_get(env->res->headers, "content-type") === ""
+          "text/plain");
+      }
     }
 
-    it "returns 0 if the file is not found"
+    context "no env->bag '**'"
     {
-      env = fshv_env_prepare(
-        "GET /x/y/a/b/nada.txt HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
-        "\r\n",
-        NULL);
-
-      flu_list_set(env->bag, "**", rdz_strdup("a/b/nada.txt"));
-
-      int r = fshv_serve_files(env, "../spec/www");
-
-      expect(r i== 0);
-    }
-
-    it "returns 0 when the file is a dir"
-    {
-      env = fshv_env_prepare(
-        "GET /x/y/a HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
-        "\r\n",
-        NULL);
-
-      flu_list_set(env->bag, "**", rdz_strdup("a"));
-
-      int r = fshv_serve_files(env, "../spec/www");
-
-      expect(r i== 0);
-    }
-
-    it "returns 0 when the request goes ../"
-    {
-      env = fshv_env_prepare(
-        "GET /x/y/../www/a/b/hello.txt HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
-        "\r\n",
-        NULL);
-
-      flu_list_set(env->bag, "**", rdz_strdup("../www/a/b/hello.txt"));
-
-      int r = fshv_serve_files(env, "../spec/www");
-
-      expect(r i== 0);
-    }
-
-    it "accepts an alternative sendfile \"accel-header\" header via the conf"
-    {
-      conf = flu_d("accel-header", "X-Sendfile", NULL);
-
-      env = fshv_env_prepare(
-        "GET /x/y/a/b/hello.txt HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
-        "\r\n",
-        conf);
-
-      flu_list_set(env->bag, "**", rdz_strdup("a/b/hello.txt"));
-
-      int r = fshv_serve_files(env, "../spec/www");
-
-      expect(r i== 1);
-
-      expect(flu_list_get(env->res->headers, "X-Accel-Redirect") == NULL);
-
-      expect(flu_list_get(env->res->headers, "X-Sendfile") === ""
-        "../spec/www/a/b/hello.txt");
-      expect(flu_list_get(env->res->headers, "fshv_content_length") === ""
-        "12");
-      expect(flu_list_get(env->res->headers, "content-type") === ""
-        "text/plain");
-    }
-
-    it "serves a/b/index.html when asked for a/b"
-    {
-      env = fshv_env_prepare(
-        "GET /web/a/b HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
-        "\r\n",
-        NULL);
-
-      flu_list_set(env->bag, "**", rdz_strdup("a/b"));
-
-      int r = fshv_serve_files(env, "../spec/www");
-
-      expect(r i== 1);
-
-      expect(flu_list_get(env->res->headers, "X-Accel-Redirect") === ""
-        "../spec/www/a/b/index.html");
-      expect(flu_list_get(env->res->headers, "fshv_content_length") === ""
-        "13");
-      expect(flu_list_get(env->res->headers, "content-type") === ""
-        "text/html");
-    }
-
-    it "accepts alternative indexes"
-    {
-      conf = flu_d("index", "index.txt", NULL);
-
-      env = fshv_env_prepare(
-        "GET /web/a/ HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
-        "\r\n",
-        conf);
-
-      flu_list_set(env->bag, "**", rdz_strdup("a/"));
-
-      int r = fshv_serve_files(env, "../spec/www");
-
-      expect(r i== 1);
-
-      expect(flu_list_get(env->res->headers, "X-Accel-Redirect") === ""
-        "../spec/www/a/index.txt");
-      expect(flu_list_get(env->res->headers, "fshv_content_length") === ""
-        "21");
-      expect(flu_list_get(env->res->headers, "content-type") === ""
-        "text/plain");
-    }
-
-    it "defaults to text/plain for unknown filetypes"
-    {
-      env = fshv_env_prepare(
-        "GET /x/y/a/b/nada.nad HTTP/1.1\r\n"
-        "Host: http://www.example.com\r\n"
-        "\r\n",
-        NULL);
-
-      flu_list_set(env->bag, "**", rdz_strdup("a/b/nada.nad"));
-
-      int r = fshv_serve_files(env, "../spec/www");
-
-      expect(r i== 1);
-
-      expect(flu_list_get(env->res->headers, "X-Accel-Redirect") === ""
-        "../spec/www/a/b/nada.nad");
-      expect(flu_list_get(env->res->headers, "fshv_content_length") === ""
-        "10");
-      expect(flu_list_get(env->res->headers, "content-type") === ""
-        "text/plain");
+      it "works"
     }
   }
 
