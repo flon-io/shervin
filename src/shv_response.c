@@ -66,3 +66,11 @@ void fshv_response_free(fshv_response *r)
   free(r);
 }
 
+char *fshv_response_body_to_s(fshv_response *res)
+{
+  flu_sbuffer *b = flu_sbuffer_malloc();
+  for (flu_node *n = res->body->first; n; n = n->next) flu_sbputs(b, n->item);
+
+  return flu_sbuffer_to_string(b);
+}
+

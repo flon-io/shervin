@@ -5,6 +5,7 @@
 // Thu Nov  6 15:37:01 JST 2014
 //
 
+#include "gajeta.h"
 #include "shervin.h"
 //#include "shv_protected.h" // direct access to fshv_request methods
 
@@ -325,6 +326,50 @@ context "handlers"
   describe "fshv_mirror()"
   {
     it "mirrors the incoming request"
+    {
+      env = fshv_env_prepare(
+        "GET /x/y/mirror HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "X-Whatever: hello whatever\r\n"
+        "\r\n",
+        NULL);
+
+      flu_list_set(env->bag, "**", rdz_strdup("mirror"));
+
+      int r = fshv_mirror(env, 0);
+
+      expect(r i== 1);
+
+      expect(fshv_response_body_to_s(env->res) ===f ""
+        "GET /x/y/mirror HTTP/1.1\r\n"
+        "x-whatever: hello whatever\r\n"
+        "host: http://www.example.com\r\n"
+        "method: GET\r\n"
+        "path: /x/y/mirror\r\n"
+        "uri_d: {_path:/x/y/mirror,_host:www.example.com,_scheme:http}\r\n"
+        "\r\n");
+    }
+
+    it "logs the incoming request as well if do_log == 1"
+    {
+      fgaj_conf_get()->logger = fgaj_grey_logger;
+      fgaj_conf_get()->level = 5;
+      fgaj_conf_get()->out = stderr;
+      fgaj_conf_get()->params = "5p";
+
+      env = fshv_env_prepare(
+        "GET /x/y/mirror HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "X-Whatever: hello whatever\r\n"
+        "\r\n",
+        NULL);
+
+      flu_list_set(env->bag, "**", rdz_strdup("mirror"));
+
+      int r = fshv_mirror(env, 1);
+
+      expect(r i== 1);
+    }
   }
 }
 

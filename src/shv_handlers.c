@@ -103,33 +103,33 @@ _over:
   return r;
 }
 
-/*
-int fshv_mirror(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
+
+int fshv_mirror(fshv_env *env, short do_log)
 {
-  res->status_code = 200;
+  env->res->status_code = 200;
   //flu_list_set(res->headers, "content-type", "text/plain; charset=utf-8");
 
-  char *suri = flu_list_to_s(req->uri_d);
+  char *suri = flu_list_to_s(env->req->uri_d);
 
   // prepare response body
 
   flu_sbuffer *b = flu_sbuffer_malloc();
 
   flu_sbprintf(
-    b, "%s %s HTTP/1.1\r\n", fshv_char_to_method(req->method), req->uri);
+    b, "%s %s HTTP/1.1\r\n",
+    fshv_char_to_method(env->req->method), env->req->uri);
 
-  for (flu_node *fn = req->headers->first; fn; fn = fn->next)
+  for (flu_node *fn = env->req->headers->first; fn; fn = fn->next)
   {
     flu_sbprintf(b, "%s: %s\r\n", fn->key, fn->item);
   }
-  flu_sbprintf(b, "method: %s\r\n", fshv_char_to_method(req->method));
-  flu_sbprintf(b, "path: %s\r\n", req->uri);
+  flu_sbprintf(b, "method: %s\r\n", fshv_char_to_method(env->req->method));
+  flu_sbprintf(b, "path: %s\r\n", env->req->uri);
   flu_sbprintf(b, "uri_d: %s\r\n", suri);
   flu_sbputs(b, "\r\n");
-  if (req->body) flu_sbputs(b, req->body);
+  if (env->req->body) flu_sbputs(b, env->req->body);
 
-  flu_list_add(res->body, flu_sbuffer_to_string(b));
+  flu_list_add(env->res->body, flu_sbuffer_to_string(b));
 
   // log request
 
@@ -137,22 +137,22 @@ int fshv_mirror(
 
   fgaj_d(
     "|%05x| %s %s HTTP/1.1\r\n",
-    us, fshv_char_to_method(req->method), req->uri);
+    us, fshv_char_to_method(env->req->method), env->req->uri);
   fgaj_d(
     "|%05x| uri_d: %s",
     us, suri);
 
-  for (flu_node *fn = req->headers->first; fn; fn = fn->next)
+  for (flu_node *fn = env->req->headers->first; fn; fn = fn->next)
   {
     fgaj_d("|%05x|  * %s: \"%s\"", us, fn->key, fn->item);
   }
 
-  ssize_t l = req->body ? strlen(req->body) : -1;
+  ssize_t l = env->req->body ? strlen(env->req->body) : -1;
   size_t maxl = 35;
   if (l > maxl)
-    fgaj_d("|%05x| body: >%.*s...< l%lli", us, maxl, req->body, l);
+    fgaj_d("|%05x| body: >%.*s...< l%lli", us, maxl, env->req->body, l);
   else
-    fgaj_d("|%05x| body: >%s< l%lli", us, req->body, l);
+    fgaj_d("|%05x| body: >%s< l%lli", us, env->req->body, l);
 
   // done
 
@@ -160,5 +160,4 @@ int fshv_mirror(
 
   return 1;
 }
-*/
 

@@ -57,6 +57,8 @@ typedef struct {
   flu_list *body;
 } fshv_response;
 
+char *fshv_response_body_to_s(fshv_response *res);
+
 // env
 
 typedef struct {
@@ -73,6 +75,7 @@ typedef int fshv_handler(fshv_env *env);
 // handlers
 
 int fshv_serve_files(fshv_env *env, char *root);
+int fshv_mirror(fshv_env *env, short do_log);
 
 // guards
 
