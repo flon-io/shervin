@@ -46,13 +46,11 @@ context "handlers"
           "12");
         expect(flu_list_get(env->res->headers, "content-type") === ""
           "text/plain");
+
+        expect(env->res->status_code i== 200);
       }
 
       it "goes 404 if the file is not found"
-      it "goes 404 if the file is a dir"
-      it "goes 403 when the request goes"
-
-      it "returns 0 if the file is not found"
       {
         env = fshv_env_prepare(
           "GET /x/y/a/b/nada.txt HTTP/1.1\r\n"
@@ -65,9 +63,10 @@ context "handlers"
         int r = fshv_serve_files(env, "../spec/www");
 
         expect(r i== 0);
+        expect(env->res->status_code i== 404);
       }
 
-      it "returns 0 when the file is a dir"
+      it "goes 404 if the file is a dir"
       {
         env = fshv_env_prepare(
           "GET /x/y/a HTTP/1.1\r\n"
@@ -80,9 +79,10 @@ context "handlers"
         int r = fshv_serve_files(env, "../spec/www");
 
         expect(r i== 0);
+        expect(env->res->status_code i== 404);
       }
 
-      it "returns 0 when the request goes ../"
+      it "goes 403 when the request goes ../"
       {
         env = fshv_env_prepare(
           "GET /x/y/../www/a/b/hello.txt HTTP/1.1\r\n"
@@ -95,6 +95,7 @@ context "handlers"
         int r = fshv_serve_files(env, "../spec/www");
 
         expect(r i== 0);
+        expect(env->res->status_code i== 403);
       }
 
       it "accepts an alternative sendfile \"accel-header\" header via the conf"
@@ -121,6 +122,8 @@ context "handlers"
           "12");
         expect(flu_list_get(env->res->headers, "content-type") === ""
           "text/plain");
+
+        expect(env->res->status_code i== 200);
       }
 
       it "serves a/b/index.html when asked for a/b"
@@ -143,6 +146,8 @@ context "handlers"
           "13");
         expect(flu_list_get(env->res->headers, "content-type") === ""
           "text/html");
+
+        expect(env->res->status_code i== 200);
       }
 
       it "accepts alternative indexes"
@@ -167,6 +172,8 @@ context "handlers"
           "21");
         expect(flu_list_get(env->res->headers, "content-type") === ""
           "text/plain");
+
+        expect(env->res->status_code i== 200);
       }
 
       it "defaults to text/plain for unknown filetypes"
@@ -189,6 +196,8 @@ context "handlers"
           "10");
         expect(flu_list_get(env->res->headers, "content-type") === ""
           "text/plain");
+
+        expect(env->res->status_code i== 200);
       }
     }
 

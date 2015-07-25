@@ -41,8 +41,11 @@
 
 int fshv_serve_files(fshv_env *env, char *root)
 {
+  int r = 0;
+  char *path = NULL;
+
   char *p = flu_list_get(env->bag, "**");
-  if (p == NULL) return 0;
+  if (p == NULL) goto _over;
   //{
     //char *path = (char *)flu_list_get(env->bag, "path");
     //char *rpath = (char *)flu_list_get(req->uri_d, "_path");
@@ -66,14 +69,13 @@ int fshv_serve_files(fshv_env *env, char *root)
 
   //fgaj_d("p: %s", p);
 
-  if (strstr(p, "..")) return 0;
+  if (strstr(p, "..")) { env->res->status_code = 403; goto _over; }
 
-  char *path = flu_path("%s/%s", root, p);
+  path = flu_path("%s/%s", root, p);
 
   ssize_t s = fshv_serve_file(env, path);
 
-  if (s < 0) { free(path); return 0; }
-
+  if (s < 0) goto _over;
   if (s == 0 && flu_list_get(env->res->headers, "fshv_file") == NULL)
   {
     char *i = flu_list_getod(env->conf, "index", "index.html");
@@ -90,9 +92,15 @@ int fshv_serve_files(fshv_env *env, char *root)
     flu_list_free_all(is);
   }
 
+  r = (s > 0 || flu_list_get(env->res->headers, "fshv_file") != NULL);
+
+_over:
+
   free(path);
 
-  return (s > 0 || flu_list_get(env->res->headers, "fshv_file") != NULL);
+  if (env->res->status_code < 0) env->res->status_code = 404;
+
+  return r;
 }
 
 /*
