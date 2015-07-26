@@ -1,7 +1,7 @@
 
 # shervin
 
-"servant", the h stands for HTTP.
+"servant", the h stands for HTTP. Something to stand behind NGINX.
 
 
 ## License
