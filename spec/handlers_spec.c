@@ -204,124 +204,29 @@ context "handlers"
 
     context "no env->bag '**'"
     {
-      it "works"
+      it "serves successfully"
+      {
+        env = fshv_env_prepare(
+          "GET /a/b/hello.txt HTTP/1.1\r\n"
+          "Host: http://www.example.com\r\n"
+          "\r\n",
+          NULL);
+
+        int r = fshv_serve_files(env, "../spec/www");
+
+        expect(r i== 1);
+
+        expect(flu_list_get(env->res->headers, "X-Accel-Redirect") === ""
+          "../spec/www/a/b/hello.txt");
+        expect(flu_list_get(env->res->headers, "fshv_content_length") === ""
+          "12");
+        expect(flu_list_get(env->res->headers, "content-type") === ""
+          "text/plain");
+
+        expect(env->res->status_code i== 200);
+      }
     }
   }
-
-//  describe "fshv_dir_handler()"
-//  {
-//    before each
-//    {
-//      struct ev_io *eio = calloc(1, sizeof(ev_io));
-//      fshv_con *con = calloc(1, sizeof(fshv_con));
-//      eio->data = con;
-//    }
-//    after each
-//    {
-//      for (size_t i = 0; con->routes[i] != NULL; ++i)
-//      {
-//        flu_list_free(con->routes[i]->params);
-//        free(con->routes[i]);
-//      }
-//      //free(con->routes); // not malloc'ed
-//      fshv_request_free(con->req);
-//      fshv_response_free(con->res);
-//      free(con);
-//      free(eio);
-//    }
-//
-//    it "serves files with a wildcard path"
-//    {
-//      con->routes = (fshv_route *[]){
-//        fshv_rp("/x/y/**", fshv_dir_handler, "root", "../spec/www", NULL),
-//        NULL // do not forget it
-//      };
-//
-//      con->req = fshv_parse_request_head(
-//        "GET /x/y/a/b/index.html HTTP/1.1\r\n"
-//        "Host: http://www.example.com\r\n"
-//        "\r\n");
-//
-//      fshv_handle(NULL, eio);
-//
-//      expect(flu_list_get(con->res->headers, "X-Accel-Redirect") === ""
-//        "../spec/www/a/b/index.html");
-//      expect(flu_list_get(con->res->headers, "fshv_content_length") === ""
-//        "13");
-//      expect(flu_list_get(con->res->headers, "content-type") === ""
-//        "text/html");
-//    }
-//
-//    it "serves files without a wildcard path"
-//    {
-//      con->routes = (fshv_route *[]){
-//        fshv_rp("/a/b/index.html", fshv_dir_handler, "root", "../spec/www", NULL),
-//        NULL // do not forget it
-//      };
-//
-//      con->req = fshv_parse_request_head(
-//        "GET /a/b/index.html HTTP/1.1\r\n"
-//        "Host: http://www.example.com\r\n"
-//        "\r\n");
-//
-//      fshv_handle(NULL, eio);
-//
-//      expect(flu_list_get(con->res->headers, "X-Accel-Redirect") === ""
-//        "../spec/www/a/b/index.html");
-//      expect(flu_list_get(con->res->headers, "fshv_content_length") === ""
-//        "13");
-//      expect(flu_list_get(con->res->headers, "content-type") === ""
-//        "text/html");
-//    }
-//
-//    it "serves files without a wildcard path (GET)"
-//    {
-//      con->routes = (fshv_route *[]){
-//        fshv_rp("GET /a/b/index.html",
-//          fshv_dir_handler,
-//            "root", "../spec/www", NULL),
-//        NULL // do not forget it
-//      };
-//
-//      con->req = fshv_parse_request_head(
-//        "GET /a/b/index.html HTTP/1.1\r\n"
-//        "Host: http://www.example.com\r\n"
-//        "\r\n");
-//
-//      fshv_handle(NULL, eio);
-//
-//      expect(flu_list_get(con->res->headers, "X-Accel-Redirect") === ""
-//        "../spec/www/a/b/index.html");
-//      expect(flu_list_get(con->res->headers, "fshv_content_length") === ""
-//        "13");
-//      expect(flu_list_get(con->res->headers, "content-type") === ""
-//        "text/html");
-//    }
-//
-//    it "serves files without a wilcard path but with a start param"
-//    {
-//      con->routes = (fshv_route *[]){
-//        fshv_rp("/x/y/a/b/index.html",
-//          fshv_dir_handler,
-//            "root", "../spec/www", "s", "/x/y", NULL),
-//        NULL // do not forget it
-//      };
-//
-//      con->req = fshv_parse_request_head(
-//        "GET /x/y/a/b/index.html HTTP/1.1\r\n"
-//        "Host: http://www.example.com\r\n"
-//        "\r\n");
-//
-//      fshv_handle(NULL, eio);
-//
-//      expect(flu_list_get(con->res->headers, "X-Accel-Redirect") === ""
-//        "../spec/www/a/b/index.html");
-//      expect(flu_list_get(con->res->headers, "fshv_content_length") === ""
-//        "13");
-//      expect(flu_list_get(con->res->headers, "content-type") === ""
-//        "text/html");
-//    }
-//  }
 
   describe "fshv_mirror()"
   {

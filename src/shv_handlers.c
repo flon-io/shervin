@@ -45,27 +45,7 @@ int fshv_serve_files(fshv_env *env, char *root)
   char *path = NULL;
 
   char *p = flu_list_get(env->bag, "**");
-  if (p == NULL) goto _over;
-  //{
-    //char *path = (char *)flu_list_get(env->bag, "path");
-    //char *rpath = (char *)flu_list_get(req->uri_d, "_path");
-
-    //if (path && strstr(path, "**")) return 0;
-
-    //char *s = (char *)flu_list_get(params, "start");
-    //if (s == NULL) s = (char *)flu_list_get(params, "s");
-
-    //if (s)
-    //{
-    //  size_t sl = strlen(s);
-    //  if (strncmp(rpath, s, sl) != 0) return 0;
-    //  p = rpath + sl;
-    //}
-    //else
-    //{
-    //  p = rpath;
-    //}
-  //}
+  if (p == NULL) p = flu_list_get(env->req->uri_d, "_path");
 
   //fgaj_d("p: %s", p);
 
