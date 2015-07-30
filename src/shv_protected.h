@@ -73,6 +73,37 @@ void fshv_env_free(fshv_env *e);
 
 
 //
+// con
+
+typedef struct {
+
+  struct sockaddr_in *client;
+  long long startus;
+
+  flu_dict *conf;
+
+  flu_sbuffer *head;
+  short hend;
+
+  flu_sbuffer *body;
+  size_t blen;
+
+  ssize_t req_count;
+  fshv_env *env;
+
+  char *hout;
+  size_t houtlen;
+  size_t houtoff;
+
+  FILE *bout;
+} fshv_con;
+
+fshv_con *fshv_con_malloc(struct sockaddr_in *client, flu_dict *conf);
+void fshv_con_reset(fshv_con *c);
+void fshv_con_free(fshv_con *c);
+
+
+//
 // uri
 
 flu_dict *fshv_parse_uri(char *uri);

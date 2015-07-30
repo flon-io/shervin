@@ -32,6 +32,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 
@@ -41,6 +42,192 @@
 #include "shervin.h"
 #include "shv_protected.h"
 
+
+static void fshv_close(struct ev_loop *l, struct ev_io *eio)
+{
+  fgaj_sd(eio, NULL);
+
+  fshv_con_free((fshv_con *)eio->data);
+
+  ev_io_stop(l, eio);
+  close(eio->fd);
+  free(eio);
+}
+
+void fshv_handle(struct ev_loop *l, struct ev_io *eio)
+{
+  fshv_con *con = (fshv_con *)eio->data;
+
+  con->env->res = fshv_response_malloc(404);
+
+  int handled = 0;
+
+  for (size_t i = 0; ; ++i)
+  {
+    fshv_route *route = con->routes[i];
+
+    if (route == NULL) break; // end reached
+
+    int flags = 0;
+    if (handled) flags |= FSHV_F_HANDLED;
+
+    int guarded = 0;
+    //
+    if (route->guard == NULL)
+      guarded = 1;
+    else if (handled == 0)
+      guarded = route->guard(con->req, con->res, flags, route->params);
+    //else if (handled == 1)
+      //guarded = 0;
+
+    if (guarded == 0) continue;
+
+    if (route->guard == NULL) flags |= FSHV_F_NULL_GUARD;
+
+    int h = route->handler(con->req, con->res, flags, route->params);
+    if (handled == 0) handled = h;
+  }
+
+  if (handled == 0) con->res->status_code = 404;
+
+  fshv_respond(l, eio);
+}
+
+static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
+{
+  fgaj_sdr(eio, NULL);
+
+  if (revents & EV_ERROR) { fgaj_r("invalid event"); return; }
+  if ( ! (revents & EV_READ)) { fgaj_r("not a read"); ev_io_stop(l, eio); return; }
+
+  if (fcntl(eio->fd, F_SETFL, fcntl(eio->fd, F_GETFL) | O_NONBLOCK) == -1)
+  {
+    fgaj_str(eio, "couldn't set nonblock"); fshv_close(l, eio); return;
+  }
+  //fgaj_t("eio->fd flags: %i", fcntl(eio->fd, F_GETFL));
+  fgaj_sdr(eio, "socket nonblock set");
+
+  fshv_con *con = (fshv_con *)eio->data;
+
+  char buffer[FSHV_BUFFER_SIZE];
+
+  errno = 0;
+  ssize_t r = read(eio->fd, buffer, FSHV_BUFFER_SIZE);
+
+  fgaj_sdr(eio, "read %d chars", r);
+
+  if (r == 0)
+  {
+    fgaj_sdr(eio, "read eof, closing."); fshv_close(l, eio); return;
+  }
+  if (r < 0)
+  {
+    if (errno == EAGAIN || errno == EWOULDBLOCK) return;
+    fgaj_sdr(eio, "read error"); fshv_close(l, eio); return;
+  }
+
+  buffer[r] = '\0';
+
+  fgaj_st(eio, "in >>>\n%s<<< %i\n", buffer, r);
+
+  ssize_t i = -1;
+  if (con->hend < 4) for (i = 0; i < r; ++i)
+  {
+    if (con->hend == 4) break; // head found
+
+    if (
+      ((con->hend == 0 || con->hend == 2) && buffer[i] == '\r') ||
+      ((con->hend == 1 || con->hend == 3) && buffer[i] == '\n')
+    ) ++con->hend; else con->hend = 0;
+  }
+
+  fgaj_st(eio, "i %i, con->hend %i", i, con->hend);
+
+  if (i < 0)
+  {
+    flu_sbwrite(con->body, buffer, r);
+    con->blen += r;
+  }
+  else
+  {
+    if (con->head == NULL) con->head = flu_sbuffer_malloc();
+    flu_sbwrite(con->head, buffer, i + 1);
+    con->body = flu_sbuffer_malloc();
+    flu_sbwrite(con->body, buffer + i, r - i);
+    con->blen = r - i;
+  }
+
+  //fgaj_sd(eio, "con->blen %zu", con->blen);
+
+  if (con->req == NULL)
+  {
+    if (con->hend < 4) return;
+      // end of head not yet found
+
+    char *head = flu_sbuffer_to_string(con->head);
+    con->head = NULL;
+
+    con->req = fshv_parse_request_head(head);
+    con->req->startus = ev_now(l) * 1000000;
+    con->rqount++;
+
+    free(head);
+
+    fgaj_si(eio, "%s", inet_ntoa(con->client->sin_addr));
+
+    if (con->req->status_code != 200)
+    {
+      fgaj_sd(eio, "couldn't parse request head");
+
+      con->res = fshv_response_malloc(con->req->status_code);
+      fshv_respond(l, eio);
+      return;
+    }
+  }
+
+  //fgaj_sd(
+  //  eio, "req content-length %zd", fshv_request_content_length(con->req));
+
+  if (
+    (con->req->method == 'p' || con->req->method == 'u') &&
+    (con->blen < fshv_request_content_length(con->req))
+  ) return; // request body not yet complete
+
+  con->req->body = flu_sbuffer_to_string(con->body);
+  con->body = NULL;
+
+  fshv_handle(l, eio);
+}
+
+static void fshv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
+{
+  // remember: the eio here has the routes in its ->data
+
+  fgaj_d("i%p d%d", eio, eio->fd);
+
+  if (revents & EV_ERROR) { fgaj_r("invalid event"); return; }
+  if ( ! (revents & EV_READ)) { fgaj_r("not a read"); ev_io_stop(l, eio); return; }
+
+  socklen_t cal = sizeof(struct sockaddr_in);
+  struct sockaddr_in *ca = calloc(1, cal); // client address
+
+  struct ev_io *ceio = calloc(1, sizeof(struct ev_io));
+
+  int csd = accept(eio->fd, (struct sockaddr *)ca, &cal);
+
+  if (csd < 0) { fgaj_r("error"); return; }
+
+  // client connected...
+
+  fshv_con *con = fshv_con_malloc(ca, (flu_dict *)eio->data);
+  con->startus = 1000 * 1000 * ev_now(l);
+  ceio->data = con;
+
+  fgaj_sd(ceio, "<- i%p d%d", eio, eio->fd);
+
+  ev_io_init(ceio, fshv_handle_cb, csd, EV_READ);
+  ev_io_start(l, ceio);
+}
 
 static ssize_t subjecter(
   char *buffer, size_t off,
@@ -58,10 +245,10 @@ static ssize_t subjecter(
 
     fshv_con *con = eio->data; if (con)
     {
-      w = snprintf(buffer + off, rem, "c%p rq%li ", con, con->rqount);
+      w = snprintf(buffer + off, rem, "c%p rqc%li ", con, con->req_count);
       if (w < 0) return -1; off += w; rem -= w;
 
-      fshv_request *req = con->req; if (req)
+      fshv_request *req = con->env->req; if (req)
       {
         char *met = fshv_char_to_method(req->method);
         w = snprintf(buffer + off, rem, "%s %s ", met, req->uri);
@@ -117,7 +304,8 @@ void fshv_serve(int port, fshv_handler *root_handler, flu_dict *conf)
   fgaj_dr("listening");
 
   ev_io_init(eio, fshv_accept_cb, sd, EV_READ);
-  eio->data = routes;
+  //eio->data = routes;
+  eio->data = conf;
   ev_io_start(l, eio);
 
   fgaj_i("serving on %d...", port);
