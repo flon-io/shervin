@@ -43,6 +43,11 @@
 #include "shv_protected.h"
 
 
+typedef struct {
+  fshv_handler *handler;
+  flu_dict *conf;
+} fshv_root;
+
 static void fshv_close(struct ev_loop *l, struct ev_io *eio)
 {
   fgaj_sd(eio, NULL);
@@ -62,33 +67,33 @@ void fshv_handle(struct ev_loop *l, struct ev_io *eio)
 
   int handled = 0;
 
-  for (size_t i = 0; ; ++i)
-  {
-    fshv_route *route = con->routes[i];
-
-    if (route == NULL) break; // end reached
-
-    int flags = 0;
-    if (handled) flags |= FSHV_F_HANDLED;
-
-    int guarded = 0;
-    //
-    if (route->guard == NULL)
-      guarded = 1;
-    else if (handled == 0)
-      guarded = route->guard(con->req, con->res, flags, route->params);
-    //else if (handled == 1)
-      //guarded = 0;
-
-    if (guarded == 0) continue;
-
-    if (route->guard == NULL) flags |= FSHV_F_NULL_GUARD;
-
-    int h = route->handler(con->req, con->res, flags, route->params);
-    if (handled == 0) handled = h;
-  }
-
-  if (handled == 0) con->res->status_code = 404;
+//  for (size_t i = 0; ; ++i)
+//  {
+//    fshv_route *route = con->routes[i];
+//
+//    if (route == NULL) break; // end reached
+//
+//    int flags = 0;
+//    if (handled) flags |= FSHV_F_HANDLED;
+//
+//    int guarded = 0;
+//    //
+//    if (route->guard == NULL)
+//      guarded = 1;
+//    else if (handled == 0)
+//      guarded = route->guard(con->req, con->res, flags, route->params);
+//    //else if (handled == 1)
+//      //guarded = 0;
+//
+//    if (guarded == 0) continue;
+//
+//    if (route->guard == NULL) flags |= FSHV_F_NULL_GUARD;
+//
+//    int h = route->handler(con->req, con->res, flags, route->params);
+//    if (handled == 0) handled = h;
+//  }
+//
+//  if (handled == 0) con->res->status_code = 404;
 
   fshv_respond(l, eio);
 }
@@ -159,7 +164,7 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   //fgaj_sd(eio, "con->blen %zu", con->blen);
 
-  if (con->req == NULL)
+  if (con->env->req == NULL)
   {
     if (con->hend < 4) return;
       // end of head not yet found
@@ -167,19 +172,19 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     char *head = flu_sbuffer_to_string(con->head);
     con->head = NULL;
 
-    con->req = fshv_parse_request_head(head);
-    con->req->startus = ev_now(l) * 1000000;
-    con->rqount++;
+    con->env->req = fshv_parse_request_head(head);
+    con->env->req->startus = ev_now(l) * 1000000;
+    con->req_count++;
 
     free(head);
 
     fgaj_si(eio, "%s", inet_ntoa(con->client->sin_addr));
 
-    if (con->req->status_code != 200)
+    if (con->env->req->status_code != 200)
     {
       fgaj_sd(eio, "couldn't parse request head");
 
-      con->res = fshv_response_malloc(con->req->status_code);
+      con->env->res = fshv_response_malloc(con->env->req->status_code);
       fshv_respond(l, eio);
       return;
     }
@@ -189,11 +194,11 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   //  eio, "req content-length %zd", fshv_request_content_length(con->req));
 
   if (
-    (con->req->method == 'p' || con->req->method == 'u') &&
-    (con->blen < fshv_request_content_length(con->req))
+    (con->env->req->method == 'p' || con->env->req->method == 'u') &&
+    (con->blen < fshv_request_content_length(con->env->req))
   ) return; // request body not yet complete
 
-  con->req->body = flu_sbuffer_to_string(con->body);
+  con->env->req->body = flu_sbuffer_to_string(con->body);
   con->body = NULL;
 
   fshv_handle(l, eio);
@@ -219,7 +224,9 @@ static void fshv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   // client connected...
 
-  fshv_con *con = fshv_con_malloc(ca, (flu_dict *)eio->data);
+  fshv_root *r = eio->data;
+
+  fshv_con *con = fshv_con_malloc(ca, r->handler, r->conf);
   con->startus = 1000 * 1000 * ev_now(l);
   ceio->data = con;
 
@@ -303,9 +310,12 @@ void fshv_serve(int port, fshv_handler *root_handler, flu_dict *conf)
   if (r < 0) { fgaj_r("listen error"); exit(3); }
   fgaj_dr("listening");
 
+  fshv_root *root = calloc(1, sizeof(fshv_root));
+  root->handler = root_handler;
+  root->conf = conf;
+
   ev_io_init(eio, fshv_accept_cb, sd, EV_READ);
-  //eio->data = routes;
-  eio->data = conf;
+  eio->data = root;
   ev_io_start(l, eio);
 
   fgaj_i("serving on %d...", port);

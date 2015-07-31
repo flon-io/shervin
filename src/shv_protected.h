@@ -80,6 +80,7 @@ typedef struct {
   struct sockaddr_in *client;
   long long startus;
 
+  fshv_handler *handler;
   flu_dict *conf;
 
   flu_sbuffer *head;
@@ -98,7 +99,8 @@ typedef struct {
   FILE *bout;
 } fshv_con;
 
-fshv_con *fshv_con_malloc(struct sockaddr_in *client, flu_dict *conf);
+fshv_con *fshv_con_malloc(
+  struct sockaddr_in *client, fshv_handler *handler, flu_dict *conf);
 void fshv_con_reset(fshv_con *c);
 void fshv_con_free(fshv_con *c);
 
