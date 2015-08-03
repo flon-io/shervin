@@ -65,8 +65,8 @@ void fshv_handle(struct ev_loop *l, struct ev_io *eio)
 
   con->env->res = fshv_response_malloc(404);
 
-  int handled = 0;
-
+//  int handled = 0;
+//
 //  for (size_t i = 0; ; ++i)
 //  {
 //    fshv_route *route = con->routes[i];
