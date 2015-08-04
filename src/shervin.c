@@ -180,11 +180,11 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
     fgaj_si(eio, "%s", inet_ntoa(con->client->sin_addr));
 
-    if (con->env->req->status_code != 200)
+    if (con->env->req == NULL)
     {
       fgaj_sd(eio, "couldn't parse request head");
 
-      con->env->res = fshv_response_malloc(con->env->req->status_code);
+      con->env->res = fshv_response_malloc(400);
       fshv_respond(l, eio);
       return;
     }
