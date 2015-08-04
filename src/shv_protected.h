@@ -64,6 +64,7 @@ void fshv_request_free(fshv_request *r);
 fshv_response *fshv_response_malloc();
 void fshv_response_free(fshv_response *r);
 
+void fshv_respond(struct ev_loop *l, struct ev_io *eio);
 
 //
 // env
