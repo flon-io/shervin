@@ -164,7 +164,7 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   //fgaj_sd(eio, "con->blen %zu", con->blen);
 
-  if (con->env->req == NULL)
+  if (con->env == NULL)
   {
     if (con->hend < 4) return;
       // end of head not yet found
@@ -172,7 +172,7 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     char *head = flu_sbuffer_to_string(con->head);
     con->head = NULL;
 
-    con->env->req = fshv_parse_request_head(head);
+    con->env = fshv_env_prepare(head, con->conf);
     con->env->req->startus = ev_now(l) * 1000000;
     con->req_count++;
 
@@ -255,7 +255,7 @@ static ssize_t subjecter(
       w = snprintf(buffer + off, rem, "c%p rqc%li ", con, con->req_count);
       if (w < 0) return -1; off += w; rem -= w;
 
-      fshv_request *req = con->env->req; if (req)
+      fshv_request *req = con->env ? con->env->req : NULL; if (req)
       {
         char *met = fshv_char_to_method(req->method);
         w = snprintf(buffer + off, rem, "%s %s ", met, req->uri);
