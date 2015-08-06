@@ -58,6 +58,7 @@ fshv_con *fshv_con_malloc(
 
   c->client = client;
   //c->startus = flu_gets('u');
+  c->handler = handler;
   c->conf = conf;
   con_reset(c);
   c->req_count = -1;

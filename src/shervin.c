@@ -65,35 +65,7 @@ void fshv_handle(struct ev_loop *l, struct ev_io *eio)
 
   con->env->res = fshv_response_malloc(404);
 
-//  int handled = 0;
-//
-//  for (size_t i = 0; ; ++i)
-//  {
-//    fshv_route *route = con->routes[i];
-//
-//    if (route == NULL) break; // end reached
-//
-//    int flags = 0;
-//    if (handled) flags |= FSHV_F_HANDLED;
-//
-//    int guarded = 0;
-//    //
-//    if (route->guard == NULL)
-//      guarded = 1;
-//    else if (handled == 0)
-//      guarded = route->guard(con->req, con->res, flags, route->params);
-//    //else if (handled == 1)
-//      //guarded = 0;
-//
-//    if (guarded == 0) continue;
-//
-//    if (route->guard == NULL) flags |= FSHV_F_NULL_GUARD;
-//
-//    int h = route->handler(con->req, con->res, flags, route->params);
-//    if (handled == 0) handled = h;
-//  }
-//
-//  if (handled == 0) con->res->status_code = 404;
+  /*int r = */con->handler(con->env);
 
   fshv_respond(l, eio);
 }

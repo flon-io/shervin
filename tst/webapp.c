@@ -104,8 +104,11 @@
 //
 //  return 1;
 //}
+
 static int root(fshv_env *env)
 {
+  if (fshv_match(env, "/mirror")) return fshv_mirror(env, 1);
+
 //  fshv_route *routes[] =
 //  {
 //    // public zone
@@ -123,6 +126,7 @@ static int root(fshv_env *env)
 //
 //    NULL
 //  };
+
   return 0;
 }
 
