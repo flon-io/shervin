@@ -63,8 +63,6 @@ void fshv_handle(struct ev_loop *l, struct ev_io *eio)
 {
   fshv_con *con = (fshv_con *)eio->data;
 
-  con->env->res = fshv_response_malloc(404);
-
   /*int r = */con->handler(con->env);
 
   fshv_respond(l, eio);
@@ -156,7 +154,9 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     {
       fgaj_sd(eio, "couldn't parse request head");
 
+      fshv_response_free(con->env->res);
       con->env->res = fshv_response_malloc(400);
+
       fshv_respond(l, eio);
       return;
     }
