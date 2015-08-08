@@ -107,7 +107,8 @@
 
 static int root(fshv_env *env)
 {
-  if (fshv_match(env, "/mirror")) return fshv_mirror(env, 1);
+  if (fshv_m(env, "/mirror")) return fshv_mirror(env, 1);
+  if (fshv_m(env, "/files/**")) return fshv_serve_files(env, "../spec/www");
 
 //  fshv_route *routes[] =
 //  {
