@@ -29,7 +29,7 @@
 #define FLON_SHV_PROTECTED_H
 
 //#include <netinet/in.h>
-//#include <ev.h>
+#include <ev.h>
 
 #include "flutil.h"
 #include "shervin.h"
