@@ -282,12 +282,10 @@ void fshv_serve(int port, fshv_handler *root_handler, flu_dict *conf)
   if (r < 0) { fgaj_r("listen error"); exit(3); }
   fgaj_dr("listening");
 
-  fshv_root *root = calloc(1, sizeof(fshv_root));
-  root->handler = root_handler;
-  root->conf = conf;
+  fshv_root root = { root_handler, conf };
 
   ev_io_init(eio, fshv_accept_cb, sd, EV_READ);
-  eio->data = root;
+  eio->data = &root;
   ev_io_start(l, eio);
 
   fgaj_i("serving on %d...", port);
