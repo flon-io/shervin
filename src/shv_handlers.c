@@ -141,3 +141,10 @@ int fshv_mirror(fshv_env *env, short do_log)
   return 1;
 }
 
+int fshv_status(fshv_env *env, int status)
+{
+  env->res->status_code = status;
+
+  return 1;
+}
+

@@ -77,6 +77,8 @@ typedef int fshv_handler(fshv_env *env);
 int fshv_serve_files(fshv_env *env, char *root);
 int fshv_mirror(fshv_env *env, short do_log);
 
+int fshv_status(fshv_env *env, int status);
+
 // guards
 
 int fshv_path_match(fshv_env *env, int sub, char *path);
