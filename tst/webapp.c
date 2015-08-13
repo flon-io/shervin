@@ -131,9 +131,9 @@ static int root(fshv_env *env)
   // TODO if the root handler returns 0, then go 404
   // TODO also have a fshv_err(403)
 
-  //return 0;
+  return 0;
     // OR
-  return fshv_status(env, 404);
+  //return fshv_status(env, 404);
 }
 
 int main()
