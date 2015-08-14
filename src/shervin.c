@@ -63,7 +63,9 @@ void fshv_handle(struct ev_loop *l, struct ev_io *eio)
 {
   fshv_con *con = (fshv_con *)eio->data;
 
-  /*int r = */con->handler(con->env);
+  int r = con->handler(con->env);
+
+  if (r == 0) fshv_status(con->env, 404);
 
   fshv_respond(l, eio);
 }
