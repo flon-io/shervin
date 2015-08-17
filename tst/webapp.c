@@ -34,18 +34,6 @@
 //#include "shv_protected.h"
 
 
-///* Redirects with 303.
-// */
-//static int redir_handler(
-//  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
-//{
-//  res->status_code = 303;
-//  flu_list_set(res->headers, "location", strdup("/somewhere/else"));
-//  flu_list_add(res->body, strdup(""));
-//
-//  return 1;
-//}
-//
 //static int login_handler(
 //  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 //{
@@ -102,11 +90,22 @@ static int hello(fshv_env *env)
   return 1;
 }
 
+static int redir(fshv_env *env)
+{
+  env->res->status_code = 303;
+
+  flu_list_set(env->res->headers, "location", strdup("/somewhere/else"));
+  flu_list_add(env->res->body, strdup(""));
+
+  return 1;
+}
+
 static int root(fshv_env *env)
 {
   if (fshv_m(env, "/mirror")) return fshv_mirror(env, 1);
-  if (fshv_m(env, "/files/**")) return fshv_serve_files(env, "../spec/www");
   if (fshv_m(env, "/hello/:name")) return hello(env);
+  if (fshv_m(env, "/redir")) return redir(env);
+  if (fshv_m(env, "/files/**")) return fshv_serve_files(env, "../spec/www");
 
 //  fshv_route *routes[] =
 //  {
