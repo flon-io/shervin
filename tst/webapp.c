@@ -34,20 +34,6 @@
 //#include "shv_protected.h"
 
 
-///* Respond with 200 and the time.
-// */
-//static int hello_handler(
-//  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
-//{
-//  res->status_code = 200;
-//
-//  flu_list_add(
-//    res->body,
-//    flu_sprintf("hello %s\n", flu_list_get(req->routing_d, "name")));
-//
-//  return 1;
-//}
-//
 ///* Redirects with 303.
 // */
 //static int redir_handler(
@@ -105,10 +91,22 @@
 //  return 1;
 //}
 
+static int hello(fshv_env *env)
+{
+  env->res->status_code = 200;
+
+  flu_list_add(
+    env->res->body,
+    flu_sprintf("hello %s\n", flu_list_get(env->bag, "name")));
+
+  return 1;
+}
+
 static int root(fshv_env *env)
 {
   if (fshv_m(env, "/mirror")) return fshv_mirror(env, 1);
   if (fshv_m(env, "/files/**")) return fshv_serve_files(env, "../spec/www");
+  if (fshv_m(env, "/hello/:name")) return hello(env);
 
 //  fshv_route *routes[] =
 //  {
@@ -127,9 +125,6 @@ static int root(fshv_env *env)
 //
 //    NULL
 //  };
-
-  // TODO if the root handler returns 0, then go 404
-  // TODO also have a fshv_err(403)
 
   return 0;
     // OR
