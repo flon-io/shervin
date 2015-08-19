@@ -25,8 +25,22 @@ context "basic auth:"
     return (strcmp(user, pass) == 0);
   }
 
-  describe "fshv_basic_auth_filter()"
+  describe "fshv_basic_auth()"
   {
+    it "rejects non basic auth"
+    {
+      env = fshv_env_prepare(
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "Authorization: Complicated dG90bzp0b3Rv\r\n"
+        "\r\n",
+        NULL);
+
+      int r = fshv_basic_auth(env, specauth);
+
+      expect(r i== 0);
+    }
+
     it "authentifies (hit)"
     {
       env = fshv_env_prepare(
@@ -38,7 +52,7 @@ context "basic auth:"
 
       int r = fshv_basic_auth(env, specauth);
 
-      expect(r i== 1); // continue routing
+      expect(r i== 1);
       expect(flu_list_get(env->bag, "_basic_user") === "toto");
     }
 
