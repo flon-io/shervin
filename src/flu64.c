@@ -88,7 +88,7 @@ void flu64_do_decode(char *in, size_t l, char *out)
 
 char *flu64_encode(char *in, ssize_t l)
 {
-  if (l < 0) l = strlen(in);
+  if ((int)l < 0) l = strlen(in);
   char *out = calloc(l * 2, sizeof(char));
 
   flu64_do_encode(in, l, out);
@@ -98,7 +98,7 @@ char *flu64_encode(char *in, ssize_t l)
 
 char *flu64_decode(char *in, ssize_t l)
 {
-  if (l < 0) l = strlen(in);
+  if ((int)l < 0) l = strlen(in);
   char *out = calloc(l, sizeof(char));
 
   flu64_do_decode(in, l, out);
@@ -127,7 +127,7 @@ char *flu64_decode_from_url(char *in, ssize_t l)
   char *r = NULL;
 
   char *s = strdup(in);
-  if (l < 0) l = strlen(in);
+  if ((int)l < 0) l = strlen(in);
 
   for (size_t i = 0; i < l; ++i)
   {

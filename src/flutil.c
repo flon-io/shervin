@@ -1264,8 +1264,8 @@ void flu_zero_and_free(char *s, ssize_t n)
   free(s);
 }
 
-//commit 7364e517f7974b54a2073df83c2574f070f03dd5
+//commit b9906f5a9997d78f3dfd3959d04ab6195cd1588a
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Jul 23 07:46:24 2015 +0900
+//Date:   Thu Aug 20 07:54:39 2015 +0900
 //
-//    implement flu_list_getod()
+//    promote ssize_t to int before comparing with zero
