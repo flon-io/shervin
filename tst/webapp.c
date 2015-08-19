@@ -97,6 +97,11 @@ static int secret(fshv_env *env)
   return 1;
 }
 
+static int auth(char *username, char *password) {
+
+  return strcmp(username, password) == 0;
+}
+
 static int root(fshv_env *env)
 {
   // public zone
@@ -108,9 +113,9 @@ static int root(fshv_env *env)
 
   // 'private' zone and friends
 
-  if (fshv_m(env, "POST /login")) return login(env);
-
-  if ( ! fsh_session_auth_filter(env)) return fshv_status(env, 401);
+  //if (fshv_m(env, "POST /login")) return login(env);
+  //if ( ! fshv_session_auth_filter(env)) return fshv_status(env, 401);
+  if ( ! fshv_basic_auth(env, _auth)) return fshv_status(env, 401);
 
   if (fshv_m(env, "GET /secret")) return secret(env);
 

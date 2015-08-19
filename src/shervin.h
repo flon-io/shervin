@@ -79,6 +79,12 @@ int fshv_mirror(fshv_env *env, short do_log);
 
 int fshv_status(fshv_env *env, int status);
 
+// auth
+
+typedef int fshv_basic_authentifier(const char *uname, const char *pass);
+
+int fshv_basic_auth(fshv_env *env, fshv_basic_authentifier *a);
+
 // guards
 
 int fshv_path_match(fshv_env *env, int sub, char *path);
