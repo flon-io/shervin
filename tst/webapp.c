@@ -66,18 +66,6 @@
 //  res->status_code = 200;
 //  return 1;
 //}
-//
-//static int secret_handler(
-//  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
-//{
-//  //if (res->status_code == 401) return 1;
-//  if (fshv_get_user(req, "session") == NULL) return 1;
-//
-//  res->status_code = 200;
-//  flu_list_add(res->body, strdup("there are no secrets."));
-//
-//  return 1;
-//}
 
 static int hello(fshv_env *env)
 {
@@ -100,30 +88,31 @@ static int redir(fshv_env *env)
   return 1;
 }
 
+static int secret(fshv_env *env)
+{
+  env->res->status_code = 200;
+
+  flu_list_add( env->res->body, strdup("there are no secrets."));
+
+  return 1;
+}
+
 static int root(fshv_env *env)
 {
+  // public zone
+
   if (fshv_m(env, "/mirror")) return fshv_mirror(env, 1);
   if (fshv_m(env, "/hello/:name")) return hello(env);
   if (fshv_m(env, "/redir")) return redir(env);
   if (fshv_m(env, "/files/**")) return fshv_serve_files(env, "../spec/www");
 
-//  fshv_route *routes[] =
-//  {
-//    // public zone
-//
-//    fshv_rp("/mirror", fshv_debug_handler, NULL),
-//    fshv_rp("/hello/:name", hello_handler, NULL),
-//    fshv_rp("/redir", redir_handler, NULL),
-//    fshv_rp("/files/**", fshv_dir_handler, "r", "../spec/www", NULL),
-//
-//    // authentified zone
-//
-//    fshv_rp("POST /login", login_handler, NULL),
-//    fshv_r(fshv_any_guard, fshv_session_auth_filter, NULL),
-//    fshv_rp("GET /secret", secret_handler, NULL),
-//
-//    NULL
-//  };
+  // 'private' zone and friends
+
+  if (fshv_m(env, "POST /login")) return login(env);
+
+  if ( ! fsh_session_auth_filter(env)) return fshv_status(env, 401);
+
+  if (fshv_m(env, "GET /secret")) return secret(env);
 
   return 0;
     // OR
