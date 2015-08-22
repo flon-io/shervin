@@ -1264,8 +1264,10 @@ void flu_zero_and_free(char *s, ssize_t n)
   free(s);
 }
 
-//commit b9906f5a9997d78f3dfd3959d04ab6195cd1588a
+//commit 02c7844e77f6c0f7da9f782a9f230efec5b05a32
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Aug 20 07:54:39 2015 +0900
+//Date:   Sun Aug 23 06:34:12 2015 +0900
 //
-//    promote ssize_t to int before comparing with zero
+//    compare ssize_t with -1
+//    
+//    and not < 0, which happens also when l > INT_MAX...
