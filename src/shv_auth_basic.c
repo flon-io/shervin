@@ -28,18 +28,20 @@
 #define _POSIX_C_SOURCE 200809L
 
 
+#include <string.h>
+
+#include "flu64.h"
 #include "shv_protected.h"
 
 
-int fshv_basic_auth(fshv_env *env, fshv_basic_authentifier *a)
+int fshv_basic_auth(
+  fshv_env *env, const char *realm, fshv_user_pass_authentifier *a)
 {
   int authentified = 0;
   char *user = NULL;
 
   char *auth = flu_list_get(env->req->headers, "authorization");
   if (auth == NULL) goto _over;
-
-  printf("auth >%s<\n", auth);
 
   if (strncmp(auth, "Basic ", 6) != 0) goto _over;
 
@@ -49,7 +51,10 @@ int fshv_basic_auth(fshv_env *env, fshv_basic_authentifier *a)
 
   *pass = 0; pass = pass + 1;
 
-  printf("user >%s< pass >%s<\n", user, pass);
+  authentified = a(user, pass);
+
+  if (authentified) flu_list_set(env->bag, "_basic_user", strdup(user));
+    // hopefully, strdup stops at the 0 right before the password
 
 _over:
 
@@ -59,6 +64,12 @@ _over:
 }
 
   // shervin 1.0.0
+  //
+//void fshv_set_user(fshv_request *req, const char *auth, const char *user)
+//{
+//  flu_list_setk(
+//    req->routing_d, flu_sprintf("_%s_user", auth), strdup(user), 0);
+//}
   //
 //int fshv_basic_auth_filter(
 //  fshv_request *req, fshv_response *res, int mode, flu_dict *params)

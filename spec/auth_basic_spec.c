@@ -36,7 +36,7 @@ context "basic auth:"
         "\r\n",
         NULL);
 
-      int r = fshv_basic_auth(env, specauth);
+      int r = fshv_basic_auth(env, "therealm", specauth);
 
       expect(r i== 0);
     }
@@ -50,7 +50,7 @@ context "basic auth:"
         "\r\n",
         NULL);
 
-      int r = fshv_basic_auth(env, specauth);
+      int r = fshv_basic_auth(env, "therealm", specauth);
 
       expect(r i== 1);
       expect(flu_list_get(env->bag, "_basic_user") === "toto");
@@ -99,6 +99,8 @@ context "basic auth:"
 //      expect(flu_list_get(res->headers, "WWW-Authenticate") === ""
 //        "Basic realm=\"wonderland\"");
 //    }
+
+    it "doesn't answer with www-authenticate if the realm is NULL"
   }
 }
 

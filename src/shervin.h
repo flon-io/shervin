@@ -81,9 +81,10 @@ int fshv_status(fshv_env *env, int status);
 
 // auth
 
-typedef int fshv_basic_authentifier(const char *uname, const char *pass);
+typedef int fshv_user_pass_authentifier(const char *user, const char *pass);
 
-int fshv_basic_auth(fshv_env *env, fshv_basic_authentifier *a);
+int fshv_basic_auth(
+  fshv_env *env, const char *realm, fshv_user_pass_authentifier *a);
 
 // guards
 
