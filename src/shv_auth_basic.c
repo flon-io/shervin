@@ -60,6 +60,9 @@ _over:
 
   free(user);
 
+  if ( ! authentified) env->res->status_code = 401;
+    // users of the auth are free to override that downstream
+
   return authentified;
 }
 

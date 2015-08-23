@@ -54,30 +54,30 @@ context "basic auth:"
 
       expect(r i== 1);
       expect(flu_list_get(env->bag, "_basic_user") === "toto");
+
+      expect(env->res->status_code i== -1);
     }
 
-//    it "authentifies (miss)"
-//    {
-//      req = fshv_parse_request_head(
-//        "GET /x HTTP/1.1\r\n"
-//        "Host: http://www.example.com\r\n"
-//        "Authorization: Basic nadanadanada\r\n"
-//        "\r\n");
-//
-//      //params = flu_d("func", specauth, NULL);
-//      params = flu_d("a", specauth, NULL);
-//
-//      int r = fshv_basic_auth_filter(req, res, 0, params);
-//
-//      expect(r i== 0); // handled -> 0
-//
-//      expect(res->status_code i== 401);
-//      expect(flu_list_get(req->routing_d, "_basic_user") == NULL);
-//
-//      expect(flu_list_get(res->headers, "WWW-Authenticate") === ""
-//        "Basic realm=\"shervin\"");
-//    }
-//
+    it "authentifies (miss)"
+    {
+      env = fshv_env_prepare(
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "Authorization: Basic NADANADANADA\r\n"
+        "\r\n",
+        NULL);
+
+      int r = fshv_basic_auth(env, "therealm", specauth);
+
+      expect(r i== 0);
+      expect(flu_list_get(env->bag, "_basic_user") == NULL);
+
+      expect(env->res->status_code i== 401);
+    }
+
+    it "answers with www-authenticate in case of auth miss"
+    it "doesn't answer with www-authenticate if the realm is NULL"
+
 //    it "accepts a 'realm' parameter"
 //    {
 //      req = fshv_parse_request_head(
@@ -99,8 +99,6 @@ context "basic auth:"
 //      expect(flu_list_get(res->headers, "WWW-Authenticate") === ""
 //        "Basic realm=\"wonderland\"");
 //    }
-
-    it "doesn't answer with www-authenticate if the realm is NULL"
   }
 }
 
