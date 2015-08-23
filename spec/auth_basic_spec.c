@@ -20,9 +20,10 @@ context "basic auth:"
     fshv_env_free(env);
   }
 
-  static int specauth(const char *user, const char *pass)
+  static char *specauth(const char *realm, const char *user, const char *pass)
   {
-    return (strcmp(user, pass) == 0);
+    if (strcmp(user, pass) == 0) return strdup(user);
+    return NULL;
   }
 
   describe "fshv_basic_auth()"

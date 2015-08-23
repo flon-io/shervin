@@ -81,7 +81,16 @@ int fshv_status(fshv_env *env, int status);
 
 // auth
 
-typedef int fshv_user_pass_authentifier(const char *user, const char *pass);
+/* Given a realm, a user and a pass, returns the (new) username in case
+ * of valid user/pass combination or NULL instead.
+ * Generally the same username is given back, but who knows, certain
+ * systems might be more byzantine.
+ *
+ * Warning: the returned string must be a newly malloced string
+ * (usually strdup(user)), else you're in for memory issues.
+ */
+typedef char *fshv_user_pass_authentifier(
+  const char *realm, const char *user, const char *pass);
 
 int fshv_basic_auth(
   fshv_env *env, const char *realm, fshv_user_pass_authentifier *a);

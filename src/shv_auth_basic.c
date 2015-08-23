@@ -52,10 +52,11 @@ int fshv_basic_auth(
 
   *pass = 0; pass = pass + 1;
 
-  authentified = a(user, pass);
+  char *nuser = a(realm, user, pass);
+  authentified = (nuser != NULL);
 
-  if (authentified) flu_list_set(env->bag, "_basic_user", strdup(user));
-    // hopefully, strdup stops at the 0 right before the password
+  if (nuser) flu_list_set(env->bag, "_basic_user", nuser);
+    // the authentifier is tasked with delivering a new string in nuser
 
 _over:
 

@@ -26,8 +26,8 @@
 #define _POSIX_C_SOURCE 200809L
 
 //#include <stdlib.h>
-//#include <string.h>
-//
+#include <string.h>
+
 //#include "flutil.h"
 #include "gajeta.h"
 #include "shervin.h"
@@ -97,9 +97,10 @@ static int secret(fshv_env *env)
   return 1;
 }
 
-static int auth(char *username, char *password) {
-
-  return strcmp(username, password) == 0;
+static char *bauth(const char *realm, const char *user, const char *pass)
+{
+  if (strcmp(user, pass) == 0) return strdup(user);
+  return NULL;
 }
 
 static int root(fshv_env *env)
@@ -115,7 +116,7 @@ static int root(fshv_env *env)
 
   //if (fshv_m(env, "POST /login")) return login(env);
   //if ( ! fshv_session_auth_filter(env)) return fshv_status(env, 401);
-  if ( ! fshv_basic_auth(env, _auth)) return fshv_status(env, 401);
+  if ( ! fshv_basic_auth(env, "tst_realm", bauth)) return 1;
 
   if (fshv_m(env, "GET /secret")) return secret(env);
 
