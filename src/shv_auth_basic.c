@@ -28,6 +28,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "flu64.h"
@@ -60,65 +61,19 @@ _over:
 
   free(user);
 
-  if ( ! authentified) env->res->status_code = 401;
-    // users of the auth are free to override that downstream
+  if ( ! authentified)
+  {
+    env->res->status_code = 401;
+      // users of the auth are free to override that downstream
+
+    if (realm)
+    {
+      flu_list_set(
+        env->res->headers,
+        "WWW-Authenticate", flu_sprintf("Basic realm=\"%s\"", realm));
+    }
+  }
 
   return authentified;
 }
 
-  // shervin 1.0.0
-  //
-//void fshv_set_user(fshv_request *req, const char *auth, const char *user)
-//{
-//  flu_list_setk(
-//    req->routing_d, flu_sprintf("_%s_user", auth), strdup(user), 0);
-//}
-  //
-//int fshv_basic_auth_filter(
-//  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
-//{
-//  int authentified = 0;
-//  char *user = NULL;
-//
-//  if (params == NULL) goto _over;
-//
-//  if (flu_list_get(req->uri_d, "logout")) goto _over;
-//    // /?logout logs out...
-//
-//  char *auth = flu_list_get(req->headers, "authorization");
-//  if (auth == NULL) goto _over;
-//
-//  if (strncmp(auth, "Basic ", 6) != 0) goto _over;
-//
-//  user = flu64_decode(auth + 6, -1);
-//  char *pass = strchr(user, ':');
-//  if (pass == NULL) goto _over;
-//
-//  *pass = 0; pass = pass + 1;
-//
-//  fshv_authenticate *a = flu_list_get(params, "func");
-//  if (a == NULL) a = flu_list_get(params, "a");
-//  if (a == NULL) a = no_auth;
-//
-//  if (a(user, pass, req, params) == 0) goto _over;
-//
-//  authentified = 1;
-//  fshv_set_user(req, "basic", user);
-//
-//_over:
-//
-//  if ( ! authentified)
-//  {
-//    flu_list_set(
-//      res->headers,
-//      "WWW-Authenticate",
-//      flu_sprintf(
-//        "Basic realm=\"%s\"", flu_list_getd(params, "realm", "shervin")));
-//
-//    res->status_code = 401;
-//  }
-//
-//  free(user);
-//
-//  return 0;
-//}
