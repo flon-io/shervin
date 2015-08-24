@@ -35,11 +35,30 @@
 #include "shv_protected.h"
 
 
+static int is_logout_request(fshv_env *env)
+{
+  char *lo = flu_list_get(env->req->uri_d, "logout");
+
+  return
+    lo &&
+    (
+      strlen(lo) < 1 ||
+      strcmp(lo, "1") == 0 ||
+      strcasecmp(lo, "yes") == 0 ||
+      strcasecmp(lo, "true") == 0
+    );
+}
+
 int fshv_basic_auth(
   fshv_env *env, const char *realm, fshv_user_pass_authentifier *a)
 {
+  //printf("uri: %s\n", flu_list_to_sm(env->req->uri_d));
+  //printf("bag: %s\n", flu_list_to_sm(env->bag));
+
   int authentified = 0;
   char *user = NULL;
+
+  if (is_logout_request(env)) goto _over;
 
   char *auth = flu_list_get(env->req->headers, "authorization");
   if (auth == NULL) goto _over;

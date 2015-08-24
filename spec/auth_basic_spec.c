@@ -108,6 +108,23 @@ context "basic auth:"
 
       expect(flu_list_get(env->res->headers, "WWW-Authenticate") == NULL);
     }
+
+    it "logs out on ?logout"
+    {
+      env = fshv_env_prepare(
+        "GET /x?logout HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "Authorization: Basic dG90bzp0b3Rv\r\n"
+        "\r\n",
+        NULL);
+
+      int r = fshv_basic_auth(env, "therealm", specauth);
+
+      expect(r i== 0);
+      expect(flu_list_get(env->bag, "_basic_user") == NULL);
+
+      expect(env->res->status_code i== 401);
+    }
   }
 }
 
