@@ -85,6 +85,20 @@ context "uri"
       ensure(flu_list_get(d, "_path") === "/a");
       ensure(flu_list_get(d, "x") === "");
     }
+
+    it "prevents overriding of core uri_d entries"
+    {
+      d = fshv_parse_uri("/a?x&_path=/other");
+
+      //printf("uri: %s\n", flu_list_to_sm(d));
+
+      ensure(d != NULL);
+      ensure(d->size zu== 4);
+      ensure(flu_list_get(d, "_path") === "/a");
+      ensure(flu_list_get(d, "_query") === "?x&_path=/other");
+      ensure(flu_list_get(d, "x") === "");
+      ensure(flu_list_get(d, "__path") === "/other");
+    }
   }
 
   describe "fshv_parse_host_and_path()"
