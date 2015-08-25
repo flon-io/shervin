@@ -30,6 +30,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #include "flu64.h"
 #include "shv_protected.h"
@@ -37,7 +38,7 @@
 
 static int is_logout_request(fshv_env *env)
 {
-  char *lo = flu_list_get(env->req->uri_d, "logout");
+  char *lo = flu_list_get(env->req->uri->qentries, "logout");
 
   return
     lo &&
@@ -52,7 +53,7 @@ static int is_logout_request(fshv_env *env)
 int fshv_basic_auth(
   fshv_env *env, const char *realm, fshv_user_pass_authentifier *a)
 {
-  //printf("uri: %s\n", flu_list_to_sm(env->req->uri_d));
+  //printf("uri: %s\n", flu_list_to_sm(env->req->uri->qentries));
   //printf("bag: %s\n", flu_list_to_sm(env->bag));
 
   int authentified = 0;

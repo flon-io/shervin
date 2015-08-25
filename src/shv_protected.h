@@ -47,6 +47,8 @@ ssize_t fshv_serve_file(fshv_env *env, const char *path, ...);
 //
 // request
 
+char *fshv_uri_to_s(fshv_uri *u);
+
 fshv_request *fshv_parse_request_head(char *s);
 fshv_request *fshv_parse_request_head_f(const char *s, ...);
 
@@ -55,6 +57,8 @@ ssize_t fshv_request_content_length(fshv_request *r);
 
 //void fshv_handle(struct ev_loop *l, struct ev_io *eio);
 
+fshv_uri *fshv_uri_malloc();
+void fshv_uri_free(fshv_uri *u);
 void fshv_request_free(fshv_request *r);
 
 
@@ -109,16 +113,16 @@ void fshv_con_free(fshv_con *c);
 //
 // uri
 
-flu_dict *fshv_parse_uri(char *uri);
-flu_dict *fshv_parse_host_and_path(char *host, char *path);
+fshv_uri *fshv_parse_uri(char *uri);
+fshv_uri *fshv_parse_host_and_path(char *host, char *path);
 
 /* Renders the uri_d as an absolute URI. When ssl is set to 1, the
  * scheme will be "https://".
  */
-char *fshv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...);
+char *fshv_absolute_uri(int ssl, fshv_uri *u, const char *rel, ...);
 
-#define fshv_abs(ssl, uri_d) fshv_absolute_uri(ssl, uri_d, NULL)
-#define fshv_rel(ssl, uri_d, ...) fshv_absolute_uri(ssl, uri_d, __VA_ARGS__)
+#define fshv_abs(ssl, uri) fshv_absolute_uri(ssl, uri, NULL)
+#define fshv_rel(ssl, uri, ...) fshv_absolute_uri(ssl, uri, __VA_ARGS__)
 
 
 #endif // FLON_SHV_PROTECTED_H

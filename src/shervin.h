@@ -41,10 +41,20 @@
 // request
 
 typedef struct {
+  char *scheme;
+  char *host;
+  int port;
+  char *path;
+  char *query;
+  char *fragment;
+  flu_dict *qentries;
+} fshv_uri;
+
+typedef struct {
   long long startus; // microseconds since the Epoch
   char method;
-  char *uri;
-  flu_dict *uri_d;
+  char *u; // raw uri
+  fshv_uri *uri;
   flu_dict *headers;
   char *body;
 } fshv_request;

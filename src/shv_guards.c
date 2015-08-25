@@ -38,7 +38,7 @@ int fshv_path_match(fshv_env *e, int sub, char *path)
 {
   char *rpath = NULL;
   if (sub) rpath = flu_list_get(e->bag, "**");
-  else rpath = flu_list_get(e->req->uri_d, "_path");
+  else rpath = e->req->uri->path;
 
   //printf(
   //  "fshv_path_match() sub%d path >%s<\nrpath >%s<\n",

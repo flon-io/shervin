@@ -45,7 +45,7 @@ int fshv_serve_files(fshv_env *env, char *root)
   char *path = NULL;
 
   char *p = flu_list_get(env->bag, "**");
-  if (p == NULL) p = flu_list_get(env->req->uri_d, "_path");
+  if (p == NULL) p = env->req->uri->path;
 
   //fgaj_d("p: %s", p);
 
@@ -89,7 +89,7 @@ int fshv_mirror(fshv_env *env, short do_log)
   env->res->status_code = 200;
   //flu_list_set(res->headers, "content-type", "text/plain; charset=utf-8");
 
-  char *suri = flu_list_to_s(env->req->uri_d);
+  char *suri = fshv_uri_to_s(env->req->uri);
 
   // prepare response body
 

@@ -232,7 +232,7 @@ static ssize_t subjecter(
       fshv_request *req = con->env ? con->env->req : NULL; if (req)
       {
         char *met = fshv_char_to_method(req->method);
-        w = snprintf(buffer + off, rem, "%s %s ", met, req->uri);
+        w = snprintf(buffer + off, rem, "%s %s ", met, req->u);
         if (w < 0) return -1; off += w; rem -= w;
       }
     }

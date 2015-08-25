@@ -119,12 +119,12 @@ fshv_request *fshv_parse_request_head(char *s)
   // uri
 
   t = fabr_tree_lookup(r, "request_uri");
-  req->uri = fabr_tree_string(s, t);
+  req->u = fabr_tree_string(s, t);
     //
   while (1)
   {
-    char *last = strrchr(req->uri, '/');
-    if (last && last != req->uri && *(last + 1) == 0) *last = 0;
+    char *last = strrchr(req->u, '/');
+    if (last && last != req->u && *(last + 1) == 0) *last = 0;
     else break;
   }
     //
@@ -158,10 +158,10 @@ fshv_request *fshv_parse_request_head(char *s)
 
   flu_list_free(hs);
 
-  req->uri_d =
+  req->uri =
     fshv_parse_host_and_path(
       flu_list_get(req->headers, "host"),
-      req->uri);
+      req->u);
 
   // over.
 
@@ -181,8 +181,8 @@ void fshv_request_free(fshv_request *r)
 {
   if (r == NULL) return;
 
-  free(r->uri);
-  flu_list_free_all(r->uri_d);
+  free(r->u);
+  fshv_uri_free(r->uri);
   flu_list_free_all(r->headers);
   free(r->body);
   free(r);
@@ -190,7 +190,7 @@ void fshv_request_free(fshv_request *r)
 
 int fshv_request_is_https(fshv_request *r)
 {
-  if (strcmp(flu_list_getd(r->uri_d, "_scheme", ""), "https") == 0) return 1;
+  if (strcmp(r->uri->scheme, "https") == 0) return 1;
 
   char *s = flu_list_getd(r->headers, "forwarded", "");
   if (strstr(s, "proto=https")) return 1;

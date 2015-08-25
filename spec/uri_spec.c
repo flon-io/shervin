@@ -13,91 +13,107 @@ context "uri"
 {
   before each
   {
-    flu_dict *d = NULL;
+    fshv_uri *u = NULL;
   }
   after each
   {
-    flu_list_free_all(d);
+    fshv_uri_free(u);
   }
 
   describe "fshv_parse_uri()"
   {
     it "returns the \"_path\""
     {
-      d = fshv_parse_uri("/a/b/c");
+      u = fshv_parse_uri("/a/b/c");
 
-      ensure(d != NULL);
-      ensure(d->size == 1);
-      ensure(flu_list_get(d, "_path") === "/a/b/c");
+      ensure(u != NULL);
+      ensure(u->scheme == NULL);
+      ensure(u->host == NULL);
+      ensure(u->port == -1);
+      ensure(u->path === "/a/b/c");
+      ensure(u->query == NULL);
+      ensure(u->fragment == NULL);
+
+      ensure(u->qentries->size zu== 0);
     }
 
     it "returns the query string"
     {
-      d = fshv_parse_uri("/a?b=c&d=e");
+      u = fshv_parse_uri("/a?b=c&d=e");
 
-      ensure(d != NULL);
-      ensure(d->size zu== 4);
-      ensure(flu_list_get(d, "_path") === "/a");
-      ensure(flu_list_get(d, "b") === "c");
-      ensure(flu_list_get(d, "d") === "e");
-      ensure(flu_list_get(d, "_query") === "?b=c&d=e");
+      ensure(u != NULL);
+      ensure(u->scheme == NULL);
+      ensure(u->host == NULL);
+      ensure(u->port == -1);
+      ensure(u->path === "/a");
+      ensure(u->query === "?b=c&d=e");
+      ensure(u->fragment == NULL);
+
+      ensure(u->qentries->size zu== 2);
+      ensure(flu_list_get(u->qentries, "b") === "c");
+      ensure(flu_list_get(u->qentries, "d") === "e");
     }
 
     it "returns the fragment"
     {
-      d = fshv_parse_uri("/a#frag");
+      u = fshv_parse_uri("/a#frag");
 
-      ensure(d != NULL);
-      ensure(d->size == 2);
-      ensure(flu_list_get(d, "_path") === "/a");
-      ensure(flu_list_get(d, "_fragment") === "frag");
+      ensure(u != NULL);
+      ensure(u->scheme == NULL);
+      ensure(u->host == NULL);
+      ensure(u->port == -1);
+      ensure(u->path === "/a");
+      ensure(u->query == NULL);
+      ensure(u->fragment === "frag");
+
+      ensure(u->qentries->size zu== 0);
     }
 
     it "returns _scheme, _host and _port"
     {
-      d = fshv_parse_uri("https://www.example.com:80/a#frag");
+      u = fshv_parse_uri("https://www.example.com:80/a#frag");
 
-      ensure(d != NULL);
-      ensure(d->size == 5);
-      ensure(flu_list_get(d, "_scheme") === "https");
-      ensure(flu_list_get(d, "_host") === "www.example.com");
-      ensure(flu_list_get(d, "_port") === "80");
-      ensure(flu_list_get(d, "_path") === "/a");
-      ensure(flu_list_get(d, "_fragment") === "frag");
+      ensure(u != NULL);
+      ensure(u->scheme === "https");
+      ensure(u->host === "www.example.com");
+      ensure(u->port == 80);
+      ensure(u->path === "/a");
+      ensure(u->query == NULL);
+      ensure(u->fragment === "frag");
+
+      ensure(u->qentries->size zu== 0);
     }
 
     it "unescapes \%hex entries"
     {
-      d = fshv_parse_uri("/a?x=x%20y%20z");
+      u = fshv_parse_uri("/a?x=x%20y%20z");
 
-      ensure(d != NULL);
-      ensure(d->size zu== 3);
-      ensure(flu_list_get(d, "_path") === "/a");
-      ensure(flu_list_get(d, "x") === "x y z");
+      ensure(u != NULL);
+      ensure(u->scheme == NULL);
+      ensure(u->host == NULL);
+      ensure(u->port == -1);
+      ensure(u->path === "/a");
+      ensure(u->query === "?x=x%20y%20z");
+      ensure(u->fragment == NULL);
+
+      ensure(u->qentries->size zu== 1);
+      ensure(flu_list_get(u->qentries, "x") === "x y z");
     }
 
     it "accepts query entries without values"
     {
-      d = fshv_parse_uri("/a?x");
+      u = fshv_parse_uri("/a?x");
 
-      ensure(d != NULL);
-      ensure(d->size zu== 3);
-      ensure(flu_list_get(d, "_path") === "/a");
-      ensure(flu_list_get(d, "x") === "");
-    }
+      ensure(u != NULL);
+      ensure(u->scheme == NULL);
+      ensure(u->host == NULL);
+      ensure(u->port == -1);
+      ensure(u->path === "/a");
+      ensure(u->query === "?x");
+      ensure(u->fragment == NULL);
 
-    it "prevents overriding of core uri_d entries"
-    {
-      d = fshv_parse_uri("/a?x&_path=/other");
-
-      //printf("uri: %s\n", flu_list_to_sm(d));
-
-      ensure(d != NULL);
-      ensure(d->size zu== 4);
-      ensure(flu_list_get(d, "_path") === "/a");
-      ensure(flu_list_get(d, "_query") === "?x&_path=/other");
-      ensure(flu_list_get(d, "x") === "");
-      ensure(flu_list_get(d, "__path") === "/other");
+      ensure(u->qentries->size zu== 1);
+      ensure(flu_list_get(u->qentries, "x") === "");
     }
   }
 
@@ -105,40 +121,48 @@ context "uri"
   {
     it "returns _host, _path and co"
     {
-      d = fshv_parse_host_and_path("http://example.com", "/a?x=x%20y%20z");
+      u = fshv_parse_host_and_path("http://example.com", "/a?x=x%20y%20z");
 
-      ensure(d != NULL);
-      ensure(d->size zu== 5);
-      ensure(flu_list_get(d, "_scheme") === "http");
-      ensure(flu_list_get(d, "_host") === "example.com");
-      ensure(flu_list_get(d, "_path") === "/a");
-      ensure(flu_list_get(d, "x") === "x y z");
+      ensure(u != NULL);
+      ensure(u->scheme === "http");
+      ensure(u->host === "example.com");
+      ensure(u->port == 80);
+      ensure(u->path === "/a");
+      ensure(u->query === "?x=x%20y%20z");
+      ensure(u->fragment == NULL);
+
+      ensure(u->qentries->size zu== 1);
+      ensure(flu_list_get(u->qentries, "x") === "x y z");
     }
 
     it "returns _host, _port, _path and co"
     {
-      d = fshv_parse_host_and_path("http://example.com:8080", "/a/b#anchor");
+      u = fshv_parse_host_and_path("http://example.com:8080", "/a/b#anchor");
 
-      ensure(d != NULL);
-      ensure(d->size == 5);
-      ensure(flu_list_get(d, "_scheme") === "http");
-      ensure(flu_list_get(d, "_host") === "example.com");
-      ensure(flu_list_get(d, "_port") === "8080");
-      ensure(flu_list_get(d, "_path") === "/a/b");
-      ensure(flu_list_get(d, "_fragment") === "anchor");
+      ensure(u != NULL);
+      ensure(u->scheme === "http");
+      ensure(u->host === "example.com");
+      ensure(u->port == 8080);
+      ensure(u->path === "/a/b");
+      ensure(u->query == NULL);
+      ensure(u->fragment === "anchor");
+
+      ensure(u->qentries->size zu== 0);
     }
 
     it "defaults to http://"
     {
-      d = fshv_parse_host_and_path("example.com:8080", "/a/b#anchor");
+      u = fshv_parse_host_and_path("example.com:8080", "/a/b#anchor");
 
-      expect(d != NULL);
-      expect(d->size zu== 5);
-      expect(flu_list_get(d, "_scheme") === "http");
-      expect(flu_list_get(d, "_host") === "example.com");
-      expect(flu_list_get(d, "_port") === "8080");
-      expect(flu_list_get(d, "_path") === "/a/b");
-      expect(flu_list_get(d, "_fragment") === "anchor");
+      ensure(u != NULL);
+      ensure(u->scheme === "http");
+      ensure(u->host === "example.com");
+      ensure(u->port == 8080);
+      ensure(u->path === "/a/b");
+      ensure(u->query == NULL);
+      ensure(u->fragment === "anchor");
+
+      ensure(u->qentries->size zu== 0);
     }
   }
 
@@ -148,26 +172,26 @@ context "uri"
     {
       it "returns an absolute uri (0)"
       {
-        d = fshv_parse_host_and_path("example.com:8080", "/a/b#anchor");
+        u = fshv_parse_host_and_path("example.com:8080", "/a/b#anchor");
 
-        expect(fshv_abs(0, d) ===f "http://example.com:8080/a/b#anchor");
-        expect(fshv_abs(1, d) ===f "https://example.com:8080/a/b#anchor");
+        expect(fshv_abs(0, u) ===f "http://example.com:8080/a/b#anchor");
+        expect(fshv_abs(1, u) ===f "https://example.com:8080/a/b#anchor");
       }
 
       it "returns an absolute uri (1)"
       {
-        d = fshv_parse_uri("/a?b=c&d=e");
+        u = fshv_parse_uri("/a?b=c&d=e");
 
-        expect(fshv_abs(0, d) ===f "http://127.0.0.1/a?b=c&d=e");
-        expect(fshv_abs(1, d) ===f "https://127.0.0.1/a?b=c&d=e");
+        expect(fshv_abs(0, u) ===f "http://127.0.0.1/a?b=c&d=e");
+        expect(fshv_abs(1, u) ===f "https://127.0.0.1/a?b=c&d=e");
       }
 
       it "returns an absolute uri (2)"
       {
-        d = fshv_parse_uri("/a#frag");
+        u = fshv_parse_uri("/a#frag");
 
-        expect(fshv_abs(0, d) ===f "http://127.0.0.1/a#frag");
-        expect(fshv_abs(1, d) ===f "https://127.0.0.1/a#frag");
+        expect(fshv_abs(0, u) ===f "http://127.0.0.1/a#frag");
+        expect(fshv_abs(1, u) ===f "https://127.0.0.1/a#frag");
       }
     }
 
@@ -175,41 +199,41 @@ context "uri"
     {
       it "returns an absolute uri (0)"
       {
-        d = fshv_parse_host_and_path("example.com:8080", "/a/b#anchor");
+        u = fshv_parse_host_and_path("example.com:8080", "/a/b#anchor");
 
-        expect(fshv_rel(0, d, "c") ===f ""
+        expect(fshv_rel(0, u, "c") ===f ""
           "http://example.com:8080/a/b/c#anchor");
-        expect(fshv_rel(0, d, "/c") ===f ""
+        expect(fshv_rel(0, u, "/c") ===f ""
           "http://example.com:8080/c#anchor");
-        expect(fshv_rel(0, d, "..") ===f ""
+        expect(fshv_rel(0, u, "..") ===f ""
           "http://example.com:8080/a/#anchor");
       }
 
       it "returns an absolute uri (2)"
       {
-        d = fshv_parse_uri("http://a.example.com/a/index.htm#frag");
+        u = fshv_parse_uri("http://a.example.com/a/index.htm#frag");
 
-        expect(fshv_rel(0, d, "..") ===f ""
+        expect(fshv_rel(0, u, "..") ===f ""
           "http://a.example.com/#frag");
-        expect(fshv_rel(0, d, "toto.htm") ===f ""
+        expect(fshv_rel(0, u, "toto.htm") ===f ""
           "http://a.example.com/a/toto.htm#frag");
       }
 
       it "returns an absolute uri (3)"
       {
-        d = fshv_parse_uri("http://a.example.com/a/index.htm/#frag");
+        u = fshv_parse_uri("http://a.example.com/a/index.htm/#frag");
 
-        expect(fshv_rel(0, d, "..") ===f ""
+        expect(fshv_rel(0, u, "..") ===f ""
           "http://a.example.com/a/#frag");
-        expect(fshv_rel(0, d, "toto.htm") ===f ""
+        expect(fshv_rel(0, u, "toto.htm") ===f ""
           "http://a.example.com/a/index.htm/toto.htm#frag");
       }
 
       it "composes its path"
       {
-        d = fshv_parse_uri("http://a.example.com/a/b");
+        u = fshv_parse_uri("http://a.example.com/a/b");
 
-        expect(fshv_rel(0, d, "../%s", "c") ===f "http://a.example.com/a/c");
+        expect(fshv_rel(0, u, "../%s", "c") ===f "http://a.example.com/a/c");
       }
     }
   }

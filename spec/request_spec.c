@@ -31,7 +31,7 @@ context "request"
 
       ensure(req != NULL);
       ensure(req->method == 'g');
-      ensure(req->uri === "/");
+      ensure(req->u === "/");
     }
 
     it "parses POST requests"
@@ -48,7 +48,7 @@ context "request"
 
       ensure(req->method == 'p');
 
-      ensure(req->uri === "/msgbin");
+      ensure(req->u === "/msgbin");
 
       ensure(req->headers->size == 3);
       //
@@ -129,7 +129,7 @@ context "request"
 
         ensure(req != NULL);
         ensure(req->method == 'g');
-        ensure(req->uri === "/nada");
+        ensure(req->u === "/nada");
       }
     }
   }

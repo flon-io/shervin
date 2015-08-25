@@ -5,6 +5,8 @@
 // Sat Dec  6 17:31:49 JST 2014
 //
 
+//#include <string.h>
+
 #include "shervin.h"
 #include "shv_protected.h" // direct access to shv_request methods
 
@@ -22,7 +24,7 @@ context "basic auth:"
 
   static char *specauth(const char *realm, const char *user, const char *pass)
   {
-    if (strcmp(user, pass) == 0) return strdup(user);
+    if (strcmp(user, pass) == 0) return rdz_strdup((char *)user);
     return NULL;
   }
 
