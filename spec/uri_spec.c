@@ -29,7 +29,7 @@ context "uri"
       ensure(u != NULL);
       ensure(u->scheme == NULL);
       ensure(u->host == NULL);
-      ensure(u->port == -1);
+      ensure(u->port == 80);
       ensure(u->path === "/a/b/c");
       ensure(u->query == NULL);
       ensure(u->fragment == NULL);
@@ -44,7 +44,7 @@ context "uri"
       ensure(u != NULL);
       ensure(u->scheme == NULL);
       ensure(u->host == NULL);
-      ensure(u->port == -1);
+      ensure(u->port == 80);
       ensure(u->path === "/a");
       ensure(u->query === "?b=c&d=e");
       ensure(u->fragment == NULL);
@@ -61,7 +61,7 @@ context "uri"
       ensure(u != NULL);
       ensure(u->scheme == NULL);
       ensure(u->host == NULL);
-      ensure(u->port == -1);
+      ensure(u->port == 80);
       ensure(u->path === "/a");
       ensure(u->query == NULL);
       ensure(u->fragment === "frag");
@@ -91,7 +91,7 @@ context "uri"
       ensure(u != NULL);
       ensure(u->scheme == NULL);
       ensure(u->host == NULL);
-      ensure(u->port == -1);
+      ensure(u->port == 80);
       ensure(u->path === "/a");
       ensure(u->query === "?x=x%20y%20z");
       ensure(u->fragment == NULL);
@@ -107,7 +107,7 @@ context "uri"
       ensure(u != NULL);
       ensure(u->scheme == NULL);
       ensure(u->host == NULL);
-      ensure(u->port == -1);
+      ensure(u->port == 80);
       ensure(u->path === "/a");
       ensure(u->query === "?x");
       ensure(u->fragment == NULL);

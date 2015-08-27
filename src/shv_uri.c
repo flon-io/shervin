@@ -220,7 +220,7 @@ char *fshv_absolute_uri(int ssl, fshv_uri *u, const char *rel, ...)
 fshv_uri *fshv_uri_malloc()
 {
   fshv_uri *u = calloc(1, sizeof(fshv_uri));
-  u->port = -1;
+  u->port = 80;
   u->qentries = flu_list_malloc();
 
   return u;
