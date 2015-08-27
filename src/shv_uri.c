@@ -162,10 +162,9 @@ fshv_uri *fshv_parse_host_and_path(char *host, char *path)
 
 char *fshv_absolute_uri(int ssl, fshv_uri *u, const char *rel, ...)
 {
-  //char *s = NULL;
-
-  char *scheme =
-    ssl ? "https" : u->scheme;
+  char *scheme = u->scheme;
+  if (ssl) scheme = "https";
+  if (scheme == NULL) scheme = "http";
 
   char *host =
     strdup(u->host ? u->host : "127.0.0.1"); // what about IPv6?
