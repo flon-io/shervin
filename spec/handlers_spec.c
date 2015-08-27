@@ -251,7 +251,7 @@ context "handlers"
         "host: http://www.example.com\r\n"
         "method: GET\r\n"
         "path: /x/y/mirror\r\n"
-        "uri_d: {_path:/x/y/mirror,_host:www.example.com,_scheme:http}\r\n"
+        "uri: (uri s\"http\" h\"www.example.com\" p-1 p\"/x/y/mirror\")\r\n"
         "\r\n");
     }
 

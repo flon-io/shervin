@@ -221,6 +221,7 @@ char *fshv_absolute_uri(int ssl, fshv_uri *u, const char *rel, ...)
 fshv_uri *fshv_uri_malloc()
 {
   fshv_uri *u = calloc(1, sizeof(fshv_uri));
+  u->port = -1;
   u->qentries = flu_list_malloc();
 
   return u;
@@ -235,12 +236,15 @@ char *fshv_uri_to_s(fshv_uri *u)
   flu_sbprintf(b, " h\"%s\"", u->host);
   flu_sbprintf(b, " p%i", u->port);
   flu_sbprintf(b, " p\"%s\"", u->path);
-  flu_sbprintf(b, " q\"%s\"", u->query);
+  if (u->query) flu_sbprintf(b, " q\"%s\"", u->query);
   if (u->fragment) flu_sbprintf(b, " f\"%s\"", u->fragment);
 
-  char *qes = flu_list_to_s(u->qentries);
-  flu_sbprintf(b, " q%s", qes);
-  free(qes);
+  if (u->query)
+  {
+    char *qes = flu_list_to_s(u->qentries);
+    flu_sbprintf(b, " q%s", qes);
+    free(qes);
+  }
 
   flu_sbputs(b, ")");
 

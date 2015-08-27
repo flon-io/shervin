@@ -97,15 +97,15 @@ int fshv_mirror(fshv_env *env, short do_log)
 
   flu_sbprintf(
     b, "%s %s HTTP/1.1\r\n",
-    fshv_char_to_method(env->req->method), env->req->uri);
+    fshv_char_to_method(env->req->method), env->req->u);
 
   for (flu_node *fn = env->req->headers->first; fn; fn = fn->next)
   {
     flu_sbprintf(b, "%s: %s\r\n", fn->key, fn->item);
   }
   flu_sbprintf(b, "method: %s\r\n", fshv_char_to_method(env->req->method));
-  flu_sbprintf(b, "path: %s\r\n", env->req->uri);
-  flu_sbprintf(b, "uri_d: %s\r\n", suri);
+  flu_sbprintf(b, "path: %s\r\n", env->req->u);
+  flu_sbprintf(b, "uri: %s\r\n", suri);
   flu_sbputs(b, "\r\n");
   if (env->req->body) flu_sbputs(b, env->req->body);
 
