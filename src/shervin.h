@@ -59,6 +59,7 @@ typedef struct {
   char *body;
 } fshv_request;
 
+
 // response
 
 typedef struct {
@@ -69,6 +70,7 @@ typedef struct {
 
 char *fshv_response_body_to_s(fshv_response *res);
 
+
 // env
 
 typedef struct {
@@ -78,9 +80,11 @@ typedef struct {
   flu_dict *bag; // req-res scoped databag
 } fshv_env;
 
+
 // [root] handler
 
 typedef int fshv_handler(fshv_env *env);
+
 
 // handlers
 
@@ -88,6 +92,7 @@ int fshv_serve_files(fshv_env *env, char *root);
 int fshv_mirror(fshv_env *env, short do_log);
 
 int fshv_status(fshv_env *env, int status);
+
 
 // auth
 
@@ -100,10 +105,19 @@ int fshv_status(fshv_env *env, int status);
  * (usually strdup(user)), else you're in for memory issues.
  */
 typedef char *fshv_user_pass_authentifier(
-  fshv_env *env, const char *realm, const char *user, const char *pass);
+  fshv_env *e, const char *realm, const char *user, const char *pass);
 
 int fshv_basic_auth(
-  fshv_env *env, const char *realm, fshv_user_pass_authentifier *a);
+  fshv_env *e, const char *realm, fshv_user_pass_authentifier *a);
+
+/* Used by login endpoints to start a session.
+ */
+void fshv_start_session(fshv_env *e, const char *user);
+
+/* Used by logout endpoints to leave a session.
+ */
+void fshv_stop_session(fshv_env *e, const char *sid);
+
 
 // guards
 
@@ -112,10 +126,12 @@ int fshv_path_match(fshv_env *env, int sub, char *path);
 #define fshv_match(env, path) fshv_path_match(env, 0, path)
 #define fshv_smatch(env, path) fshv_path_match(env, 1, path)
 
+
 // serve
 
 void fshv_serve(int port, fshv_handler *root_handler, flu_dict *conf);
   // interfaces?
+
 
 #endif // FLON_SHERVIN_H
 
