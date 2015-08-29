@@ -72,7 +72,7 @@ int fshv_basic_auth(
 
   *pass = 0; pass = pass + 1;
 
-  char *nuser = a(realm, user, pass);
+  char *nuser = a(env, realm, user, pass);
   authentified = (nuser != NULL);
 
   if (nuser) flu_list_set(env->bag, "_basic_user", nuser);

@@ -100,7 +100,7 @@ int fshv_status(fshv_env *env, int status);
  * (usually strdup(user)), else you're in for memory issues.
  */
 typedef char *fshv_user_pass_authentifier(
-  const char *realm, const char *user, const char *pass);
+  fshv_env *env, const char *realm, const char *user, const char *pass);
 
 int fshv_basic_auth(
   fshv_env *env, const char *realm, fshv_user_pass_authentifier *a);

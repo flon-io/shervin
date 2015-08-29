@@ -22,7 +22,8 @@ context "basic auth:"
     fshv_env_free(env);
   }
 
-  static char *specauth(const char *realm, const char *user, const char *pass)
+  static char *specauth(
+    fshv_env *e, const char *realm, const char *user, const char *pass)
   {
     if (strcmp(user, pass) == 0) return rdz_strdup((char *)user);
     return NULL;
