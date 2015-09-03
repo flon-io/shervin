@@ -130,6 +130,8 @@ static fshv_session *start_session(
 fshv_session *fshv_session_memstore_push(
   fshv_env *e, const char *sid, const char *user, const char *id, long long tus)
 {
+  // TODO why did I need env anyway?
+
   if (store == NULL) store = flu_list_malloc();
 
   if (tus == -1 && sid != NULL) return stop_session(sid);
