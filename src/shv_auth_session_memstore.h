@@ -33,7 +33,7 @@
 
 
 fshv_session *fshv_session_memstore_push(
-  fshv_env *e,
+  fshv_env *e, // can't remember why...
   const char *sid,
   const char *user,
   const char *id,
