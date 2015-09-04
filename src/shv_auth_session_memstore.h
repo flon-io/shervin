@@ -32,6 +32,17 @@
 #include "shv_protected.h"
 
 
+/* : pushing with all the parameters set and expiry time:
+ *   start or refreshes a session
+ *   returns the new session in case of success, NULL else
+ * : pushing with only the sid set and now:
+ *   queries and expires,
+ *   returns a session in case of success, NULL else
+ * : pushing with only the sid set and -1:
+ *   stops the session and returns NULL
+ * : pushing with all NULL and -1:
+ *   resets the store and returns NULL
+ */
 fshv_session *fshv_session_memstore_push(
   fshv_env *e, // can't remember why...
   const char *sid,
