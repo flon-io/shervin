@@ -30,13 +30,13 @@ context "session auth:"
     {
       fshv_session_memstore_push(NULL, NULL, NULL, NULL, -1);
         // reset store
-
-      long long e = (long long)10 * 60 * 60 * 1000 * 1000;
-        // expiry time, arbitrary
     }
 
     it "starts a session"
     {
+      long long e = (long long)10 * 60 * 60 * 1000 * 1000;
+        // expiry time, arbitrary
+
       fshv_session *s = fshv_session_memstore_push(
         NULL, "deadbeef", "toto", "toto:1234", flu_gets('u') + e); // start
 
@@ -50,14 +50,16 @@ context "session auth:"
       expect(s1->sid === "deadbeef");
     }
 
-/*
     it "refreshes a session"
     {
+      long long e = (long long)10 * 60 * 60 * 1000 * 1000;
+        // expiry time, arbitrary
+
       fshv_session_memstore_push(
-        "deadbeef", "toto", "toto:1234", flu_gets('u') + e); // start
+        NULL, "deadbeef", "toto", "toto:1234", flu_gets('u') + e); // start
 
       fshv_session *s = fshv_session_memstore_push(
-        "c0bebeef", "toto", "toto:1234", flu_gets('u') + e); // renew
+        NULL, "c0bebeef", "toto", "toto:1234", flu_gets('u') + e); // renew
 
       expect(s->used i== 0);
       expect(fshv_session_memstore()->size == 2);
@@ -72,7 +74,7 @@ context "session auth:"
     it "queries and misses (store empty)"
     {
       fshv_session *s = fshv_session_memstore_push(
-        "boeufcharolais", NULL, NULL, flu_gets('u')); // query
+        NULL, "boeufcharolais", NULL, NULL, flu_gets('u')); // query
 
       expect(s == NULL);
 
@@ -81,13 +83,16 @@ context "session auth:"
 
     it "queries and misses (session used)"
     {
+      long long e = (long long)10 * 60 * 60 * 1000 * 1000;
+        // expiry time, arbitrary
+
       fshv_session *s = fshv_session_memstore_push(
-        "deadbeef", "toto", "toto:1234", flu_gets('u') + e); // start
+        NULL, "deadbeef", "toto", "toto:1234", flu_gets('u') + e); // start
 
       s->used = 1; // memstore...
 
       s = fshv_session_memstore_push(
-        "deadbeef", NULL, NULL, flu_gets('u')); // query
+        NULL, "deadbeef", NULL, NULL, flu_gets('u')); // query
 
       expect(s == NULL);
 
@@ -96,11 +101,14 @@ context "session auth:"
 
     it "queries and misses"
     {
+      long long e = (long long)10 * 60 * 60 * 1000 * 1000;
+        // expiry time, arbitrary
+
       fshv_session_memstore_push(
-        "deadbeef", "toto", "toto:1234", flu_gets('u') + e); // start
+        NULL, "deadbeef", "toto", "toto:1234", flu_gets('u') + e); // start
 
       fshv_session *s = fshv_session_memstore_push(
-        "boeufcharolais", NULL, NULL, flu_gets('u')); // query
+        NULL, "boeufcharolais", NULL, NULL, flu_gets('u')); // query
 
       expect(s == NULL);
 
@@ -109,11 +117,14 @@ context "session auth:"
 
     it "queries and hits"
     {
+      long long e = (long long)10 * 60 * 60 * 1000 * 1000;
+        // expiry time, arbitrary
+
       fshv_session_memstore_push(
-        "delaplatabeef", "toto", "toto:1234", flu_gets('u') + e); // start
+        NULL, "delaplatabeef", "toto", "toto:1234", flu_gets('u') + e); // start
 
       fshv_session *s = fshv_session_memstore_push(
-        "delaplatabeef", NULL, NULL, flu_gets('u')); // query
+        NULL, "delaplatabeef", NULL, NULL, flu_gets('u')); // query
 
       expect(s != NULL);
       expect(s->id === "toto:1234");
@@ -124,12 +135,12 @@ context "session auth:"
     it "queries, misses and expires (1 record)"
     {
       fshv_session_memstore_push(
-        "beef0", "alice", "alice:1234", flu_gets('u') - 1); // start
+        NULL, "beef0", "alice", "alice:1234", flu_gets('u') - 1); // start
 
       expect(fshv_session_memstore()->size == 1);
 
       fshv_session *s = fshv_session_memstore_push(
-        "beef1", NULL, NULL, flu_gets('u')); // query
+        NULL, "beef1", NULL, NULL, flu_gets('u')); // query
 
       expect(s == NULL);
 
@@ -140,9 +151,9 @@ context "session auth:"
     it "queries, misses and expires (1+ records)"
     {
       fshv_session_memstore_push(
-        "beef0", "alice", "alice:1234", flu_gets('u') - 3); // start
+        NULL, "beef0", "alice", "alice:1234", flu_gets('u') - 3); // start
       fshv_session_memstore_push(
-        "beef1", "alice", "alice:1234", flu_gets('u') - 2); // start
+        NULL, "beef1", "alice", "alice:1234", flu_gets('u') - 2); // start
 
       expect(fshv_session_memstore()->size == 2);
 
@@ -152,7 +163,7 @@ context "session auth:"
         ((fshv_session *)fshv_session_memstore()->first->item)->used i== 0);
 
       fshv_session *s = fshv_session_memstore_push(
-        "beef1", NULL, NULL, flu_gets('u')); // query
+        NULL, "beef1", NULL, NULL, flu_gets('u')); // query
 
       expect(s == NULL);
 
@@ -162,11 +173,14 @@ context "session auth:"
 
     it "stops a session"
     {
+      long long e = (long long)10 * 60 * 60 * 1000 * 1000;
+        // expiry time, arbitrary
+
       fshv_session_memstore_push(
-        "waterbuffalo", "toto", "toto:1234", flu_gets('u') + e); // start
+        NULL, "waterbuffalo", "toto", "toto:1234", flu_gets('u') + e); // start
 
       fshv_session *s = fshv_session_memstore_push(
-        "waterbuffalo", NULL, NULL, -1); // stop
+        NULL, "waterbuffalo", NULL, NULL, -1); // stop
 
       expect(s == NULL);
       expect(fshv_session_memstore()->size == 1);
@@ -176,7 +190,6 @@ context "session auth:"
       expect(s->used i== 1);
     }
   }
-*/
 
 //  describe "fshv_session_auth_filter()"
 //  {
