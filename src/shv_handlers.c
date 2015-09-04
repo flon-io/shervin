@@ -117,9 +117,9 @@ int fshv_mirror(fshv_env *env, short do_log)
 
   fgaj_d(
     "|%05x| %s %s HTTP/1.1\r\n",
-    us, fshv_char_to_method(env->req->method), env->req->uri);
+    us, fshv_char_to_method(env->req->method), env->req->u);
   fgaj_d(
-    "|%05x| uri_d: %s",
+    "|%05x| uri: %s",
     us, suri);
 
   for (flu_node *fn = env->req->headers->first; fn; fn = fn->next)
