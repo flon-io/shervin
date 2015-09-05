@@ -107,6 +107,9 @@ int fshv_status(fshv_env *env, int status);
 typedef char *fshv_user_pass_authentifier(
   fshv_env *e, const char *realm, const char *user, const char *pass);
 
+/* Vanilla basic authentication implementation.
+ * Returns 1 in case of successful authentication, 0 else.
+ */
 int fshv_basic_auth(
   fshv_env *e, const char *realm, fshv_user_pass_authentifier *a);
 
@@ -117,6 +120,8 @@ void fshv_start_session(fshv_env *e, const char *user);
 /* Used by logout endpoints to leave a session.
  */
 void fshv_stop_session(fshv_env *e, const char *sid);
+
+int fshv_session_auth(fshv_env *e);
 
 
 // guards
