@@ -77,6 +77,8 @@ int fshv_basic_auth(
 
   if (nuser) flu_list_set(env->bag, "_basic_user", nuser);
     // the authentifier is tasked with delivering a new string in nuser
+    //
+  //if (nuser) fshv_set_user(req, "basic", nuser);
 
 _over:
 

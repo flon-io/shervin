@@ -66,6 +66,7 @@ void fshv_session_free(fshv_session *s)
   if (s == NULL) return;
 
   free(s->sid);
+printf("f s->user >%s<\n", s->user);
   free(s->user);
   free(s->id);
   free(s);
@@ -91,25 +92,14 @@ static char *generate_sid(fshv_env *env)
     SHV_SA_RANDSIZE - (env->req->startus / 1000000) % 10);
 }
 
-static char *get_cookie_name(fshv_env *env)
+static void set_session_cookie(
+  fshv_env *env, const char *cookie_name, fshv_session *ses)
 {
-  if (env->conf == NULL) return "flon.io.shervin";
-
-  char *r = flu_list_get(env->conf, "name");
-  if (r == NULL) r = flu_list_get(env->conf, "n");
-  if (r == NULL) r = "flon.io.shervin";
-
-  return r;
-}
-
-static void set_session_cookie(fshv_env *env, fshv_session *ses)
-{
-  char *cn = get_cookie_name(env);
   char *ts = flu_sstamp((ses->expus) / 1000000 , 1, 'g');
 
   flu_sbuffer *b = flu_sbuffer_malloc();
 
-  flu_sbputs(b, cn); flu_sbputc(b, '='); flu_sbputs(b, ses->sid);
+  flu_sbputs(b, cookie_name); flu_sbputc(b, '='); flu_sbputs(b, ses->sid);
   flu_sbputs(b, ";Expires="); flu_sbputs(b, ts);
   flu_sbputs(b, ";HttpOnly");
   if (fshv_request_is_https(env->req)) flu_sbputs(b, ";Secure");
@@ -131,7 +121,8 @@ static fshv_session_push *push_func(fshv_env *env)
   return fshv_session_memstore_push;
 }
 
-void fshv_start_session(fshv_env *env, const char *user)
+void fshv_start_session(
+  fshv_env *env, const char *cookie_name,  const char *user)
 {
   if (spid == NULL) spid = flu_sprintf("%lli_%lli", getppid(), getpid());
 
@@ -148,7 +139,7 @@ void fshv_start_session(fshv_env *env, const char *user)
 
   fshv_session *ses = push_func(env)(env, sid, user, id, expus);
 
-  set_session_cookie(env, ses);
+  set_session_cookie(env, cookie_name, ses);
 
   free(id);
   free(sid);
@@ -159,57 +150,58 @@ void fshv_stop_session(fshv_env *env, const char *sid)
   push_func(env)(env, sid, NULL, NULL, -1);
 }
 
-//int fshv_session_auth_filter(
-//  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
-//{
-//  fshv_session *s = NULL;
-//
-//  char *cookies = flu_list_get(req->headers, "cookie");
-//  if (cookies == NULL) goto _over;
-//
-//  char *cname = get_cookie_name(params);
-//
-//  char *sid = NULL;
-//  for (char *cs = cookies; cs; cs = strchr(cs, ';'))
-//  {
-//    while (*cs == ';' || *cs == ' ') ++cs;
-//
-//    char *eq = strchr(cs, '=');
-//    if (eq == NULL) break;
-//
-//    if (strncmp(cs, cname, eq - cs) != 0) continue;
-//
-//    char *eoc = strchr(eq + 1, ';');
-//    sid = eoc ? strndup(eq + 1, eoc - eq - 1) : strdup(eq + 1);
-//    break;
-//  }
-//
-//  fshv_session_push *push = push_func(params);
-//
-//  s = push(sid, NULL, NULL, req->startus);
-//    // query
-//
-//  free(sid);
-//
-//  if (s == NULL) goto _over;
-//
-//  sid = generate_sid(req, params);
-//
-//  fshv_session *s1 = push(sid, s->user, s->id, req->startus + SHV_SA_EXPIRY);
-//    // refresh
-//
-//  free(sid);
-//
-//  if (s1 == NULL) goto _over;
-//
-//  fshv_set_user(req, "session", s1->user);
-//
-//  set_session_cookie(req, res, params, s1);
-//
-//_over:
-//
-//  if (s == NULL) res->status_code = 401;
-//
-//  return 0;
-//}
+int fshv_session_auth(fshv_env *env, const char *cookie_name)
+{
+  fshv_session *s = NULL;
+
+  char *cookies = flu_list_get(env->req->headers, "cookie");
+printf("cookies >%s<\n", cookies);
+  if (cookies == NULL) goto _over;
+
+  char *sid = NULL;
+  for (char *cs = cookies; cs; cs = strchr(cs, ';'))
+  {
+    while (*cs == ';' || *cs == ' ') ++cs;
+
+    char *eq = strchr(cs, '=');
+    if (eq == NULL) break;
+
+    if (strncmp(cs, cookie_name, eq - cs) != 0) continue;
+
+    char *eoc = strchr(eq + 1, ';');
+    sid = eoc ? strndup(eq + 1, eoc - eq - 1) : strdup(eq + 1);
+    break;
+  }
+  if (sid == NULL) goto _over;
+
+  fshv_session_push *push = push_func(env);
+
+  s = push(env, sid, NULL, NULL, env->req->startus);
+    // query
+
+  free(sid);
+
+  if (s == NULL) goto _over;
+
+  sid = generate_sid(env);
+
+  fshv_session *s1 =
+    push(env, sid, s->user, s->id, env->req->startus + SHV_SA_EXPIRY);
+      // refresh
+
+  free(sid);
+
+  if (s1 == NULL) goto _over;
+
+  //fshv_set_user(env, "session", s1->user);
+  flu_list_set(env->bag, "_session_user", s1->user);
+
+  set_session_cookie(env, cookie_name, s1);
+
+_over:
+
+  if (s == NULL) env->res->status_code = 401;
+
+  return 0;
+}
 

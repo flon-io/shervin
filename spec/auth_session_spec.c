@@ -191,55 +191,74 @@ context "session auth:"
     }
   }
 
-//  describe "fshv_session_auth_filter()"
-//  {
-//    before each
-//    {
-//      fshv_request *req = NULL;
-//      flu_dict *params = NULL;
-//      fshv_response *res = fshv_response_malloc(200);
-//
-//      params = flu_d(
-//        "a", sa_specauth,
-//        "n", "shervin.test",
-//        NULL);
-//
-//      fshv_session_memstore_push(NULL, NULL, NULL, -1);
-//        // reset store
-//
-//      fshv_session_memstore_push(
-//        "abcdef123",
-//        "toto",
-//        "toto:1234:4567",
-//        flu_gets('u') + (long long)10 * 60 * 60 * 1000 * 1000);
-//          // start session
-//
-//        // expiry time, arbitrary
-//    }
-//    after each
-//    {
-//      fshv_request_free(req);
-//      flu_list_free(params);
-//      fshv_response_free(res);
-//    }
-//
-//    int sa_specauth(const char *user, const char *pass, flu_dict *params)
-//    {
-//      return (strcmp(user, pass) == 0);
-//    }
-//
-//    it "authentifies (hit)"
-//    {
-//      req = fshv_parse_request_head(
-//        "GET /x HTTP/1.1\r\n"
-//        "Host: http://www.example.com\r\n"
-//        "Cookie: geo.nada=timbuk; shervin.test=abcdef123; o.ther=1234abc\r\n"
-//        "\r\n");
-//      req->startus = flu_gets('u');
-//
-//      int r = fshv_session_auth_filter(req, res, 0, params);
-//
-//      expect(r i== 0); // continue routing
+  describe "fshv_session_auth()"
+  {
+    before each
+    {
+      fshv_env *env = NULL;
+
+      fshv_session_memstore_push(NULL, NULL, NULL, NULL, -1);
+        // reset store
+
+      fshv_session_memstore_push(
+        NULL,
+        "abcdef123",
+        "toto",
+        "toto:1234:4567",
+        flu_gets('u') + (long long)10 * 60 * 60 * 1000 * 1000);
+          // start session
+
+        // expiry time, arbitrary
+    }
+    after each
+    {
+      fshv_env_free(env);
+    }
+
+    it "misses (no cookie)"
+    {
+      env = fshv_env_prepare(
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "\r\n",
+        NULL);
+      //req->startus = flu_gets('u');
+
+      int r = fshv_session_auth(env, "shervin.test");
+
+      expect(r i== 0);
+
+      expect(flu_list_get(env->res->headers, "set-cookie") == NULL);
+    }
+
+    it "misses (cookies but none for us)"
+    {
+      env = fshv_env_prepare(
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "Cookie: geo.nada=timbuk; o.ther=1234abc\r\n"
+        "\r\n",
+        NULL);
+      //req->startus = flu_gets('u');
+
+      int r = fshv_session_auth(env, "shervin.test");
+
+      expect(r i== 0);
+    }
+
+    it "authentifies (hit)"
+    {
+      env = fshv_env_prepare(
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "Cookie: geo.nada=timbuk; shervin.test=abcdef123; o.ther=1234abc\r\n"
+        "\r\n",
+        NULL);
+      //req->startus = flu_gets('u');
+
+      int r = fshv_session_auth(env, "shervin.test");
+
+      expect(r i== 1);
 //      expect(flu_list_get(req->routing_d, "_session_user") === "toto");
 //
 //      expect(fshv_session_memstore()->size i== 2);
@@ -253,20 +272,21 @@ context "session auth:"
 //      expect(s >== ";Expires=");
 //      expect(s >== ";HttpOnly");
 //      expect(strstr(s, ";Secure") == NULL);
-//    }
-//
-//    it "authentifies (hit, cookie last)"
-//    {
-//      req = fshv_parse_request_head(
-//        "GET /x HTTP/1.1\r\n"
-//        "Host: http://www.example.com\r\n"
-//        "Cookie: geo.nada=timbuk; shervin.test=abcdef123\r\n"
-//        "\r\n");
-//      req->startus = flu_gets('u');
-//
-//      int r = fshv_session_auth_filter(req, res, 0, params);
-//
-//      expect(r i== 0); // continue routing
+    }
+
+    it "authentifies (hit, cookie last)"
+    {
+      env = fshv_env_prepare(
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "Cookie: geo.nada=timbuk; shervin.test=abcdef123\r\n"
+        "\r\n",
+        NULL);
+      //req->startus = flu_gets('u');
+
+      int r = fshv_session_auth(env, "shervin.test");
+
+      expect(r i== 1);
 //      expect(flu_list_get(req->routing_d, "_session_user") === "toto");
 //
 //      expect(fshv_session_memstore()->size i== 2);
@@ -280,21 +300,22 @@ context "session auth:"
 //      expect(s >== ";Expires=");
 //      expect(s >== ";HttpOnly");
 //      expect(strstr(s, ";Secure") == NULL);
-//    }
-//
-//    it "authentifies (hit, https)"
-//    {
-//      req = fshv_parse_request_head(
-//        "GET /x HTTP/1.1\r\n"
-//        "Host: http://www.example.com\r\n"
-//        "Cookie: geo.nada=timbuk; shervin.test=abcdef123\r\n"
-//        "X-Forwarded-Proto: https\r\n"
-//        "\r\n");
-//      req->startus = flu_gets('u');
-//
-//      int r = fshv_session_auth_filter(req, res, 0, params);
-//
-//      expect(r i== 0); // continue routing
+    }
+
+    it "authentifies (hit, https)"
+    {
+      env = fshv_env_prepare(
+        "GET /x HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "Cookie: geo.nada=timbuk; shervin.test=abcdef123\r\n"
+        "X-Forwarded-Proto: https\r\n"
+        "\r\n",
+        NULL);
+      //req->startus = flu_gets('u');
+
+      int r = fshv_session_auth(env, "shervin.test");
+
+      expect(r i== 1);
 //      expect(flu_list_get(req->routing_d, "_session_user") === "toto");
 //
 //      expect(fshv_session_memstore()->size i== 2);
@@ -304,22 +325,7 @@ context "session auth:"
 //
 //      char *s = flu_list_get(res->headers, "set-cookie");
 //      expect(s $== ";Secure");
-//    }
-//
-//    it "authentifies (miss, no cookie)"
-//    {
-//      req = fshv_parse_request_head(
-//        "GET /x HTTP/1.1\r\n"
-//        "Host: http://www.example.com\r\n"
-//        "\r\n");
-//      req->startus = flu_gets('u');
-//
-//      int r = fshv_session_auth_filter(req, res, 0, params);
-//
-//      expect(r i== 0); // handled -> 0
-//
-//      expect(flu_list_get(res->headers, "set-cookie") == NULL);
-//    }
-//  }
+    }
+  }
 }
 

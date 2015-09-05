@@ -96,6 +96,9 @@ int fshv_status(fshv_env *env, int status);
 
 // auth
 
+//void fshv_set_user(fshv_env *e, const char *auth, const char *user);
+//char *fshv_get_user(fshv_env *e, const char *auth);
+
 /* Given a realm, a user and a pass, returns the (new) username in case
  * of valid user/pass combination or NULL instead.
  * Generally the same username is given back, but who knows, certain
@@ -115,13 +118,13 @@ int fshv_basic_auth(
 
 /* Used by login endpoints to start a session.
  */
-void fshv_start_session(fshv_env *e, const char *user);
+void fshv_start_session(fshv_env *e, const char *cookie_name, const char *user);
 
 /* Used by logout endpoints to leave a session.
  */
 void fshv_stop_session(fshv_env *e, const char *sid);
 
-int fshv_session_auth(fshv_env *e);
+int fshv_session_auth(fshv_env *e, const char *cookie_name);
 
 
 // guards

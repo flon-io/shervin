@@ -111,3 +111,36 @@ ssize_t fshv_serve_file(fshv_env *env, const char *path, ...)
   return sta.st_size;
 }
 
+
+//
+// auth
+
+//void fshv_set_user(fshv_env *env, const char *auth, const char *user)
+//{
+//  flu_list_setk(
+//    req->routing_d, flu_sprintf("_%s_user", auth), strdup(user), 0);
+//}
+//
+//char *fshv_get_user(fshv_env *env, const char *auth)
+//{
+//  if (auth)
+//  {
+//    char *k = flu_sprintf("_%s_user", auth);
+//    char *r = flu_list_get(req->routing_d, k);
+//    free(k);
+//
+//    return r;
+//  }
+//
+//  for (flu_node *fn = req->routing_d->first; fn; fn = fn->next)
+//  {
+//    if (*fn->key != '_') continue;
+//    char *u = strrchr(fn->key, '_');
+//    if (u == NULL || strcmp(u, "_user") != 0) continue;
+//
+//    return fn->item;
+//  }
+//
+//  return NULL;
+//}
+
