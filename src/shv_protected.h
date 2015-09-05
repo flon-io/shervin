@@ -124,40 +124,5 @@ char *fshv_absolute_uri(int ssl, fshv_uri *u, const char *rel, ...);
 #define fshv_abs(ssl, uri) fshv_absolute_uri(ssl, uri, NULL)
 #define fshv_rel(ssl, uri, ...) fshv_absolute_uri(ssl, uri, __VA_ARGS__)
 
-
-//
-// session
-
-typedef struct {
-  char *sid;
-  char *user;
-  char *id;
-  long long expus; // microseconds, expiration point
-  short used;
-} fshv_session;
-
-char *fshv_session_to_s(fshv_session *s);
-
-void fshv_session_free(fshv_session *s);
-
-/* * pushing with all the parameters set and expiry time:
- *   start or refreshes a session
- *   returns the new session in case of success, NULL else
- * * pushing with only the sid set and now:
- *   queries and expires,
- *   returns a session in case of success, NULL else
- * * pushing with only the sid set and -1:
- *   stops the session and returns NULL
- * * pushing with all NULL and -1:
- *   resets the store and returns NULL
- */
-typedef fshv_session *fshv_session_push(
-  fshv_env *e,
-  const char *sid,
-  const char *user,
-  const char *id,
-  long long tus);
-
-
 #endif // FLON_SHV_PROTECTED_H
 

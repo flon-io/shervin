@@ -67,7 +67,6 @@ static fshv_session *query_session(const char *sid, long long nowus)
     if (s->expus <= nowus) break;
     ++count; last = fn;
 
-printf("s->sid >%s<, sid >%s<\n", s->sid, sid);
     if (strcmp(s->sid, sid) != 0) continue;
 
     if (s->used == 1) return NULL;

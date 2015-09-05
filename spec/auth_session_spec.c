@@ -224,7 +224,8 @@ context "session auth:"
         NULL);
       //req->startus = flu_gets('u');
 
-      int r = fshv_session_auth(env, "shervin.test");
+      int r = fshv_session_auth(
+        env, fshv_session_memstore_push, "shervin.test");
 
       expect(r i== 0);
 
@@ -241,7 +242,8 @@ context "session auth:"
         NULL);
       //req->startus = flu_gets('u');
 
-      int r = fshv_session_auth(env, "shervin.test");
+      int r = fshv_session_auth(
+        env, fshv_session_memstore_push, "shervin.test");
 
       expect(r i== 0);
     }
@@ -256,7 +258,8 @@ context "session auth:"
         NULL);
       //req->startus = flu_gets('u');
 
-      int r = fshv_session_auth(env, "shervin.test");
+      int r = fshv_session_auth(
+        env, fshv_session_memstore_push, "shervin.test");
 
       expect(r i== 1);
 //      expect(flu_list_get(req->routing_d, "_session_user") === "toto");
@@ -284,7 +287,8 @@ context "session auth:"
         NULL);
       //req->startus = flu_gets('u');
 
-      int r = fshv_session_auth(env, "shervin.test");
+      int r = fshv_session_auth(
+        env, fshv_session_memstore_push, "shervin.test");
 
       expect(r i== 1);
 //      expect(flu_list_get(req->routing_d, "_session_user") === "toto");
@@ -313,7 +317,8 @@ context "session auth:"
         NULL);
       //req->startus = flu_gets('u');
 
-      int r = fshv_session_auth(env, "shervin.test");
+      int r = fshv_session_auth(
+        env, fshv_session_memstore_push, "shervin.test");
 
       expect(r i== 1);
 //      expect(flu_list_get(req->routing_d, "_session_user") === "toto");

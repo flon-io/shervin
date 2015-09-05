@@ -38,6 +38,7 @@
 #define FSHV_BUFFER_SIZE 4096
 
 
+//
 // request
 
 typedef struct {
@@ -60,6 +61,7 @@ typedef struct {
 } fshv_request;
 
 
+//
 // response
 
 typedef struct {
@@ -71,6 +73,7 @@ typedef struct {
 char *fshv_response_body_to_s(fshv_response *res);
 
 
+//
 // env
 
 typedef struct {
@@ -81,11 +84,13 @@ typedef struct {
 } fshv_env;
 
 
+//
 // [root] handler
 
 typedef int fshv_handler(fshv_env *env);
 
 
+//
 // handlers
 
 int fshv_serve_files(fshv_env *env, char *root);
@@ -94,7 +99,8 @@ int fshv_mirror(fshv_env *env, short do_log);
 int fshv_status(fshv_env *env, int status);
 
 
-// auth
+//
+// basic auth
 
 //void fshv_set_user(fshv_env *e, const char *auth, const char *user);
 //char *fshv_get_user(fshv_env *e, const char *auth);
@@ -116,17 +122,55 @@ typedef char *fshv_user_pass_authentifier(
 int fshv_basic_auth(
   fshv_env *e, const char *realm, fshv_user_pass_authentifier *a);
 
+
+//
+// session auth
+
+typedef struct {
+  char *sid;
+  char *user;
+  char *id;
+  long long expus; // microseconds, expiration point
+  short used;
+} fshv_session;
+
+char *fshv_session_to_s(fshv_session *s);
+
+void fshv_session_free(fshv_session *s);
+
+/* * pushing with all the parameters set and expiry time:
+ *   start or refreshes a session
+ *   returns the new session in case of success, NULL else
+ * * pushing with only the sid set and now:
+ *   queries and expires,
+ *   returns a session in case of success, NULL else
+ * * pushing with only the sid set and -1:
+ *   stops the session and returns NULL
+ * * pushing with all NULL and -1:
+ *   resets the store and returns NULL
+ */
+typedef fshv_session *fshv_session_push(
+  fshv_env *e,
+  const char *sid,
+  const char *user,
+  const char *id,
+  long long tus);
+
 /* Used by login endpoints to start a session.
  */
-void fshv_start_session(fshv_env *e, const char *cookie_name, const char *user);
+void fshv_start_session(
+  fshv_env *e, fshv_session_push *p, const char *cookie_name, const char *user);
 
 /* Used by logout endpoints to leave a session.
  */
-void fshv_stop_session(fshv_env *e, const char *sid);
+void fshv_stop_session(
+  fshv_env *env, fshv_session_push *p, const char *sid);
 
-int fshv_session_auth(fshv_env *e, const char *cookie_name);
+int fshv_session_auth(
+  fshv_env *e, fshv_session_push *p, const char *cookie_name);
 
 
+//
 // guards
 
 int fshv_path_match(fshv_env *env, int sub, char *path);
@@ -135,6 +179,7 @@ int fshv_path_match(fshv_env *env, int sub, char *path);
 #define fshv_smatch(env, path) fshv_path_match(env, 1, path)
 
 
+//
 // serve
 
 void fshv_serve(int port, fshv_handler *root_handler, flu_dict *conf);

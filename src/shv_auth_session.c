@@ -66,7 +66,6 @@ void fshv_session_free(fshv_session *s)
   if (s == NULL) return;
 
   free(s->sid);
-printf("f s->user >%s<\n", s->user);
   free(s->user);
   free(s->id);
   free(s);
@@ -109,20 +108,11 @@ static void set_session_cookie(
   free(ts);
 }
 
-static fshv_session_push *push_func(fshv_env *env)
-{
-  if (env->conf == NULL) return fshv_session_memstore_push;
-
-  fshv_session_push *r = NULL;
-
-  r = flu_list_get(env->conf, "store"); if (r) return r;
-  r = flu_list_get(env->conf, "s"); if (r) return r;
-
-  return fshv_session_memstore_push;
-}
-
 void fshv_start_session(
-  fshv_env *env, const char *cookie_name,  const char *user)
+  fshv_env *env,
+  fshv_session_push *push_func,
+  const char *cookie_name,
+  const char *user)
 {
   if (spid == NULL) spid = flu_sprintf("%lli_%lli", getppid(), getpid());
 
@@ -137,7 +127,7 @@ void fshv_start_session(
   long long expus =
     (env->req ? env->req->startus : flu_gets('u')) + SHV_SA_EXPIRY;
 
-  fshv_session *ses = push_func(env)(env, sid, user, id, expus);
+  fshv_session *ses = push_func(env, sid, user, id, expus);
 
   set_session_cookie(env, cookie_name, ses);
 
@@ -145,17 +135,18 @@ void fshv_start_session(
   free(sid);
 }
 
-void fshv_stop_session(fshv_env *env, const char *sid)
+void fshv_stop_session(
+  fshv_env *env, fshv_session_push *push_func, const char *sid)
 {
-  push_func(env)(env, sid, NULL, NULL, -1);
+  push_func(env, sid, NULL, NULL, -1);
 }
 
-int fshv_session_auth(fshv_env *env, const char *cookie_name)
+int fshv_session_auth(
+  fshv_env *env, fshv_session_push *push_func, const char *cookie_name)
 {
   fshv_session *s = NULL;
 
   char *cookies = flu_list_get(env->req->headers, "cookie");
-printf("cookies >%s<\n", cookies);
   if (cookies == NULL) goto _over;
 
   char *sid = NULL;
@@ -174,9 +165,7 @@ printf("cookies >%s<\n", cookies);
   }
   if (sid == NULL) goto _over;
 
-  fshv_session_push *push = push_func(env);
-
-  s = push(env, sid, NULL, NULL, env->req->startus);
+  s = push_func(env, sid, NULL, NULL, env->req->startus);
     // query
 
   free(sid);
@@ -186,7 +175,7 @@ printf("cookies >%s<\n", cookies);
   sid = generate_sid(env);
 
   fshv_session *s1 =
-    push(env, sid, s->user, s->id, env->req->startus + SHV_SA_EXPIRY);
+    push_func(env, sid, s->user, s->id, env->req->startus + SHV_SA_EXPIRY);
       // refresh
 
   free(sid);
