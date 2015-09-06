@@ -189,8 +189,8 @@ int fshv_session_auth(
 
 _over:
 
-  if (s == NULL) env->res->status_code = 401;
+  if (s == NULL) { env->res->status_code = 401; return 0; }
 
-  return 0;
+  return 1;
 }
 

@@ -229,6 +229,7 @@ context "session auth:"
 
       expect(r i== 0);
 
+      expect(env->res->status_code i== 401);
       expect(flu_list_get(env->res->headers, "set-cookie") == NULL);
     }
 
@@ -246,6 +247,8 @@ context "session auth:"
         env, fshv_session_memstore_push, "shervin.test");
 
       expect(r i== 0);
+
+      expect(env->res->status_code i== 401);
     }
 
     it "authentifies (hit)"
@@ -256,25 +259,27 @@ context "session auth:"
         "Cookie: geo.nada=timbuk; shervin.test=abcdef123; o.ther=1234abc\r\n"
         "\r\n",
         NULL);
-      //req->startus = flu_gets('u');
+      //env->req->startus = flu_gets('u');
 
       int r = fshv_session_auth(
         env, fshv_session_memstore_push, "shervin.test");
 
       expect(r i== 1);
-//      expect(flu_list_get(req->routing_d, "_session_user") === "toto");
-//
-//      expect(fshv_session_memstore()->size i== 2);
-//
-//      fshv_session *ses = fshv_session_memstore()->first->item;
-//      expect(ses->id === "toto:1234:4567");
-//
-//      char *s = flu_list_get(res->headers, "set-cookie");
-//      expect(s ^== "shervin.test=");
-//      expect(s >== ses->sid);
-//      expect(s >== ";Expires=");
-//      expect(s >== ";HttpOnly");
-//      expect(strstr(s, ";Secure") == NULL);
+
+      expect(env->res->status_code i== -1);
+      expect(flu_list_get(env->bag, "_session_user") === "toto");
+
+      expect(fshv_session_memstore()->size i== 2);
+
+      fshv_session *ses = fshv_session_memstore()->first->item;
+      expect(ses->id === "toto:1234:4567");
+
+      char *s = flu_list_get(env->res->headers, "set-cookie");
+      expect(s ^== "shervin.test=");
+      expect(s >== ses->sid);
+      expect(s >== ";Expires=");
+      expect(s >== ";HttpOnly");
+      expect(strstr(s, ";Secure") == NULL);
     }
 
     it "authentifies (hit, cookie last)"
@@ -291,19 +296,21 @@ context "session auth:"
         env, fshv_session_memstore_push, "shervin.test");
 
       expect(r i== 1);
-//      expect(flu_list_get(req->routing_d, "_session_user") === "toto");
-//
-//      expect(fshv_session_memstore()->size i== 2);
-//
-//      fshv_session *ses = fshv_session_memstore()->first->item;
-//      expect(ses->id === "toto:1234:4567");
-//
-//      char *s = flu_list_get(res->headers, "set-cookie");
-//      expect(s ^== "shervin.test=");
-//      expect(s >== ses->sid);
-//      expect(s >== ";Expires=");
-//      expect(s >== ";HttpOnly");
-//      expect(strstr(s, ";Secure") == NULL);
+
+      expect(env->res->status_code i== -1);
+      expect(flu_list_get(env->bag, "_session_user") === "toto");
+
+      expect(fshv_session_memstore()->size i== 2);
+
+      fshv_session *ses = fshv_session_memstore()->first->item;
+      expect(ses->id === "toto:1234:4567");
+
+      char *s = flu_list_get(env->res->headers, "set-cookie");
+      expect(s ^== "shervin.test=");
+      expect(s >== ses->sid);
+      expect(s >== ";Expires=");
+      expect(s >== ";HttpOnly");
+      expect(strstr(s, ";Secure") == NULL);
     }
 
     it "authentifies (hit, https)"
@@ -321,15 +328,17 @@ context "session auth:"
         env, fshv_session_memstore_push, "shervin.test");
 
       expect(r i== 1);
-//      expect(flu_list_get(req->routing_d, "_session_user") === "toto");
-//
-//      expect(fshv_session_memstore()->size i== 2);
-//
-//      fshv_session *ses = fshv_session_memstore()->first->item;
-//      expect(ses->id === "toto:1234:4567");
-//
-//      char *s = flu_list_get(res->headers, "set-cookie");
-//      expect(s $== ";Secure");
+
+      expect(env->res->status_code i== -1);
+      expect(flu_list_get(env->bag, "_session_user") === "toto");
+
+      expect(fshv_session_memstore()->size i== 2);
+
+      fshv_session *ses = fshv_session_memstore()->first->item;
+      expect(ses->id === "toto:1234:4567");
+
+      char *s = flu_list_get(env->res->headers, "set-cookie");
+      expect(s $== ";Secure");
     }
   }
 }
