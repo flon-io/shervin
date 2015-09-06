@@ -183,7 +183,7 @@ int fshv_session_auth(
   if (s1 == NULL) goto _over;
 
   //fshv_set_user(env, "session", s1->user);
-  flu_list_set(env->bag, "_session_user", s1->user);
+  flu_list_set(env->bag, "_session_user", strdup(s1->user));
 
   set_session_cookie(env, cookie_name, s1);
 
