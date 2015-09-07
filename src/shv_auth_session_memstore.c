@@ -145,3 +145,13 @@ flu_list *fshv_session_memstore()
   return store;
 }
 
+size_t fshv_session_memstore_clear()
+{
+  if (store == NULL) return 0;
+
+  size_t r = store->size;
+  fshv_session_memstore_push(NULL, NULL, NULL, NULL, -1);
+
+  return r;
+}
+

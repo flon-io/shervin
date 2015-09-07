@@ -54,5 +54,9 @@ fshv_session *fshv_session_memstore_push(
  */
 flu_list *fshv_session_memstore();
 
+/* For specs only.
+ */
+size_t fshv_session_memstore_clear();
+
 #endif //FLON_SHV_AUTH_SESSION_MEMSTORE_H
 

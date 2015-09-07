@@ -197,8 +197,7 @@ context "session auth:"
     {
       fshv_env *env = NULL;
 
-      fshv_session_memstore_push(NULL, NULL, NULL, NULL, -1);
-        // reset store
+      fshv_session_memstore_clear();
 
       fshv_session_memstore_push(
         NULL,
@@ -213,6 +212,7 @@ context "session auth:"
     after each
     {
       fshv_env_free(env);
+      fshv_session_memstore_clear();
     }
 
     it "misses (no cookie)"
