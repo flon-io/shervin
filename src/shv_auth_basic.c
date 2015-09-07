@@ -75,10 +75,11 @@ int fshv_basic_auth(
   char *nuser = a(env, realm, user, pass);
   authentified = (nuser != NULL);
 
-  if (nuser) flu_list_set(env->bag, "_basic_user", nuser);
-    // the authentifier is tasked with delivering a new string in nuser
-    //
-  //if (nuser) fshv_set_user(req, "basic", nuser);
+  if (nuser)
+  {
+    fshv_set_user(env, realm, nuser);
+    free(nuser);
+  }
 
 _over:
 

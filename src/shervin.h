@@ -102,8 +102,8 @@ int fshv_status(fshv_env *env, int status);
 //
 // basic auth
 
-//void fshv_set_user(fshv_env *e, const char *auth, const char *user);
-//char *fshv_get_user(fshv_env *e, const char *auth);
+void fshv_set_user(fshv_env *e, const char *realm, const char *user);
+char *fshv_get_user(fshv_env *e, const char *realm);
 
 /* Given a realm, a user and a pass, returns the (new) username in case
  * of valid user/pass combination or NULL instead.

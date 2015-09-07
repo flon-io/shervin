@@ -231,6 +231,8 @@ context "session auth:"
 
       expect(env->res->status_code i== 401);
       expect(flu_list_get(env->res->headers, "set-cookie") == NULL);
+
+      expect(fshv_get_user(env, NULL) == NULL);
     }
 
     it "misses (cookies but none for us)"
@@ -249,6 +251,8 @@ context "session auth:"
       expect(r i== 0);
 
       expect(env->res->status_code i== 401);
+
+      expect(fshv_get_user(env, NULL) == NULL);
     }
 
     it "authentifies (hit)"
@@ -267,7 +271,9 @@ context "session auth:"
       expect(r i== 1);
 
       expect(env->res->status_code i== -1);
-      expect(flu_list_get(env->bag, "_session_user") === "toto");
+      expect(flu_list_get(env->bag, "_shervin.test_user") === "toto");
+      expect(fshv_get_user(env, "shervin.test") === "toto");
+      expect(fshv_get_user(env, NULL) === "toto");
 
       expect(fshv_session_memstore()->size i== 2);
 
@@ -298,7 +304,9 @@ context "session auth:"
       expect(r i== 1);
 
       expect(env->res->status_code i== -1);
-      expect(flu_list_get(env->bag, "_session_user") === "toto");
+      expect(flu_list_get(env->bag, "_shervin.test_user") === "toto");
+      expect(fshv_get_user(env, "shervin.test") === "toto");
+      expect(fshv_get_user(env, NULL) === "toto");
 
       expect(fshv_session_memstore()->size i== 2);
 
@@ -330,7 +338,9 @@ context "session auth:"
       expect(r i== 1);
 
       expect(env->res->status_code i== -1);
-      expect(flu_list_get(env->bag, "_session_user") === "toto");
+      expect(flu_list_get(env->bag, "_shervin.test_user") === "toto");
+      expect(fshv_get_user(env, "shervin.test") === "toto");
+      expect(fshv_get_user(env, NULL) === "toto");
 
       expect(fshv_session_memstore()->size i== 2);
 

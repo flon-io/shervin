@@ -57,7 +57,9 @@ context "basic auth:"
       int r = fshv_basic_auth(env, "therealm", specauth);
 
       expect(r i== 1);
-      expect(flu_list_get(env->bag, "_basic_user") === "toto");
+      expect(flu_list_get(env->bag, "_therealm_user") === "toto");
+      expect(fshv_get_user(env, "therealm") === "toto");
+      expect(fshv_get_user(env, NULL) === "toto");
 
       expect(env->res->status_code i== -1);
     }
@@ -74,7 +76,9 @@ context "basic auth:"
       int r = fshv_basic_auth(env, "therealm", specauth);
 
       expect(r i== 0);
-      expect(flu_list_get(env->bag, "_basic_user") == NULL);
+      expect(flu_list_get(env->bag, "_therealm_user") == NULL);
+      expect(fshv_get_user(env, "therealm") == NULL);
+      expect(fshv_get_user(env, NULL) == NULL);
 
       expect(env->res->status_code i== 401);
     }
@@ -124,7 +128,9 @@ context "basic auth:"
       int r = fshv_basic_auth(env, "therealm", specauth);
 
       expect(r i== 0);
-      expect(flu_list_get(env->bag, "_basic_user") == NULL);
+      expect(flu_list_get(env->bag, "_therealm_user") == NULL);
+      expect(fshv_get_user(env, "therealm") == NULL);
+      expect(fshv_get_user(env, NULL) == NULL);
 
       expect(env->res->status_code i== 401);
     }
