@@ -1,6 +1,6 @@
 
 #CFLAGS=-I../src -g -Wall -O3 -lrt -lev -lcurl
-CFLAGS=-I../src -g -Wall -lrt -lev -lcurl
+CFLAGS=-I../src -g -Wall -lrt -lev -lcurl -lcrypto
 LDLIBS=
 CC=c99
 VPATH=../src
@@ -21,9 +21,9 @@ servman.o: servman.c
 bocla.o: bocla.c
 
 webapp:
-	#@echo "[1;30m"
-	#$(MAKE) -C ../tst webapp
-	#@echo "[0;0m"
+	@echo "[1;30m"
+	$(MAKE) -C ../tst webapp
+	@echo "[0;0m"
 
 s: $(NAMES) servman.o bocla.o
 
