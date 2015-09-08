@@ -275,6 +275,40 @@ context "handlers"
 
       expect(r i== 1);
     }
+
+    it "mirrors POST requests"
+    {
+      fgaj_conf_get()->logger = fgaj_grey_logger;
+      fgaj_conf_get()->level = 5;
+      fgaj_conf_get()->out = stderr;
+      fgaj_conf_get()->params = "5p";
+
+      env = fshv_env_prepare(
+        "POST /x/y/mirror HTTP/1.1\r\n"
+        "Host: http://www.example.com\r\n"
+        "X-Whatever: hello server\r\n"
+        "\r\n"
+        "hello /mirror on the server",
+        NULL);
+
+      expect(env->req != NULL);
+
+      flu_list_set(env->bag, "**", rdz_strdup("mirror"));
+
+      int r = fshv_mirror(env, 1);
+
+      expect(r i== 1);
+
+      expect(fshv_response_body_to_s(env->res) ===f ""
+        "POST /x/y/mirror HTTP/1.1\r\n"
+        "x-whatever: hello server\r\n"
+        "host: http://www.example.com\r\n"
+        "method: POST\r\n"
+        "path: /x/y/mirror\r\n"
+        "uri: (uri s\"http\" h\"www.example.com\" p80 p\"/x/y/mirror\")\r\n"
+        "\r\n"
+        "hello /mirror on the server");
+    }
   }
 }
 

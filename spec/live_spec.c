@@ -57,6 +57,7 @@ context "live"
     {
       res = fcla_post("http://127.0.0.1:4001/mirror", NULL, "nada");
 
+      //printf("res->body >%s<\n", res->body);
       char *body = strstr(res->body, "\r\n\r\n") + 4;
 
       expect(res->status_code i== 200);
@@ -67,8 +68,8 @@ context "live"
     {
       res = fcla_get("http://127.0.0.1:4001/files/a/b/hello.txt");
 
-      //printf("res: %i\n", res->status_code);
-      //flu_putf(flu_list_to_sm(res->headers));
+      printf("res: %i\n", res->status_code);
+      flu_putf(flu_list_to_sm(res->headers));
 
       expect(res->status_code i== 200);
       expect(res->body === "hello world\n");
