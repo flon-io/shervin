@@ -97,7 +97,8 @@ static int secret(fshv_env *env)
   return 1;
 }
 
-static char *bauth(const char *realm, const char *user, const char *pass)
+static char *bauth(
+  fshv_env *e, const char *realm, const char *user, const char *pass)
 {
   if (strcmp(user, pass) == 0) return strdup(user);
   return NULL;
