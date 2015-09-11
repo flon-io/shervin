@@ -29,7 +29,7 @@ context "handlers"
     {
       it "serves successfully"
       {
-        env = fshv_env_prepare(
+        env = fshv_env_malloc(
           "GET /x/y/a/b/hello.txt HTTP/1.1\r\n"
           "Host: http://www.example.com\r\n"
           "\r\n",
@@ -53,7 +53,7 @@ context "handlers"
 
       it "goes 404 if the file is not found"
       {
-        env = fshv_env_prepare(
+        env = fshv_env_malloc(
           "GET /x/y/a/b/nada.txt HTTP/1.1\r\n"
           "Host: http://www.example.com\r\n"
           "\r\n",
@@ -69,7 +69,7 @@ context "handlers"
 
       it "goes 404 if the file is a dir"
       {
-        env = fshv_env_prepare(
+        env = fshv_env_malloc(
           "GET /x/y/a HTTP/1.1\r\n"
           "Host: http://www.example.com\r\n"
           "\r\n",
@@ -85,7 +85,7 @@ context "handlers"
 
       it "goes 403 when the request goes ../"
       {
-        env = fshv_env_prepare(
+        env = fshv_env_malloc(
           "GET /x/y/../www/a/b/hello.txt HTTP/1.1\r\n"
           "Host: http://www.example.com\r\n"
           "\r\n",
@@ -103,7 +103,7 @@ context "handlers"
       {
         conf = flu_d("accel-header", "X-Sendfile", NULL);
 
-        env = fshv_env_prepare(
+        env = fshv_env_malloc(
           "GET /x/y/a/b/hello.txt HTTP/1.1\r\n"
           "Host: http://www.example.com\r\n"
           "\r\n",
@@ -129,7 +129,7 @@ context "handlers"
 
       it "serves a/b/index.html when asked for a/b"
       {
-        env = fshv_env_prepare(
+        env = fshv_env_malloc(
           "GET /web/a/b HTTP/1.1\r\n"
           "Host: http://www.example.com\r\n"
           "\r\n",
@@ -155,7 +155,7 @@ context "handlers"
       {
         conf = flu_d("index", "index.txt", NULL);
 
-        env = fshv_env_prepare(
+        env = fshv_env_malloc(
           "GET /web/a/ HTTP/1.1\r\n"
           "Host: http://www.example.com\r\n"
           "\r\n",
@@ -179,7 +179,7 @@ context "handlers"
 
       it "defaults to text/plain for unknown filetypes"
       {
-        env = fshv_env_prepare(
+        env = fshv_env_malloc(
           "GET /x/y/a/b/nada.nad HTTP/1.1\r\n"
           "Host: http://www.example.com\r\n"
           "\r\n",
@@ -206,7 +206,7 @@ context "handlers"
     {
       it "serves successfully"
       {
-        env = fshv_env_prepare(
+        env = fshv_env_malloc(
           "GET /a/b/hello.txt HTTP/1.1\r\n"
           "Host: http://www.example.com\r\n"
           "\r\n",
@@ -232,7 +232,7 @@ context "handlers"
   {
     it "mirrors the incoming request"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x/y/mirror HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "X-Whatever: hello whatever\r\n"
@@ -262,7 +262,7 @@ context "handlers"
       fgaj_conf_get()->out = stderr;
       fgaj_conf_get()->params = "5p";
 
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x/y/mirror HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "X-Whatever: hello whatever\r\n"
@@ -283,13 +283,14 @@ context "handlers"
       fgaj_conf_get()->out = stderr;
       fgaj_conf_get()->params = "5p";
 
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "POST /x/y/mirror HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "X-Whatever: hello server\r\n"
-        "\r\n"
-        "hello /mirror on the server",
+        "\r\n",
         NULL);
+      env->req->body =
+        strdup("hello /mirror on the server");
 
       expect(env->req != NULL);
 

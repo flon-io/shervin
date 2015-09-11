@@ -24,7 +24,7 @@ context "guards"
   {
     it "returns 0 when it doesn't match"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x?a=b#f HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n",
@@ -37,7 +37,7 @@ context "guards"
 
     it "leaves the bag intact when it doesn't match"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /book/moominvalley/chapter HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n",
@@ -51,7 +51,7 @@ context "guards"
 
     it "matches an absolute route"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x?a=b#f HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n",
@@ -65,7 +65,7 @@ context "guards"
 
     it "puts the ** in the bag"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x/y/z HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n",
@@ -80,7 +80,7 @@ context "guards"
 
     it "puts :x in the bag"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /books/heart-of-darkness/3 HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n",
@@ -99,7 +99,7 @@ context "guards"
   {
     it "returns 0 if there is no ** in the bag"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x/y/z HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n",
@@ -112,7 +112,7 @@ context "guards"
 
     it "sub-matches"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x/y/z HTTP/1.1\r\n"
         "Host: www.example.com\r\n"
         "\r\n",

@@ -33,12 +33,12 @@
 #include "shv_protected.h"
 
 
-fshv_env *fshv_env_prepare(char *request_head, flu_dict *conf)
+fshv_env *fshv_env_malloc(char *req_head, flu_dict *conf)
 {
   fshv_env *r = calloc(1, sizeof(fshv_env));
 
   r->bag = flu_list_malloc();
-  r->req = fshv_parse_request_head(request_head);
+  r->req = fshv_parse_request_head(req_head);
   r->res = fshv_response_malloc();
   r->conf = conf;
 

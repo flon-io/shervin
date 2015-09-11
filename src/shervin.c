@@ -144,7 +144,7 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     char *head = flu_sbuffer_to_string(con->head);
     con->head = NULL;
 
-    con->env = fshv_env_prepare(head, con->conf);
+    con->env = fshv_env_malloc(head, con->conf);
     con->env->req->startus = ev_now(l) * 1000000;
     con->req_count++;
 

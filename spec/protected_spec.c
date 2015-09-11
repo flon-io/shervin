@@ -15,7 +15,7 @@ context "shv_protected.c"
   {
     before each
     {
-      fshv_env *env = fshv_env_prepare(
+      fshv_env *env = fshv_env_malloc(
         "GET /whatever HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n",

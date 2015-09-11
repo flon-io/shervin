@@ -217,7 +217,7 @@ context "session auth:"
 
     it "misses (no cookie)"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "\r\n",
@@ -237,7 +237,7 @@ context "session auth:"
 
     it "misses (cookies but none for us)"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "Cookie: geo.nada=timbuk; o.ther=1234abc\r\n"
@@ -257,7 +257,7 @@ context "session auth:"
 
     it "authentifies (hit)"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "Cookie: geo.nada=timbuk; shervin.test=abcdef123; o.ther=1234abc\r\n"
@@ -290,7 +290,7 @@ context "session auth:"
 
     it "authentifies (hit, cookie last)"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "Cookie: geo.nada=timbuk; shervin.test=abcdef123\r\n"
@@ -323,7 +323,7 @@ context "session auth:"
 
     it "authentifies (hit, https)"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "Cookie: geo.nada=timbuk; shervin.test=abcdef123\r\n"

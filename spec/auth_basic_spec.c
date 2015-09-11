@@ -33,7 +33,7 @@ context "basic auth:"
   {
     it "rejects non basic auth"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "Authorization: Complicated dG90bzp0b3Rv\r\n"
@@ -47,7 +47,7 @@ context "basic auth:"
 
     it "authentifies (hit)"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "Authorization: Basic dG90bzp0b3Rv\r\n"
@@ -66,7 +66,7 @@ context "basic auth:"
 
     it "authentifies (miss)"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "Authorization: Basic NADANADANADA\r\n"
@@ -85,7 +85,7 @@ context "basic auth:"
 
     it "answers with www-authenticate in case of auth miss"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "Authorization: Basic BLUEORIGNAL\r\n"
@@ -102,7 +102,7 @@ context "basic auth:"
 
     it "doesn't answer with www-authenticate if the realm is NULL"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "Authorization: Basic BLACKORIGNAL\r\n"
@@ -118,7 +118,7 @@ context "basic auth:"
 
     it "logs out on ?logout"
     {
-      env = fshv_env_prepare(
+      env = fshv_env_malloc(
         "GET /x?logout HTTP/1.1\r\n"
         "Host: http://www.example.com\r\n"
         "Authorization: Basic dG90bzp0b3Rv\r\n"
