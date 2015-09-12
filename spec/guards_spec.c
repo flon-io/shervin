@@ -128,5 +128,20 @@ context "guards"
       //puts(flu_list_to_s(env->bag));
     }
   }
+
+  describe "fshv_ma()"
+  {
+    it "returns 0 if the path doesn't match"
+    it "returns 0 if the user isn't authenticated (NULL realm)"
+    it "returns 0 if the user isn't authenticated (given realm)"
+    it "matches and authenticates (NULL realm)"
+    it "matches and authenticates (given realm)"
+  }
+
+  describe "fshv_sma()"
+  {
+    it "returns 0 if the sub-path doesn't match"
+    it "matches and authenticates"
+  }
 }
 

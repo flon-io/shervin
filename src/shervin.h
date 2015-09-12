@@ -173,10 +173,16 @@ int fshv_session_auth(
 //
 // guards
 
-int fshv_path_match(fshv_env *env, int sub, char *path);
+int fshv_path_match(
+  fshv_env *env, int sub, const char *path);
 #define fshv_m(env, path) fshv_path_match(env, 0, path)
 #define fshv_match(env, path) fshv_path_match(env, 0, path)
 #define fshv_smatch(env, path) fshv_path_match(env, 1, path)
+
+int fshv_path_match_and_auth(
+  fshv_env *env, int sub, const char *path, const char *realm);
+#define fshv_ma(env, path, realm) fshv_path_match_and_auth(env, 0, path, realm)
+#define fshv_sma(env, path, realm) fshv_path_match_and_auth(env, 1, path, realm)
 
 
 //

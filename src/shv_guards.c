@@ -34,7 +34,7 @@
 #include "shv_protected.h"
 
 
-int fshv_path_match(fshv_env *e, int sub, char *path)
+int fshv_path_match(fshv_env *e, int sub, const char *path)
 {
   char *rpath = NULL;
   if (sub) rpath = flu_list_get(e->bag, "**");
@@ -120,5 +120,11 @@ int fshv_path_match(fshv_env *e, int sub, char *path)
   }
 
   return success;
+}
+
+int fshv_path_match_and_auth(
+  fshv_env *env, int sub, const char *path, const char *realm)
+{
+  return 0;
 }
 
