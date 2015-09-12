@@ -90,6 +90,8 @@ static int redir(fshv_env *env)
 
 static int secret(fshv_env *env)
 {
+  if ( ! fshv_get_user(env, NULL)) return fshv_status(env, 401);
+
   env->res->status_code = 200;
 
   flu_list_add( env->res->body, strdup("there are no secrets."));

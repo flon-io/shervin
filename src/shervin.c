@@ -66,6 +66,7 @@ void fshv_handle(struct ev_loop *l, struct ev_io *eio)
   int r = con->handler(con->env);
 
   if (r == 0) fshv_status(con->env, 404);
+  else if (con->env->res->status_code == -1) fshv_status(con->env, 200);
 
   fshv_respond(l, eio);
 }
