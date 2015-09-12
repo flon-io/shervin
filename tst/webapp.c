@@ -119,7 +119,7 @@ static int root(fshv_env *env)
   //if (fshv_m(env, "GET /secret")) return secret(env);
     // OR
   fshv_basic_auth(env, "tst_realm", bauth);
-  if (fshv_ma(env, "GET /secret", "tst_realm")) return secret(env);
+  if (fshv_m(env, "GET /secret")) return secret(env);
 
   //if (fshv_m(env, "POST /login")) return login(env);
   //if ( ! fshv_session_auth_filter(env)) return fshv_status(env, 401);
