@@ -34,13 +34,15 @@
 #include "shv_auth_session_memstore.h"
 
 
+#define SESSION_PUSH fshv_session_memstore_push
+#define SESSION_COOKIE "flon.io.shervin"
+
+
 static int login(fshv_env *env)
 {
   env->res->status_code = 401;
 
   if (env->req->body == NULL) return 1;
-
-  fshv_session_push *push = fshv_session_memstore_push;
 
   // user=x;pass=y
   char *u = strchr(env->req->body, '=');
@@ -48,7 +50,7 @@ static int login(fshv_env *env)
   if (u == NULL)
   {
     char *csid = strdup(flu_list_getd(env->req->headers, "cookie", ""));
-    fshv_stop_session(env, push, strchr(csid, '=') + 1);
+    fshv_stop_session(env, SESSION_PUSH, strchr(csid, '=') + 1);
     free(csid);
 
     env->res->status_code = 200;
@@ -61,7 +63,7 @@ static int login(fshv_env *env)
   if (strncmp(u, p, ue - u) != 0) return 1;
 
   u = strndup(u + 1, ue - u - 1);
-  fshv_start_session(env, push, "flon.io.shervin", u);
+  fshv_start_session(env, SESSION_PUSH, SESSION_COOKIE, u);
   free(u);
 
   env->res->status_code = 200;
@@ -91,6 +93,7 @@ static int redir(fshv_env *env)
 
 static int secret(fshv_env *env)
 {
+  fgaj_d("NADA");
   if ( ! fshv_get_user(env, NULL)) return fshv_status(env, 401);
 
   env->res->status_code = 200;
@@ -126,6 +129,7 @@ static int root(fshv_env *env)
   if (fshv_m(env, "POST /login")) return login(env);
   //if ( ! fshv_session_auth_filter(env)) return fshv_status(env, 401);
 
+  fshv_session_auth(env, SESSION_PUSH, SESSION_COOKIE);
   if (fshv_m(env, "GET /secret")) return secret(env);
 
 
