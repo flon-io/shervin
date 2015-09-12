@@ -25,47 +25,48 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-//#include <stdlib.h>
+#include <stdlib.h>
 #include <string.h>
 
 //#include "flutil.h"
 #include "gajeta.h"
 #include "shervin.h"
-//#include "shv_protected.h"
+#include "shv_auth_session_memstore.h"
 
 
-//static int login_handler(
-//  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
-//{
-//  res->status_code = 401;
-//
-//  if (req->body == NULL) return 1;
-//
-//  // user=x;pass=y
-//  char *u = strchr(req->body, '=');
-//
-//  if (u == NULL)
-//  {
-//    char *csid = strdup(flu_list_getd(req->headers, "cookie", ""));
-//    fshv_stop_session(req, res, params, strchr(csid, '=') + 1);
-//    free(csid);
-//
-//    res->status_code = 200;
-//    return 1;
-//  }
-//
-//  char *ue = strchr(u, ';');
-//  char *p = strchr(ue, '=');
-//
-//  if (strncmp(u, p, ue - u) != 0) return 1;
-//
-//  u = strndup(u + 1, ue - u - 1);
-//  fshv_start_session(req, res, params, u);
-//  free(u);
-//
-//  res->status_code = 200;
-//  return 1;
-//}
+static int login(fshv_env *env)
+{
+  env->res->status_code = 401;
+
+  if (env->req->body == NULL) return 1;
+
+  fshv_session_push *push = fshv_session_memstore_push;
+
+  // user=x;pass=y
+  char *u = strchr(env->req->body, '=');
+
+  if (u == NULL)
+  {
+    char *csid = strdup(flu_list_getd(env->req->headers, "cookie", ""));
+    fshv_stop_session(env, push, strchr(csid, '=') + 1);
+    free(csid);
+
+    env->res->status_code = 200;
+    return 1;
+  }
+
+  char *ue = strchr(u, ';');
+  char *p = strchr(ue, '=');
+
+  if (strncmp(u, p, ue - u) != 0) return 1;
+
+  u = strndup(u + 1, ue - u - 1);
+  fshv_start_session(env, push, "flon.io.shervin", u);
+  free(u);
+
+  env->res->status_code = 200;
+  return 1;
+}
 
 static int hello(fshv_env *env)
 {
@@ -120,14 +121,16 @@ static int root(fshv_env *env)
   //if ( ! fshv_basic_auth(env, "tst_realm", bauth)) return 1;
   //if (fshv_m(env, "GET /secret")) return secret(env);
     // OR
-  fshv_basic_auth(env, "tst_realm", bauth);
-  if (fshv_m(env, "GET /secret")) return secret(env);
+  //fshv_basic_auth(env, "tst_realm", bauth);
 
-  //if (fshv_m(env, "POST /login")) return login(env);
+  if (fshv_m(env, "POST /login")) return login(env);
   //if ( ! fshv_session_auth_filter(env)) return fshv_status(env, 401);
 
+  if (fshv_m(env, "GET /secret")) return secret(env);
+
+
   return 0;
-    // OR
+    // which will
   //return fshv_status(env, 404);
 }
 
