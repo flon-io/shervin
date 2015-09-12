@@ -290,7 +290,7 @@ context "handlers"
         "\r\n",
         NULL);
       env->req->body =
-        strdup("hello /mirror on the server");
+        rdz_strdup("hello /mirror on the server");
 
       expect(env->req != NULL);
 
