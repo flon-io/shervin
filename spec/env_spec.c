@@ -23,6 +23,15 @@ context "fshv_env"
   describe "fshv_env_malloc()"
   {
     it "returns NULL on an invalid request"
+    {
+      env = fshv_env_malloc_f(
+        "GET /documents/logbook SMTP/1.1\r\n"
+        "Host: www.example.com\r\n"
+        "\r\n",
+        NULL);
+
+      expect(env == NULL);
+    }
 
     it "succeeds"
     {
@@ -42,6 +51,15 @@ context "fshv_env"
   describe "fshv_env_malloc_f()"
   {
     it "returns NULL on an invalid request"
+    {
+      env = fshv_env_malloc_f(
+        "GET /documents/%d SMTP/1.1\r\n"
+        "Host: www.example.com\r\n"
+        "\r\n", NULL,
+        1234);
+
+      expect(env == NULL);
+    }
 
     it "parses the request and returns a fshv_env 'instance'"
     {
