@@ -142,6 +142,8 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     if (con->hend < 4) return;
       // end of head not yet found
 
+    con->req_count++; // count even invalid requests
+
     fgaj_si(eio, "%s", inet_ntoa(con->client->sin_addr));
 
     char *head = flu_sbuffer_to_string(con->head);
@@ -150,19 +152,19 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     con->env = fshv_env_malloc(head, con->conf);
     free(head);
 
-    if (con->env == NULL)
+    if (con->env->req == NULL)
     {
       fgaj_sd(eio, "couldn't parse request head");
 
-      fshv_response_free(con->env->res);
-      con->env->res = fshv_response_malloc(400);
+      //fshv_response_free(con->env->res);
+      //con->env->res = fshv_response_malloc(400);
+      con->env->res->status_code = 400;
 
       fshv_respond(l, eio);
       return;
     }
 
     con->env->req->startus = ev_now(l) * 1000000;
-    con->req_count++;
   }
 
   //fgaj_sd(
