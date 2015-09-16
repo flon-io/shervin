@@ -146,6 +146,7 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     con->head = NULL;
 
     con->env = fshv_env_malloc(head, con->conf);
+// TODO insert if (con->env->req == NULL)... here
     con->env->req->startus = ev_now(l) * 1000000;
     con->req_count++;
 

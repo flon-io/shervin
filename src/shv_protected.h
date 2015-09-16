@@ -74,6 +74,7 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio);
 // env
 
 fshv_env *fshv_env_malloc(char *req_head, flu_dict *conf);
+fshv_env *fshv_env_malloc_f(char *req_head, flu_dict *conf, ...);
 void fshv_env_free(fshv_env *e);
 
 

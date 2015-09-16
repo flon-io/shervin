@@ -45,6 +45,19 @@ fshv_env *fshv_env_malloc(char *req_head, flu_dict *conf)
   return r;
 }
 
+fshv_env *fshv_env_malloc_f(char *req_head, flu_dict *conf, ...)
+{
+  va_list ap; va_start(ap, conf);
+  char *s = flu_svprintf(req_head, ap);
+  va_end(ap);
+
+  fshv_env *r = fshv_env_malloc(s, conf);
+
+  free(s);
+
+  return r;
+}
+
 void fshv_env_free(fshv_env *e)
 {
   if (e == NULL) return;
