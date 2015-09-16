@@ -35,13 +35,9 @@
 
 fshv_env *fshv_env_malloc(char *req_head, flu_dict *conf)
 {
-  fshv_request *req = fshv_parse_request_head(req_head);
-
-  if (req == NULL) return NULL;
-
   fshv_env *r = calloc(1, sizeof(fshv_env));
   r->bag = flu_list_malloc();
-  r->req = req;
+  r->req = fshv_parse_request_head(req_head);
   r->res = fshv_response_malloc();
   r->conf = conf;
 
