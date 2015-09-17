@@ -141,6 +141,12 @@ context "live"
       expect(res->body === "");
       expect(flu_list_get(res->headers, "location") === "/somewhere/else");
     }
+
+    it "doesn't crash on invalid requests"
+    {
+      char *out = flu_plines("ruby ../spec/live/invalid.rb");
+      flu_putf(out);
+    }
   }
 
   describe "shervin and basic auth"
