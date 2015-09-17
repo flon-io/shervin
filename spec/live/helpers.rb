@@ -26,7 +26,7 @@ def hrequest(req)
 
       break if l == "\r\n"
 
-      if m = l.match(/content-length: *(\d)+\r/i)
+      if m = l.match(/content-length: *(\d+)\r/i)
 
         length = m[1].to_i
       end

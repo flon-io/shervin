@@ -7,9 +7,7 @@ head, body = hrequest(
   "Host: localhost\r\n" +
   "\r\n")
 
-puts "=" * 80
-puts head
-puts body
-puts "=" * 80
+print head
+print body
 $stdout.flush
 

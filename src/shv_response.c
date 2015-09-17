@@ -365,7 +365,7 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio)
     flu_sprintf(
       "c%.3fms;r%.3fms;rq%i",
       (nowus - con->startus) / 1000.0,
-      (nowus - con->env->req->startus) / 1000.0,
+      con->env->req ? (nowus - con->env->req->startus) / 1000.0 : 0.0,
       con->req_count));
 
   if (
