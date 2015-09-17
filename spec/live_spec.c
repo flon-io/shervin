@@ -145,7 +145,13 @@ context "live"
     it "doesn't crash on invalid requests"
     {
       char *out = flu_plines("ruby ../spec/live/invalid.rb");
-      flu_putf(out);
+
+      expect(out ===f ""
+        "HTTP/1.1 400 Bad Request\r\n"
+        "content-length: 8\r\n"
+        "content-type: text/plain; charset=utf-8\r\n"
+        "\r\n"
+        "\r\nbad request")
     }
   }
 

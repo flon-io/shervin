@@ -3,7 +3,7 @@ require File.dirname(__FILE__) + '/helpers.rb'
 
 
 head, body = hrequest(
-  "GET /nada HTTP/1.1\r\n" +
+  "GET /nada HTTP...\r\n" +
   "Host: localhost\r\n" +
   "\r\n")
 
