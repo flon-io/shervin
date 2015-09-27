@@ -152,7 +152,7 @@ context "live"
         "content-length: 11\r\n"
         "content-type: text/plain; charset=utf-8\r\n"
         "\r\n"
-        "bad request")
+        "bad request");
     }
   }
 
