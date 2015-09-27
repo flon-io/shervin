@@ -153,6 +153,9 @@ context "live"
         "content-type: text/plain; charset=utf-8\r\n"
         "\r\n"
         "bad request");
+
+      res = fcla_get("http://127.0.0.1:4001");
+      expect(res->status_code i== 200);
     }
   }
 
