@@ -154,7 +154,7 @@ context "live"
         "\r\n"
         "bad request");
 
-      res = fcla_get("http://127.0.0.1:4001");
+      res = fcla_get("http://127.0.0.1:4001/hello/August");
       expect(res->status_code i== 200);
     }
   }

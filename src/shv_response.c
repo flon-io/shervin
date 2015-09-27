@@ -238,8 +238,11 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   // done
 
-  char asrc = 'i'; char *addr = flu_list_get(req->headers, "x-real-ip");
-  if (addr == NULL)
+  char asrc = 'i';
+  char *addr = NULL;
+
+  if (req != NULL) addr = flu_list_get(req->headers, "x-real-ip");
+  if (addr == NULL && req != NULL)
   {
     asrc = 'f'; addr = flu_list_get(req->headers, "x-forwarded-for");
   }
@@ -249,6 +252,7 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   }
 
   long long nowus = flu_gets('u');
+  long long reqsus = req ? req->startus : nowus;
 
   fgaj_si(
     eio,
@@ -257,7 +261,7 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     res->status_code,
     flu_list_get(res->headers, "content-length"),
     (nowus - con->startus) / 1000.0,
-    (nowus - req->startus) / 1000.0);
+    (nowus - reqsus) / 1000.0);
 
   ev_io_stop(l, eio); fgaj_sd(eio, "ev_io_stop() (w)"); free(eio);
   fshv_con_reset(con);
