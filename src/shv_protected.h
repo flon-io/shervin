@@ -75,6 +75,12 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio);
 
 fshv_env *fshv_env_malloc(char *req_head, flu_dict *conf);
 fshv_env *fshv_env_malloc_f(char *req_head, flu_dict *conf, ...);
+
+/* Like fshv_env_malloc_f() but the variables expected by the format string
+ * come before the final flu_dict *conf
+ */
+fshv_env *fshv_env_malloc_x(char *req_head, ...);
+
 void fshv_env_free(fshv_env *e);
 
 
